@@ -1,0 +1,45 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
+from . import views
+
+router = DefaultRouter()
+router.register('padres', views.PadresViewSet)
+router.register('pacientes', views.PacientesViewSet)
+router.register('citas', views.CitasViewSet)
+router.register('historiales', views.HistorialesViewSet)
+router.register('notas', views.NotasViewSet)
+router.register('tests', views.TestsViewSet)
+router.register('test-archivos', views.TestArchivosViewSet)
+router.register('reportes', views.ReportesViewSet)
+router.register('resultados-juegos', views.ResultadosJuegosViewSet)
+router.register('psicologos', views.PsicologosViewSet)
+router.register('usuarios', views.UsuariosViewSet)
+router.register('niveles', views.NivelesViewSet)
+router.register('subniveles', views.SubnivelesViewSet)
+
+urlpatterns = [
+    path('psicologos-lista/', views.UsuariosPsicologosView.as_view()),
+    path('login/', views.LoginView.as_view()),
+    path('token/refresh/', TokenRefreshView.as_view()),
+    path('dashboard/', views.DashboardView.as_view()),
+    path('juegos/', views.JuegosView.as_view()),
+    path('estadisticas/', views.EstadisticasView.as_view()),
+    path('notificaciones/', views.NotificacionesView.as_view()),
+    path('notificaciones/<int:pk>/', views.NotificacionesView.as_view()),
+    
+    # Games API
+    path('patients/', views.PatientsListView.as_view()),
+    path('games/player/register', views.GamePlayerRegisterView.as_view()),
+    path('games/player/login', views.GamePlayerLoginView.as_view()),
+    path('games/patient/<int:patient_id>/players', views.PatientPlayersListView.as_view()),
+    path('games/config/<int:player_id>/rocket_builder', views.GameConfigView.as_view()),
+    path('games/config/<int:player_id>/rocket_builder/<int:level>', views.GameConfigLevelView.as_view()),
+    path('games/session/start', views.GameSessionStartView.as_view()),
+    path('games/attempt', views.GameAttemptView.as_view()),
+    path('games/voice', views.GameVoiceView.as_view()),
+    path('games/session/<int:session_id>/complete', views.GameSessionCompleteView.as_view()),
+    path('games/upload_word_image', views.GameUploadWordImageView.as_view()),
+    
+    path('', include(router.urls)),
+]
