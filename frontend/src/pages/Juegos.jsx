@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import GameLogin from './games/GameLogin'
 import RocketBuilder from './games/RocketBuilder'
+import GrafemaHunter from './games/GrafemaHunter'
 import api from '../services/api'
 import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -80,6 +81,14 @@ export default function Juegos() {
       score: results.score,
       level: results.level,
       gameName: 'Constructor de Cohetes'
+    })
+  }
+
+  const handleFinishGrafema = (results) => {
+    setGameFinishedData({
+      score: results.score,
+      level: results.level,
+      gameName: 'La Caza del Grafema Perdido'
     })
   }
 
@@ -228,7 +237,23 @@ export default function Juegos() {
               </button>
             </div>
 
-            {/* Juego 2: Sílabas Mágicas (Clásico / Demo) */}
+            {/* Juego 2: La Caza del Grafema Perdido */}
+            <div style={styles.gameCardFeatured} onClick={() => setActiveGame('grafema_hunter')}>
+              <div style={{...styles.badgeFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>NUEVO 🔥</div>
+              <span style={{ fontSize: '50px' }}>🔍</span>
+              <h3 style={styles.gameCardTitle}>La Caza del Grafema Perdido</h3>
+              <p style={styles.gameCardDesc}>¡Encuentra la letra o sílaba que falta para completar la palabra! Entrena tu reconocimiento visual.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>Grafemas</span>
+                <span style={styles.tag}>Visual</span>
+                <span style={styles.tag}>10 Niveles</span>
+              </div>
+              <button style={{...styles.btnPlayFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}} onClick={(e) => { e.stopPropagation(); setActiveGame('grafema_hunter'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
+            {/* Juego 3: Sílabas Mágicas (Demo) */}
             <div style={styles.gameCard} onClick={() => { setActiveGame('silabas_magicas'); iniciarDemo(); }}>
               <span style={{ fontSize: '50px' }}>✨</span>
               <h3 style={styles.gameCardTitle}>Sílabas Mágicas</h3>
@@ -276,7 +301,21 @@ export default function Juegos() {
     )
   }
 
-  // 3. Jugando: Sílabas Mágicas (Demo Clásico)
+  // 3. Jugando: La Caza del Grafema Perdido
+  if (activeGame === 'grafema_hunter') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>👤 Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
+        </div>
+        <div style={styles.gameBody}>
+          <GrafemaHunter player={player} onFinish={handleFinishGrafema} />
+        </div>
+      </div>
+    )
+  }
+
+  // 4. Jugando: Sílabas Mágicas (Demo Clásico)
   if (activeGame === 'silabas_magicas') {
     return (
       <div style={styles.gameContainer}>

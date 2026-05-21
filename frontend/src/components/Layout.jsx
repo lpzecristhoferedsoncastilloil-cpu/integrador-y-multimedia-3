@@ -19,7 +19,7 @@ export default function Layout({ children, titulo }) {
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold" style={{ background: 'var(--ng-topbar-avatar)' }}>
                 {usuario?.nombre?.[0]}
               </div>
               <span className="text-sm font-medium text-gray-700 hidden md:block">{usuario?.nombre}</span>

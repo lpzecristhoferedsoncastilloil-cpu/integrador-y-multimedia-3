@@ -589,7 +589,7 @@ class PatientPlayersListView(APIView):
 class GameConfigView(APIView):
     permission_classes = [AllowAny]
     
-    def get(self, request, player_id):
+    def get(self, request, player_id, game_key):
         from django.db import connection
         import json
         try:
@@ -597,8 +597,8 @@ class GameConfigView(APIView):
                 cursor.execute('''
                     SELECT level, config_data
                     FROM game_configs
-                    WHERE player_id = %s AND game_key = 'rocket_builder'
-                ''', [player_id])
+                    WHERE player_id = %s AND game_key = %s
+                ''', [player_id, game_key])
                 rows = cursor.fetchall()
                 config = {}
                 for lvl, data in rows:
@@ -614,7 +614,7 @@ class GameConfigView(APIView):
 class GameConfigLevelView(APIView):
     permission_classes = [AllowAny]
     
-    def put(self, request, player_id, level):
+    def put(self, request, player_id, game_key, level):
         from django.db import connection
         import json
         body = request.data
@@ -623,21 +623,21 @@ class GameConfigLevelView(APIView):
             with connection.cursor() as cursor:
                 cursor.execute('''
                     INSERT INTO game_configs (player_id, game_key, level, config_data)
-                    VALUES (%s, 'rocket_builder', %s, %s)
+                    VALUES (%s, %s, %s, %s)
                     ON DUPLICATE KEY UPDATE config_data = %s
-                ''', [player_id, level, config_str, config_str])
+                ''', [player_id, game_key, level, config_str, config_str])
                 return Response({'message': 'Configuración guardada'})
         except Exception as e:
             return Response({'detail': str(e)}, status=500)
             
-    def delete(self, request, player_id, level):
+    def delete(self, request, player_id, game_key, level):
         from django.db import connection
         try:
             with connection.cursor() as cursor:
                 cursor.execute('''
                     DELETE FROM game_configs
-                    WHERE player_id = %s AND game_key = 'rocket_builder' AND level = %s
-                ''', [player_id, level])
+                    WHERE player_id = %s AND game_key = %s AND level = %s
+                ''', [player_id, game_key, level])
                 return Response({'message': 'Configuración eliminada'})
         except Exception as e:
             return Response({'detail': str(e)}, status=500)
@@ -735,7 +735,7 @@ class GameSessionCompleteView(APIView):
             with connection.cursor() as cursor:
                 # 1. Obtener datos de la sesión
                 cursor.execute('''
-                    SELECT gs.player_id, gp.id_paciente, gs.level
+                    SELECT gs.player_id, gp.id_paciente, gs.level, gs.game_type
                     FROM game_sessions gs
                     JOIN game_players gp ON gs.player_id = gp.id
                     WHERE gs.id = %s
@@ -744,7 +744,14 @@ class GameSessionCompleteView(APIView):
                 if not row:
                     return Response({'detail': 'Sesión no encontrada'}, status=404)
                 
-                player_id, id_paciente, session_level = row
+                player_id, id_paciente, session_level, game_type = row
+                
+                # Mapear game_type a nombre del juego
+                GAME_NAMES = {
+                    'fonologica': 'Constructor de Cohetes',
+                    'grafema': 'La Caza del Grafema Perdido',
+                }
+                nombre_juego = GAME_NAMES.get(game_type, game_type or 'Juego Desconocido')
                 logger.info(f'[SESSION_COMPLETE] session={session_id} paciente={id_paciente} level={session_level}')
                 
                 # 2. Contar intentos de sílabas
@@ -815,9 +822,9 @@ class GameSessionCompleteView(APIView):
                         cantidad_audios_enviados, cantidad_pronunciaciones_correctas,
                         cantidad_pronunciaciones_incorrectas,
                         estado_resultado, fecha_resultado
-                    ) VALUES (%s, %s, %s, 'Constructor de Cohetes', %s, %s, 0, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, 0, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ''', [
-                    id_paciente, id_nivel, id_subnivel,
+                    id_paciente, id_nivel, id_subnivel, nombre_juego,
                     correct_attempts, incorrect_attempts, total_attempts,
                     total_time_seconds, estrellas, session_level,
                     pct,

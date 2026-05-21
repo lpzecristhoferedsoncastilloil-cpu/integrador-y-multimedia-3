@@ -1,14 +1,13 @@
 // ============================================================
 // pages/games/GameLevelEditor.jsx
-// Panel del psicólogo para editar niveles del Constructor de Cohetes
-// por jugador. Los cambios se guardan en la DB y solo aplican
-// al jugador seleccionado.
+// Panel del psicólogo para editar niveles de juegos
+// Soporta: Constructor de Cohetes y La Caza del Grafema Perdido
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 
-const DEFAULT_LEVELS = {
+const ROCKET_DEFAULTS = {
   1:  { words:[['CA','SA'],['ME','SA'],['PA','TO'],['SO','FA'],['LU','NA']], distractors:0, label:'Palabras simples', voice:false },
   2:  { words:[['CA','MA'],['PI','SO'],['BO','CA'],['MA','NO'],['PE','LO']], distractors:0, label:'Palabras simples', voice:false },
   3:  { words:[['CA','SA'],['ME','SA'],['PA','TO']], distractors:2, label:'Con distractores', voice:false },
@@ -21,12 +20,31 @@ const DEFAULT_LEVELS = {
   10: { words:[['CA','SA'],['ME','SA'],['PA','TO']], distractors:0, label:'¡Reconocimiento por voz!', voice:true },
 };
 
+const GRAFEMA_DEFAULTS = {
+  1:  { words:[{display:'_ASA',answer:'C',options:['C','M','P','L'],hint:'Donde vives'},{display:'_ESA',answer:'M',options:['M','N','P','T'],hint:'Mueble para comer'},{display:'_UNA',answer:'L',options:['L','M','N','P'],hint:'Sale de noche'},{display:'_ATO',answer:'G',options:['G','P','M','T'],hint:'Animal que maúlla'},{display:'_OCA',answer:'B',options:['B','D','P','R'],hint:'Parte de la cara'}], label:'Letra inicial faltante' },
+  2:  { words:[{display:'SOL_',answer:'A',options:['A','E','O','I'],hint:''},{display:'PAN_',answer:'A',options:['A','E','O','U'],hint:''},{display:'LU_',answer:'Z',options:['Z','S','C','X'],hint:''},{display:'MA_',answer:'R',options:['R','L','N','S'],hint:''},{display:'FLO_',answer:'R',options:['R','L','N','S'],hint:''}], label:'Letra final faltante' },
+  3:  { words:[{display:'_LOTA',answer:'PE',options:['PE','BO','MA','TI'],hint:''},{display:'_DERA',answer:'MA',options:['MA','PA','CA','LI'],hint:''},{display:'_NERO',answer:'DI',options:['DI','BI','TI','MI'],hint:''},{display:'_RANJA',answer:'NA',options:['NA','MA','PA','TA'],hint:''},{display:'_TELLA',answer:'ES',options:['ES','AS','IS','US'],hint:''}], label:'Sílaba inicial faltante' },
+  4:  { words:[{display:'CA_A',answer:'S',options:['S','M','L','R'],hint:'Donde vives'},{display:'PE_O',answer:'R',options:['R','L','N','S'],hint:'Animal fiel'},{display:'GA_O',answer:'T',options:['T','D','P','B'],hint:'Felino'},{display:'MO_O',answer:'N',options:['N','M','L','R'],hint:'Primate'},{display:'LI_RO',answer:'B',options:['B','D','P','V'],hint:'Se lee'}], label:'Letra central faltante' },
+  5:  { words:[{display:'_OTE',answer:'b',options:['b','d','p','q'],hint:'Recipiente'},{display:'_EDO',answer:'d',options:['d','b','p','q'],hint:'Parte de la mano'},{display:'_OLA',answer:'b',options:['b','d','p','q'],hint:'Esfera'},{display:'_ADO',answer:'d',options:['d','b','p','q'],hint:'Al lado'},{display:'_ARCO',answer:'b',options:['b','d','p','q'],hint:'Navega'}], label:'Confusión b/d' },
+  6:  { words:[{display:'_ATO',answer:'p',options:['p','q','b','d'],hint:'Ave'},{display:'_UESO',answer:'q',options:['q','p','b','d'],hint:'Lácteo'},{display:'_AN',answer:'p',options:['p','q','b','d'],hint:'Alimento'},{display:'_UINCE',answer:'q',options:['q','p','b','d'],hint:'Número 15'},{display:'_IÑA',answer:'p',options:['p','q','b','d'],hint:'Fruta'}], label:'Confusión p/q' },
+  7:  { words:[{display:'_OCOLATE',answer:'CH',options:['CH','SH','LL','RR'],hint:'Dulce'},{display:'_UVIA',answer:'LL',options:['LL','CH','RR','SH'],hint:'Agua del cielo'},{display:'_ORRO',answer:'CH',options:['CH','LL','RR','SH'],hint:'Flujo de agua'},{display:'_AVE',answer:'LL',options:['LL','CH','RR','SH'],hint:'Para abrir'},{display:'PE_O',answer:'RR',options:['RR','LL','CH','SH'],hint:'Mascota'}], label:'Dígrafos faltantes' },
+  8:  { words:[{display:'_UTA',answer:'FR',options:['FR','FL','PR','CR'],hint:'Se come'},{display:'_OR',answer:'FL',options:['FL','FR','CL','PL'],hint:'De planta'},{display:'_UZ',answer:'CR',options:['CR','CL','FR','GR'],hint:'Símbolo +'},{display:'_AZO',answer:'BR',options:['BR','BL','PR','DR'],hint:'Extremidad'},{display:'_OBO',answer:'GL',options:['GL','GR','BL','FL'],hint:'Esfera'}], label:'Grupos consonánticos' },
+  9:  { words:[{display:'COMPU_ADORA',answer:'T',options:['T','D','S','N'],hint:'Tecnología'},{display:'ELEFAN_E',answer:'T',options:['T','D','S','N'],hint:'Animal grande'},{display:'CHOCO_ATE',answer:'L',options:['L','R','N','S'],hint:'Dulce'},{display:'BIBLIO_ECA',answer:'T',options:['T','D','S','P'],hint:'Lugar de libros'},{display:'TRANS_ORTE',answer:'P',options:['P','B','D','T'],hint:'Vehículo'}], label:'Completar palabras complejas' },
+  10: { words:[{display:'_ICLETA',answer:'B',options:['B','D','P','V'],hint:'Tiene 2 ruedas'},{display:'_RÁFICO',answer:'G',options:['G','J','C','K'],hint:'De tránsito'},{display:'MA_IPOSA',answer:'R',options:['R','L','N','S'],hint:'Insecto con alas'},{display:'_ANGUARO',answer:'Y',options:['Y','LL','J','G'],hint:'Felino grande'},{display:'CAMI_ETA',answer:'S',options:['S','Z','C','X'],hint:'Ropa'}], label:'Desafío mixto' },
+};
+
+const GAME_OPTIONS = [
+  { key: 'rocket_builder', name: '🚀 Constructor de Cohetes', defaults: ROCKET_DEFAULTS, type: 'syllable' },
+  { key: 'grafema_hunter', name: '🔍 La Caza del Grafema Perdido', defaults: GRAFEMA_DEFAULTS, type: 'grapheme' },
+];
+
 export default function GameLevelEditor({ patientId, onClose }) {
   const [players, setPlayers]       = useState([]);
   const [playerId, setPlayerId]     = useState(null);
-  const [customConfig, setCustomConfig] = useState({});  // niveles con config guardada
-  const [editLevel, setEditLevel]   = useState(null);    // nivel abierto en editor
-  const [form, setForm]             = useState(null);    // config del nivel editando
+  const [selectedGame, setSelectedGame] = useState(GAME_OPTIONS[0]);
+  const [customConfig, setCustomConfig] = useState({});
+  const [editLevel, setEditLevel]   = useState(null);
+  const [form, setForm]             = useState(null);
   const [saving, setSaving]         = useState(false);
   const [msg, setMsg]               = useState('');
 
@@ -43,43 +61,47 @@ export default function GameLevelEditor({ patientId, onClose }) {
   // Cargar config personalizada cuando cambia el jugador
   useEffect(() => {
     if (!playerId) return;
-    API.get(`/games/config/${playerId}/rocket_builder`)
+    setEditLevel(null); setForm(null); setMsg('');
+    API.get(`/games/config/${playerId}/${selectedGame.key}`)
       .then(r => setCustomConfig(r.data || {}))
       .catch(() => setCustomConfig({}));
-  }, [playerId]);
+  }, [playerId, selectedGame.key]);
 
   const [uploadingIdx, setUploadingIdx] = useState(null);
 
   const openLevel = (lvl) => {
-    const base = customConfig[lvl] || DEFAULT_LEVELS[lvl];
-    const mappedWords = base.words.map(w => {
-      if (w && typeof w === 'object' && !Array.isArray(w)) {
-        return {
-          word: w.word || '',
-          syllables: Array.isArray(w.syllables) ? w.syllables.join('-') : (w.syllables || ''),
-          distractors: Array.isArray(w.distractors) ? w.distractors.join(',') : (w.distractors || ''),
-          image: w.image || '',
-          hint: w.hint || '',
-        };
-      } else {
-        const syl = Array.isArray(w) ? w.join('-') : String(w);
-        const wrd = Array.isArray(w) ? w.join('') : String(w);
-        return {
-          word: wrd,
-          syllables: syl,
-          distractors: '',
-          image: '',
-          hint: '',
-        };
-      }
-    });
+    const defaults = selectedGame.defaults;
+    const base = customConfig[lvl] || defaults[lvl];
+    if (!base) return;
 
-    setForm({
-      words:       mappedWords,
-      distractors: base.distractors,
-      label:       base.label,
-      voice:       base.voice || false,
-    });
+    if (selectedGame.type === 'grapheme') {
+      // Grafema: words are objects with display, answer, options, hint
+      const mappedWords = (base.words || []).map(w => ({
+        display: w.display || '',
+        answer: w.answer || '',
+        options: Array.isArray(w.options) ? w.options.join(',') : (w.options || ''),
+        hint: w.hint || '',
+        image: w.image || '',
+      }));
+      setForm({ words: mappedWords, label: base.label || '', timeLimit: base.timeLimit || 0 });
+    } else {
+      // Rocket: words are arrays or objects with syllables
+      const mappedWords = (base.words || []).map(w => {
+        if (w && typeof w === 'object' && !Array.isArray(w)) {
+          return {
+            word: w.word || '',
+            syllables: Array.isArray(w.syllables) ? w.syllables.join('-') : (w.syllables || ''),
+            distractors: Array.isArray(w.distractors) ? w.distractors.join(',') : (w.distractors || ''),
+            image: w.image || '',
+            hint: w.hint || '',
+          };
+        } else {
+          const syl = Array.isArray(w) ? w.join('-') : String(w);
+          return { word: (Array.isArray(w) ? w.join('') : String(w)), syllables: syl, distractors: '', image: '', hint: '' };
+        }
+      });
+      setForm({ words: mappedWords, distractors: base.distractors, label: base.label, voice: base.voice || false });
+    }
     setEditLevel(lvl);
     setMsg('');
   };
@@ -87,34 +109,35 @@ export default function GameLevelEditor({ patientId, onClose }) {
   const handleSave = async () => {
     setSaving(true); setMsg('');
     try {
-      const words = form.words
-        .filter(w => w.word.trim() !== '' || w.syllables.trim() !== '')
-        .map(w => {
-          const syllables = w.syllables.trim().toUpperCase().includes('-')
-            ? w.syllables.trim().toUpperCase().split('-')
-            : [w.syllables.trim().toUpperCase() || w.word.trim().toUpperCase()];
-            
-          const distractors = w.distractors.trim().toUpperCase()
-            ? w.distractors.trim().toUpperCase().split(',').map(d => d.trim()).filter(d => d !== '')
-            : [];
-            
-          return {
-            word: w.word.trim().toUpperCase() || syllables.join(''),
-            syllables: syllables,
-            distractors: distractors,
-            image: w.image,
+      let payload;
+      if (selectedGame.type === 'grapheme') {
+        const words = form.words
+          .filter(w => w.display.trim() !== '')
+          .map(w => ({
+            display: w.display.trim(),
+            answer: w.answer.trim(),
+            options: w.options.split(',').map(o => o.trim()).filter(o => o !== ''),
             hint: w.hint.trim(),
-          };
-        });
+            image: w.image || '',
+          }));
+        payload = { words, label: form.label, timeLimit: parseInt(form.timeLimit) || 0 };
+      } else {
+        const words = form.words
+          .filter(w => w.word.trim() !== '' || w.syllables.trim() !== '')
+          .map(w => {
+            const syllables = w.syllables.trim().toUpperCase().includes('-')
+              ? w.syllables.trim().toUpperCase().split('-')
+              : [w.syllables.trim().toUpperCase() || w.word.trim().toUpperCase()];
+            const distractors = w.distractors.trim().toUpperCase()
+              ? w.distractors.trim().toUpperCase().split(',').map(d => d.trim()).filter(d => d !== '')
+              : [];
+            return { word: w.word.trim().toUpperCase() || syllables.join(''), syllables, distractors, image: w.image, hint: w.hint.trim() };
+          });
+        payload = { words, distractors: parseInt(form.distractors) || 0, label: form.label, voice: form.voice };
+      }
 
-      await API.put(`/games/config/${playerId}/rocket_builder/${editLevel}`, {
-        words,
-        distractors: parseInt(form.distractors) || 0,
-        label: form.label,
-        voice: form.voice,
-      });
-
-      setCustomConfig(prev => ({ ...prev, [editLevel]: { words, distractors: parseInt(form.distractors)||0, label: form.label, voice: form.voice } }));
+      await API.put(`/games/config/${playerId}/${selectedGame.key}/${editLevel}`, payload);
+      setCustomConfig(prev => ({ ...prev, [editLevel]: payload }));
       setMsg('✅ Guardado correctamente');
     } catch (e) {
       setMsg('❌ Error al guardar');
@@ -124,7 +147,7 @@ export default function GameLevelEditor({ patientId, onClose }) {
   const handleReset = async (lvl) => {
     if (!window.confirm(`¿Restaurar nivel ${lvl} a los valores por defecto?`)) return;
     try {
-      await API.delete(`/games/config/${playerId}/rocket_builder/${lvl}`);
+      await API.delete(`/games/config/${playerId}/${selectedGame.key}/${lvl}`);
       const updated = { ...customConfig };
       delete updated[lvl];
       setCustomConfig(updated);
@@ -161,7 +184,13 @@ export default function GameLevelEditor({ patientId, onClose }) {
     });
   };
 
-  const addWord = () => setForm(f => ({ ...f, words: [...f.words, { word:'', syllables:'', distractors:'', image:'', hint:'' }] }));
+  const addWord = () => {
+    if (selectedGame.type === 'grapheme') {
+      setForm(f => ({ ...f, words: [...f.words, { display:'', answer:'', options:'', hint:'', image:'' }] }));
+    } else {
+      setForm(f => ({ ...f, words: [...f.words, { word:'', syllables:'', distractors:'', image:'', hint:'' }] }));
+    }
+  };
   const removeWord = (i) => setForm(f => ({ ...f, words: f.words.filter((_,idx) => idx !== i) }));
 
   if (players.length === 0) {
@@ -184,19 +213,30 @@ export default function GameLevelEditor({ patientId, onClose }) {
 
         {/* Header */}
         <div style={s.header}>
-          <h3 style={s.title}>⚙️ Editor de Niveles — Constructor de Cohetes</h3>
+          <h3 style={s.title}>⚙️ Editor de Niveles — {selectedGame.name}</h3>
           <button onClick={onClose} style={s.btnX}>✕</button>
         </div>
 
-        {/* Selector de jugador */}
-        {players.length > 1 && (
-          <div style={s.fg}>
-            <label style={s.label}>Jugador</label>
-            <select style={s.input} value={playerId} onChange={e => setPlayerId(parseInt(e.target.value))}>
-              {players.map(p => <option key={p.id} value={p.id}>{p.nickname}</option>)}
+        {/* Selector de juego y jugador */}
+        <div style={{ display:'flex', gap:'12px', padding:'12px 24px', borderBottom:'1px solid #e5e7eb', background:'#f8fafc' }}>
+          <div style={{...s.fg, flex:1}}>
+            <label style={s.label}>Juego</label>
+            <select style={s.input} value={selectedGame.key} onChange={e => {
+              const g = GAME_OPTIONS.find(o => o.key === e.target.value);
+              if (g) setSelectedGame(g);
+            }}>
+              {GAME_OPTIONS.map(g => <option key={g.key} value={g.key}>{g.name}</option>)}
             </select>
           </div>
-        )}
+          {players.length > 1 && (
+            <div style={{...s.fg, flex:1}}>
+              <label style={s.label}>Jugador</label>
+              <select style={s.input} value={playerId} onChange={e => setPlayerId(parseInt(e.target.value))}>
+                {players.map(p => <option key={p.id} value={p.id}>{p.nickname}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
 
         <div style={s.body}>
 
@@ -205,11 +245,12 @@ export default function GameLevelEditor({ patientId, onClose }) {
             {[1,2,3,4,5,6,7,8,9,10].map(lvl => {
               const isCustom = !!customConfig[lvl];
               const isOpen   = editLevel === lvl;
+              const defaults = selectedGame.defaults;
               return (
                 <div key={lvl} style={{...s.levelRow, background: isOpen ? '#eff6ff' : '#fff', borderColor: isOpen ? '#1a56db' : '#e5e7eb'}}>
                   <div style={s.levelInfo}>
                     <span style={s.levelNum}>Nivel {lvl}</span>
-                    <span style={s.levelLabel}>{(customConfig[lvl] || DEFAULT_LEVELS[lvl]).label}</span>
+                    <span style={s.levelLabel}>{(customConfig[lvl] || defaults[lvl] || {}).label || `Nivel ${lvl}`}</span>
                     {isCustom && <span style={s.badge}>Personalizado</span>}
                   </div>
                   <div style={s.levelActions}>
@@ -223,12 +264,13 @@ export default function GameLevelEditor({ patientId, onClose }) {
             })}
           </div>
 
-          {/* Editor del nivel seleccionado */}
           {editLevel && form && (
             <div style={s.editor}>
               <h4 style={s.editorTitle}>Editando Nivel {editLevel}</h4>
               <p style={s.hint}>
-                Configura cada palabra con su separación de sílabas (guiones) y distractores (comas). Sube una imagen o añade una pista si lo deseas.
+                {selectedGame.type === 'grapheme'
+                  ? 'Configura cada palabra con su forma mostrada (usa _ para el espacio faltante), la respuesta correcta y las opciones separadas por comas.'
+                  : 'Configura cada palabra con su separación de sílabas (guiones) y distractores (comas). Sube una imagen o añade una pista si lo deseas.'}
               </p>
 
               <div style={s.fg}>
@@ -237,21 +279,24 @@ export default function GameLevelEditor({ patientId, onClose }) {
                   onChange={e => setForm(f => ({...f, label: e.target.value}))} />
               </div>
 
-              <div style={s.fgRow}>
-                <div style={s.fg}>
-                  <label style={s.label}>Nº Distractores (Automáticos si no hay personalizados)</label>
-                  <input type="number" min="0" max="6" style={s.input} value={form.distractors}
-                    onChange={e => setForm(f => ({...f, distractors: e.target.value}))} />
+              {/* Campos específicos por juego */}
+              {selectedGame.type === 'syllable' && (
+                <div style={s.fgRow}>
+                  <div style={s.fg}>
+                    <label style={s.label}>Nº Distractores (Automáticos si no hay personalizados)</label>
+                    <input type="number" min="0" max="6" style={s.input} value={form.distractors}
+                      onChange={e => setForm(f => ({...f, distractors: e.target.value}))} />
+                  </div>
+                  <div style={s.fg}>
+                    <label style={s.label}>Modo voz</label>
+                    <select style={s.input} value={form.voice ? 'true' : 'false'}
+                      onChange={e => setForm(f => ({...f, voice: e.target.value === 'true'}))}>
+                      <option value="false">No</option>
+                      <option value="true">Sí</option>
+                    </select>
+                  </div>
                 </div>
-                <div style={s.fg}>
-                  <label style={s.label}>Modo voz</label>
-                  <select style={s.input} value={form.voice ? 'true' : 'false'}
-                    onChange={e => setForm(f => ({...f, voice: e.target.value === 'true'}))}>
-                    <option value="false">No</option>
-                    <option value="true">Sí</option>
-                  </select>
-                </div>
-              </div>
+              )}
 
               <div style={s.fg}>
                 <label style={s.label}>Palabras y Configuración</label>
@@ -262,55 +307,86 @@ export default function GameLevelEditor({ patientId, onClose }) {
                       <button type="button" onClick={() => removeWord(i)} style={s.btnDelWord} disabled={form.words.length <= 1}>Eliminar ✕</button>
                     </div>
 
-                    <div style={s.fgRow}>
-                      <div style={s.fg}>
-                        <label style={s.subLabel}>Palabra completa</label>
-                        <input style={s.input} value={w.word} placeholder="Ej: CASA"
-                          onChange={e => updateWordField(i, 'word', e.target.value)} />
-                      </div>
-                      <div style={s.fg}>
-                        <label style={s.subLabel}>Sílabas (ej: CA-SA)</label>
-                        <input style={s.input} value={w.syllables} placeholder="Ej: CA-SA"
-                          onChange={e => updateWordField(i, 'syllables', e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div style={s.fgRow}>
-                      <div style={s.fg}>
-                        <label style={s.subLabel}>Sílabas incorrectas (ej: MA,PE)</label>
-                        <input style={s.input} value={w.distractors} placeholder="Ej: MA,PE"
-                          onChange={e => updateWordField(i, 'distractors', e.target.value)} />
-                      </div>
-                      <div style={s.fg}>
-                        <label style={s.subLabel}>Pista / Definición</label>
-                        <input style={s.input} value={w.hint} placeholder="Ej: Lugar para vivir"
-                          onChange={e => updateWordField(i, 'hint', e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div style={s.fgRow}>
-                      <div style={s.fg}>
-                        <label style={s.subLabel}>Imagen del objeto</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input type="file" accept="image/*" onChange={e => {
-                            if (e.target.files[0]) handleImageUpload(i, e.target.files[0]);
-                          }} style={{ display: 'none' }} id={`file-input-${i}`} />
-                          <label htmlFor={`file-input-${i}`} style={s.btnUpload}>
-                            {uploadingIdx === i ? 'Subiendo...' : w.image ? 'Cambiar Imagen 🖼️' : 'Subir Imagen 🖼️'}
-                          </label>
-                          {w.image && (
-                            <button type="button" onClick={() => updateWordField(i, 'image', '')} style={s.btnDelImg}>✕</button>
-                          )}
-                        </div>
-                      </div>
-                      <div style={s.fg}>
-                        {w.image && (
-                          <div style={s.previewContainer}>
-                            <img src={w.image} alt="Vista previa" style={s.previewImg} />
+                    {selectedGame.type === 'grapheme' ? (
+                      /* ---- Campos para Grafema ---- */
+                      <>
+                        <div style={s.fgRow}>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Palabra mostrada (ej: _ASA)</label>
+                            <input style={s.input} value={w.display} placeholder="Ej: _ASA"
+                              onChange={e => updateWordField(i, 'display', e.target.value)} />
                           </div>
-                        )}
-                      </div>
-                    </div>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Respuesta correcta</label>
+                            <input style={s.input} value={w.answer} placeholder="Ej: C"
+                              onChange={e => updateWordField(i, 'answer', e.target.value)} />
+                          </div>
+                        </div>
+                        <div style={s.fgRow}>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Opciones (ej: C,M,P,L)</label>
+                            <input style={s.input} value={w.options} placeholder="Ej: C,M,P,L"
+                              onChange={e => updateWordField(i, 'options', e.target.value)} />
+                          </div>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Pista / Definición</label>
+                            <input style={s.input} value={w.hint} placeholder="Ej: Donde vives"
+                              onChange={e => updateWordField(i, 'hint', e.target.value)} />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      /* ---- Campos para Constructor de Cohetes ---- */
+                      <>
+                        <div style={s.fgRow}>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Palabra completa</label>
+                            <input style={s.input} value={w.word} placeholder="Ej: CASA"
+                              onChange={e => updateWordField(i, 'word', e.target.value)} />
+                          </div>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Sílabas (ej: CA-SA)</label>
+                            <input style={s.input} value={w.syllables} placeholder="Ej: CA-SA"
+                              onChange={e => updateWordField(i, 'syllables', e.target.value)} />
+                          </div>
+                        </div>
+                        <div style={s.fgRow}>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Sílabas incorrectas (ej: MA,PE)</label>
+                            <input style={s.input} value={w.distractors} placeholder="Ej: MA,PE"
+                              onChange={e => updateWordField(i, 'distractors', e.target.value)} />
+                          </div>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Pista / Definición</label>
+                            <input style={s.input} value={w.hint} placeholder="Ej: Lugar para vivir"
+                              onChange={e => updateWordField(i, 'hint', e.target.value)} />
+                          </div>
+                        </div>
+                        <div style={s.fgRow}>
+                          <div style={s.fg}>
+                            <label style={s.subLabel}>Imagen del objeto</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <input type="file" accept="image/*" onChange={e => {
+                                if (e.target.files[0]) handleImageUpload(i, e.target.files[0]);
+                              }} style={{ display: 'none' }} id={`file-input-${i}`} />
+                              <label htmlFor={`file-input-${i}`} style={s.btnUpload}>
+                                {uploadingIdx === i ? 'Subiendo...' : w.image ? 'Cambiar Imagen 🖼️' : 'Subir Imagen 🖼️'}
+                              </label>
+                              {w.image && (
+                                <button type="button" onClick={() => updateWordField(i, 'image', '')} style={s.btnDelImg}>✕</button>
+                              )}
+                            </div>
+                          </div>
+                          <div style={s.fg}>
+                            {w.image && (
+                              <div style={s.previewContainer}>
+                                <img src={w.image} alt="Vista previa" style={s.previewImg} />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))}
                 <button onClick={addWord} style={s.btnAdd}>➕ Agregar Palabra</button>
