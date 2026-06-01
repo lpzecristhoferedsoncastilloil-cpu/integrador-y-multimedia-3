@@ -13,7 +13,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    // Solo redirigir al login si es 401 Y no hay usuario guardado
     if (err.response?.status === 401) {
       const refresh = localStorage.getItem('refresh')
       if (refresh) {
@@ -22,10 +21,18 @@ api.interceptors.response.use(
           localStorage.setItem('access', data.access)
           err.config.headers.Authorization = `Bearer ${data.access}`
           return axios(err.config)
-        } catch {
-          // No borrar localStorage ni redirigir automáticamente
-          console.warn('Token expirado')
+        } catch (refreshErr) {
+          // El refresh token también expiró o es inválido: cerrar sesión
+          localStorage.removeItem('access')
+          localStorage.removeItem('refresh')
+          localStorage.removeItem('usuario')
+          window.location.href = '/login'
         }
+      } else {
+        // No hay refresh token disponible: cerrar sesión
+        localStorage.removeItem('access')
+        localStorage.removeItem('usuario')
+        window.location.href = '/login'
       }
     }
     return Promise.reject(err)

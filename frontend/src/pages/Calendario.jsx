@@ -6,22 +6,31 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
-import { Plus, X, Loader2, Edit2, Trash2, Clock, User } from 'lucide-react'
+import { Plus, X, Loader2, Edit2, Trash2, Clock, User, Filter } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAuth } from '../context/AuthContext'
+
 
 const VACIO = { paciente: '', psicologo: '', fecha: '', hora_inicio: '', hora_fin: '', tipo: 'consulta', notas: '' }
 const COLORES = { consulta: '#6366f1', terapia: '#10b981', evaluacion: '#f59e0b' }
 
 export default function Calendario() {
+  const { usuario } = useAuth()
   const [citas, setCitas] = useState([])
+  const [todasLasCitas, setTodasLasCitas] = useState([])
   const [pacientes, setPacientes] = useState([])
   const [psicologos, setPsicologos] = useState([])
+  const [psicologoSeleccionado, setPsicologoSeleccionado] = useState('todos')
+  const [miPsicologoId, setMiPsicologoId] = useState(null)
+  
   const [modal, setModal] = useState(false)
   const [modalDetalle, setModalDetalle] = useState(null)
   const [form, setForm] = useState(VACIO)
   const [editandoId, setEditandoId] = useState(null)
   const [guardando, setGuardando] = useState(false)
   const calRef = useRef(null)
+
+  const esAdmin = usuario?.correo_electronico === 'admin@neurogym.com'
 
   const cargar = async () => {
     try {
@@ -31,7 +40,20 @@ export default function Calendario() {
         api.get('/psicologos-lista/'),
       ])
       const citasData = c.data.results || c.data
-      setCitas(citasData.map(cita => ({
+      const psicologosData = ps.data || []
+      
+      setPacientes(p.data.results || p.data)
+      setPsicologos(psicologosData)
+
+      // Identificar psicólogo logueado (si aplica)
+      const correoUsuario = usuario?.correo_electronico
+      const actual = psicologosData.find(p => p.correo_profesional === correoUsuario)
+      if (actual) {
+        setMiPsicologoId(actual.id_psicologo)
+      }
+
+      // Mapear citas a formato de FullCalendar
+      const mapeadas = citasData.map(cita => ({
         id: cita.id_cita,
         title: cita.paciente_nombre || cita.titulo_cita,
         start: `${cita.fecha_cita}T${cita.hora_inicio}`,
@@ -39,17 +61,50 @@ export default function Calendario() {
         backgroundColor: COLORES[cita.tipo] || '#6366f1',
         borderColor: 'transparent',
         extendedProps: { ...cita },
-      })))
-      setPacientes(p.data.results || p.data)
-      setPsicologos(ps.data)
+      }))
+
+      if (esAdmin) {
+        setTodasLasCitas(mapeadas)
+        // Aplicar el filtro actual del admin
+        if (psicologoSeleccionado === 'todos') {
+          setCitas(mapeadas)
+        } else {
+          setCitas(mapeadas.filter(c => Number(c.extendedProps.id_psicologo) === Number(psicologoSeleccionado)))
+        }
+      } else {
+        // Si es psicólogo, filtrar estrictamente para ver solo sus citas
+        if (actual) {
+          const filtradas = mapeadas.filter(c => Number(c.extendedProps.id_psicologo) === Number(actual.id_psicologo))
+          setCitas(filtradas)
+        } else {
+          setCitas([])
+        }
+      }
+
     } catch (e) { console.error(e) }
   }
 
-  useEffect(() => { cargar() }, [])
+  // Filtrado reactivo en el frontend para el Administrador al cambiar el select
+  useEffect(() => {
+    if (esAdmin) {
+      if (psicologoSeleccionado === 'todos') {
+        setCitas(todasLasCitas)
+      } else {
+        setCitas(todasLasCitas.filter(c => Number(c.extendedProps.id_psicologo) === Number(psicologoSeleccionado)))
+      }
+    }
+  }, [psicologoSeleccionado, todasLasCitas, esAdmin])
+
+  useEffect(() => { cargar() }, [usuario])
+
 
   const abrirNueva = (info) => {
     setEditandoId(null)
-    setForm({ ...VACIO, fecha: info?.dateStr || '' })
+    setForm({ 
+      ...VACIO, 
+      fecha: info?.dateStr || '',
+      psicologo: esAdmin ? '' : (miPsicologoId || '')
+    })
     setModal(true)
   }
 
@@ -118,12 +173,29 @@ export default function Calendario() {
     <Layout titulo="Calendario Clínico">
 
       <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center flex-wrap">
           {Object.entries({ consulta: 'Consulta', terapia: 'Terapia', evaluacion: 'Evaluación' }).map(([k, v]) => (
             <span key={k} className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORES[k] }} />{v}
             </span>
           ))}
+
+          {/* Selector Maestro de Psicólogos para el Administrador */}
+          {esAdmin && (
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 ml-2">
+              <Filter className="w-3.5 h-3.5 text-indigo-500" />
+              <select 
+                value={psicologoSeleccionado} 
+                onChange={e => setPsicologoSeleccionado(e.target.value)}
+                className="text-xs font-semibold text-gray-600 bg-transparent focus:outline-none border-none cursor-pointer"
+              >
+                <option value="todos">Todos los psicólogos</option>
+                {psicologos.map(p => (
+                  <option key={p.id_psicologo} value={p.id_psicologo}>{p.nombre_completo}</option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
         <button
           onClick={() => abrirNueva({})}
@@ -219,7 +291,13 @@ export default function Calendario() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Psicólogo</label>
-                <select value={form.psicologo} onChange={e => setForm({...form, psicologo: e.target.value})} required className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white">
+                <select 
+                  value={form.psicologo} 
+                  onChange={e => setForm({...form, psicologo: e.target.value})} 
+                  required 
+                  disabled={!esAdmin}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white disabled:bg-gray-50 disabled:text-gray-400"
+                >
                   <option value="">Seleccionar psicólogo</option>
                   {psicologos.map(p => <option key={p.id_psicologo} value={p.id_psicologo}>{p.nombre_completo}</option>)}
                 </select>

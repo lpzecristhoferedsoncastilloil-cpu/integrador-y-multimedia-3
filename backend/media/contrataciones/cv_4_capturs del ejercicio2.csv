@@ -1,0 +1,63 @@
+,OS: Windows 11 | Browser: Chrome 148 | Resolution: 1366x720 | Time: 31 May 2026 / 0:2:6  GMT-4
+
+"#","Step","Data","Exp Result","XPath","cssSelector"
+"✓
+1","Open website","https://automationexercise.com/contact_us","","",""
+"✓
+2","Click on ""Home""","","","//a[normalize-space()='Home']","body > header:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > ul:nth-child(1) > li:nth-child(1) > a:nth-child(1)"
+"✓
+3","Click on ""Signup / Login""","","","//a[normalize-space()='Signup / Login']","a[href='/login']"
+"✓
+4","Scroll down","","","",""
+"✓
+5","Scroll up","","","",""
+"✓
+6","Scroll down","","","",""
+"✓
+7","Enter ""cristhofer"" into ""Name""","cristhofer","","//input[@placeholder='Name']","input[placeholder='Name']"
+"✓
+8","Enter ""tomasediya1@gmail.com"" into ""Email Address""","tomasediya1@gmail.com","","//input[@data-qa='signup-email']","body > section:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > div:nth-child(1) > form:nth-child(2) > input:nth-child(3)"
+"✓
+9","Click on ""Signup""","","","//button[normalize-space()='Signup']","body > section:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(3) > div:nth-child(1) > form:nth-child(2) > button:nth-child(5)"
+"✓
+10","Scroll down","","","",""
+"✓
+11","Click on ""Mr.""","","","//input[@id='id_gender1']","#id_gender1"
+"✓
+12","Enter ""******"" into ""Password *""","******","","//input[@id='password']","#password"
+"✗
+13","select ""14"" from ""Day 1 2 3 4 5 6 ""","14","","//select[@id='days']","#days"
+"✗
+14","select ""October"" from ""Month January February March April May ""","October","","//select[@id='months']","#months"
+"✗
+15","select ""2006"" from ""Year 2021 2020 2019 2018 2017 2016""","2006","","//select[@id='years']","#years"
+"✓
+16","Click on ""Receive special offers from our partners!""","","","//input[@id='optin']","#optin"
+"✓
+17","Enter ""CRISTHOFER"" into ""First name *""","CRISTHOFER","","//input[@id='first_name']","#first_name"
+"✓
+18","Enter ""ILLANES"" into ""Last name *""","ILLANES","","//input[@id='last_name']","#last_name"
+"✓
+19","Enter ""nnn"" into ""Company""","nnn","","//input[@id='company']","#company"
+"✓
+20","Press Caps Lock","","","//select[contains(text(),'Year 2021 2020 2019 2018 2017 2016 2015 2014 2013 2012 2011 2010 2009 2008 2007 2006 2005 2004 2003 2002 2001 2000 1999 1998 1997 1996 1995 1994 1993 1992 1991 1990 1989 1988 1987 1986 1985 1984 1983 1982 1981 1980 1979 1978 1977 1976 1975 1974 1973 1972 1971 1970 1969 1968 1967 1966 1965 1964 1963 1962 1961 1960 1959 1958 1957 1956 1955 1954 1953 1952 1951 1950 1949 1948 1947 1946 1945 1944 1943 1942 1941 1940 1939 1938 1937 1936 1935 1934 1933 1932 1931 1930 1929 1928 1927 1926 1925 1924 1923 1922 1921 1920 1919 1918 1917 1916 1915 1914 1913 1912 1911 1910 1909 1908 1907 1906 1905 1904 1903 1902 1901 1900')]","#address1"
+"✓
+21","Press Caps Lock","","","","#address1"
+"✓
+22","Enter ""box"" into ""Address * (Street address, P.O. Box, Company name, etc.)""","box","","//input[@id='address1']","#address1"
+"✓
+23","Enter ""po"" into ""Address 2""","po","","//input[@id='address2']","#address2"
+"✓
+24","Scroll up","","","","select[id='years']"
+"✓
+25","Click on ""Create Account""","","","//button[normalize-space()='Create Account']","body > section:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > form:nth-child(2) > button:nth-child(22)"
+"✓
+26","Enter ""asd"" into ""State *""","asd","","//input[@id='state']","#state"
+"✓
+27","Enter ""asd"" into ""City *""","asd","","//input[@id='city']","#city"
+"✓
+28","Enter ""asd"" into ""zipcode""","asd","","//input[@id='zipcode']","#zipcode"
+"✓
+29","Enter ""asd"" into ""Mobile Number *""","asd","","//input[@id='mobile_number']","#mobile_number"
+"✓
+30","Click on ""Create Account""","","","//button[normalize-space()='Create Account']","body > section:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > form:nth-child(2) > button:nth-child(22)"

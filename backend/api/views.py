@@ -873,3 +873,326 @@ class GameUploadWordImageView(APIView):
             return Response({'url': file_url})
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+
+
+class AdicionarPsicologoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 1. Validar que el usuario que hace la solicitud sea el administrador
+        if not request.user or request.user.correo_electronico != 'admin@neurogym.com':
+            return Response(
+                {'error': 'No tienes permisos para realizar esta acción. Solo el administrador principal puede adicionar psicólogos.'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        from django.db import transaction
+        import unicodedata
+        import re
+        from django.core.files.storage import default_storage
+        from django.core.mail import send_mail
+        from django.conf import settings
+
+        # Recoger datos del formulario
+        nombre_completo = request.data.get('nombre_completo', '').strip()
+        ci = request.data.get('ci', '').strip()
+        correo_personal = request.data.get('correo_personal', '').strip()
+        edad_str = request.data.get('edad', '0').strip()
+        ciudad_origen = request.data.get('ciudad_origen', '').strip()
+        telefono = request.data.get('telefono', '').strip()
+        telefono_referencia = request.data.get('telefono_referencia', '').strip()
+        universidad_egreso = request.data.get('universidad_egreso', '').strip()
+        estudios_adicionales = request.data.get('estudios_adicionales', '').strip()
+        especialidad = request.data.get('especialidad', '').strip()
+
+        # Validaciones básicas
+        if not nombre_completo or not ci or not correo_personal:
+            return Response({'error': 'Nombre completo, Cédula de Identidad (CI) y Correo personal son campos requeridos.'}, status=400)
+
+        try:
+            edad = int(edad_str)
+        except ValueError:
+            return Response({'error': 'La edad debe ser un número entero válido.'}, status=400)
+
+        # 2. Generación automática de credenciales
+        # 2a. Correo corporativo (primer nombre en minúsculas y limpio)
+        partes = nombre_completo.split(' ')
+        primer_nombre = partes[0]
+        # Quitar acentos
+        primer_nombre_limpio = ''.join(c for c in unicodedata.normalize('NFD', primer_nombre) if unicodedata.category(c) != 'Mn')
+        primer_nombre_limpio = re.sub(r'[^a-zA-Z]', '', primer_nombre_limpio).lower()
+
+        if not primer_nombre_limpio:
+            primer_nombre_limpio = "psicologo"
+
+        email_base = f"{primer_nombre_limpio}@neurogym.com"
+        username_base = primer_nombre_limpio
+
+        # Evitar colisión de usuarios y correos en la base de datos
+        counter = 1
+        email = email_base
+        username = username_base
+        while Usuarios.objects.filter(correo_electronico=email).exists() or Usuarios.objects.filter(nombre_usuario=username).exists():
+            email = f"{primer_nombre_limpio}{counter}@neurogym.com"
+            username = f"{primer_nombre_limpio}{counter}"
+            counter += 1
+
+        # 2b. Contraseña temporal (Nombre + Primera letra del primer apellido + 123)
+        primer_nombre_cap = primer_nombre.capitalize()
+        primer_nombre_cap = ''.join(c for c in unicodedata.normalize('NFD', primer_nombre_cap) if unicodedata.category(c) != 'Mn')
+        primer_nombre_cap = re.sub(r'[^a-zA-Z]', '', primer_nombre_cap)
+
+        if len(partes) > 1:
+            primer_apellido = partes[1]
+            primer_apellido_limpio = ''.join(c for c in unicodedata.normalize('NFD', primer_apellido) if unicodedata.category(c) != 'Mn')
+            primer_apellido_limpio = re.sub(r'[^a-zA-Z]', '', primer_apellido_limpio)
+            letra_apellido = primer_apellido_limpio[0].upper() if primer_apellido_limpio else 'P'
+        else:
+            letra_apellido = 'P'
+
+        contrasena_plana = f"{primer_nombre_cap}{letra_apellido}123"
+
+        # 3. Transacción e inserción en base de datos
+        try:
+            with transaction.atomic():
+                # Crear Usuario
+                usuario = Usuarios.objects.create(
+                    nombre_usuario=username,
+                    correo_electronico=email,
+                    contrasena=hash_password(contrasena_plana),
+                    rol_usuario='PSICOLOGO',
+                    estado_usuario='activo',
+                    fecha_creacion=timezone.now()
+                )
+
+                # Crear Psicólogo
+                psicologo = Psicologos.objects.create(
+                    id_usuario=usuario,
+                    nombre_completo=nombre_completo,
+                    ci=ci,
+                    telefono=telefono,
+                    correo_profesional=email,
+                    especialidad=especialidad,
+                    fecha_registro=timezone.now()
+                )
+
+                # Subida de Archivos
+                cv_file = request.FILES.get('archivo_cv')
+                especialidad_file = request.FILES.get('archivo_especialidad')
+
+                url_cv = ""
+                url_especialidad = ""
+
+                if cv_file:
+                    path_cv = default_storage.save(f'contrataciones/cv_{usuario.id_usuario}_{cv_file.name}', cv_file)
+                    url_cv = default_storage.url(path_cv)
+
+                if especialidad_file:
+                    path_esp = default_storage.save(f'contrataciones/esp_{usuario.id_usuario}_{especialidad_file.name}', especialidad_file)
+                    url_especialidad = default_storage.url(path_esp)
+
+                # Crear datos de contratación
+                DatosContratacionPsicologos.objects.create(
+                    id_psicologo=psicologo,
+                    correo_personal=correo_personal,
+                    edad=edad,
+                    ciudad_origen=ciudad_origen,
+                    telefono_referencia=telefono_referencia,
+                    universidad_egreso=universidad_egreso,
+                    estudios_adicionales=estudios_adicionales,
+                    archivo_cv=url_cv,
+                    archivo_especialidad=url_especialidad
+                )
+
+            # 4. Envío de Correo Electrónico
+            correo_enviado = False
+            error_email_detalle = ""
+            
+            asunto = "¡Bienvenido al Equipo de NeuroGym! - Tus Credenciales Corporativas"
+            mensaje = f"""Hola {nombre_completo},
+            
+Te damos una cordial bienvenida al equipo profesional de NeuroGym. 
+
+Se ha creado tu nueva cuenta corporativa para acceder al sistema. A continuación encontrarás tus credenciales de acceso personales:
+
+🔗 Enlace de Acceso al Sistema: http://localhost:5173/
+📧 Usuario Corporativo (Email): {email}
+🔑 Contraseña Temporal: {contrasena_plana}
+
+Por favor, inicia sesión con estas credenciales y te sugerimos cambiar tu contraseña temporal en la sección de Configuraciones -> Seguridad tan pronto como accedas por primera vez.
+
+Atentamente,
+El Equipo de Administración de NeuroGym
+"""
+            try:
+                # Comprobar si se ha configurado el SMTP en la base de datos
+                from django.core.mail.backends.smtp import EmailBackend
+                smtp_config = ConfiguracionSmtp.objects.last()
+                
+                if smtp_config:
+                    connection = EmailBackend(
+                        host=smtp_config.servidor_smtp,
+                        port=smtp_config.puerto,
+                        username=smtp_config.correo_emisor,
+                        password=smtp_config.contrasena_aplicacion,
+                        use_tls=bool(smtp_config.use_tls),
+                        use_ssl=False,
+                        timeout=10
+                    )
+                    remitente = smtp_config.correo_emisor
+                else:
+                    connection = None
+                    remitente = getattr(settings, 'EMAIL_HOST_USER', 'admin@neurogym.com')
+
+                send_mail(
+                    asunto,
+                    mensaje,
+                    remitente,
+                    [correo_personal],
+                    fail_silently=False,
+                    connection=connection
+                )
+                correo_enviado = True
+            except Exception as email_err:
+                error_email_detalle = str(email_err)
+                import logging
+                logger = logging.getLogger('api')
+                logger.error(f"Error al enviar correo SMTP de bienvenida a {correo_personal}: {error_email_detalle}")
+
+            return Response({
+                'message': 'Psicólogo registrado exitosamente.',
+                'usuario_creado': username,
+                'correo_corporativo': email,
+                'contrasena_temporal': contrasena_plana,
+                'correo_enviado': correo_enviado,
+                'correo_error_detalle': error_email_detalle if not correo_enviado else ""
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as db_err:
+            return Response({'error': f'Error en base de datos al registrar psicólogo: {str(db_err)}'}, status=500)
+
+
+class ConfiguracionSmtpView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user or request.user.correo_electronico != 'admin@neurogym.com':
+            return Response({'error': 'No autorizado'}, status=403)
+        
+        config = ConfiguracionSmtp.objects.last()
+        if not config:
+            return Response({
+                'correo_emisor': '',
+                'contrasena_aplicacion': '',
+                'servidor_smtp': 'smtp.gmail.com',
+                'puerto': 587,
+                'use_tls': True
+            })
+        serializer = ConfiguracionSmtpSerializer(config)
+        return Response(serializer.data)
+
+    def post(self, request):
+        if not request.user or request.user.correo_electronico != 'admin@neurogym.com':
+            return Response({'error': 'No autorizado'}, status=403)
+        
+        config = ConfiguracionSmtp.objects.last()
+        data = request.data
+        if config:
+            serializer = ConfiguracionSmtpSerializer(config, data=data, partial=True)
+        else:
+            serializer = ConfiguracionSmtpSerializer(data=data)
+            
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+
+
+class GamePodioView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, session_id):
+        from django.db import connection
+        try:
+            with connection.cursor() as cursor:
+                # 1. Obtener los detalles de la sesión actual
+                cursor.execute('''
+                    SELECT gs.player_id, gs.game_type, gs.score, gp.nickname, gp.id_paciente, p.foto_paciente
+                    FROM game_sessions gs
+                    JOIN game_players gp ON gs.player_id = gp.id
+                    JOIN pacientes p ON gp.id_paciente = p.id_paciente
+                    WHERE gs.id = %s
+                ''', [session_id])
+                session_row = cursor.fetchone()
+                if not session_row:
+                    return Response({'error': 'Sesión no encontrada'}, status=404)
+                
+                player_id, game_type, current_score, nickname, id_paciente, foto_paciente = session_row
+                
+                # 2. Obtener el puntaje máximo histórico de cada apodo/jugador para el ranking global en este game_type
+                # Excluimos los apodos duplicados
+                cursor.execute('''
+                    SELECT gp.nickname, MAX(gs.score) as max_score, p.foto_paciente
+                    FROM game_sessions gs
+                    JOIN game_players gp ON gs.player_id = gp.id
+                    JOIN pacientes p ON gp.id_paciente = p.id_paciente
+                    WHERE gs.game_type = %s
+                    GROUP BY gp.nickname, p.foto_paciente
+                    ORDER BY max_score DESC
+                ''', [game_type])
+                
+                rows = cursor.fetchall()
+                
+                # Construir la lista global de mejores marcas únicas
+                ranking_list = []
+                for r_nick, r_score, r_foto in rows:
+                    ranking_list.append({
+                        'nickname': r_nick,
+                        'score': r_score,
+                        'foto': r_foto
+                    })
+                
+                # 3. Calcular la posición exacta de este intento del niño
+                # Para saber el puesto de este intento, obtenemos el puntaje máximo histórico de todos los DEMÁS jugadores.
+                # Y colocamos el intento actual de este jugador en la mezcla.
+                competitors_scores = []
+                for item in ranking_list:
+                    if item['nickname'] != nickname:
+                        competitors_scores.append(item['score'])
+                
+                # Insertamos la puntuación del intento actual
+                competitors_scores.append(current_score)
+                # Ordenamos de mayor a menor
+                competitors_scores.sort(reverse=True)
+                
+                # La posición exacta de este intento es el primer índice (1-based) de la puntuación en la lista sorted
+                current_position = competitors_scores.index(current_score) + 1
+                total_participants = len(competitors_scores)
+                
+                # 4. Formar el Top 3 global final
+                top_3 = []
+                for i in range(min(3, len(ranking_list))):
+                    item = ranking_list[i]
+                    top_3.append({
+                        'nickname': item['nickname'],
+                        'score': item['score'],
+                        'foto': item['foto'],
+                        'rank': i + 1
+                    })
+                
+                # Determinar si el intento actual está en el Top 3
+                is_top_3 = current_position <= 3
+                
+                return Response({
+                    'game_type': game_type,
+                    'current_score': current_score,
+                    'current_position': current_position,
+                    'total_participants': total_participants,
+                    'is_top_3': is_top_3,
+                    'nickname': nickname,
+                    'foto_paciente': foto_paciente,
+                    'top_3': top_3
+                })
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+

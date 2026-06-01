@@ -27,6 +27,7 @@ urlpatterns = [
     path('estadisticas/', views.EstadisticasView.as_view()),
     path('notificaciones/', views.NotificacionesView.as_view()),
     path('notificaciones/<int:pk>/', views.NotificacionesView.as_view()),
+    path('psicologos/adicionar/', views.AdicionarPsicologoView.as_view()),
     
     # Games API
     path('patients/', views.PatientsListView.as_view()),
@@ -40,6 +41,8 @@ urlpatterns = [
     path('games/voice', views.GameVoiceView.as_view()),
     path('games/session/<int:session_id>/complete', views.GameSessionCompleteView.as_view()),
     path('games/upload_word_image', views.GameUploadWordImageView.as_view()),
+    path('configuracion-smtp/', views.ConfiguracionSmtpView.as_view()),
+    path('games/podio/<int:session_id>/', views.GamePodioView.as_view()),
     
     path('', include(router.urls)),
 ]

@@ -88,3 +88,14 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# CONFIGURACIÓN DE CORREO SMTP (Para registro y bienvenida de Psicólogos)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'                      # O tu servidor SMTP (Ej. outlook.office365.com)
+EMAIL_PORT = 587                                   # Puerto estándar de TLS
+EMAIL_USE_TLS = True                               # Habilitar seguridad TLS
+EMAIL_HOST_USER = 'tu_correo_corporativo@gmail.com' # Coloca aquí tu correo emisor real
+EMAIL_HOST_PASSWORD = 'tu_contrasena_de_aplicacion' # Coloca aquí tu contraseña de aplicación
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+

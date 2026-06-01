@@ -83,6 +83,56 @@ export default function RocketBuilder({ player, onFinish }) {
     init();
   }, [player.id]);
 
+  useEffect(() => {
+    const rocketBtnStyles = document.createElement('style');
+    rocketBtnStyles.id = 'rocket-builder-button-pulse';
+    rocketBtnStyles.textContent = `
+      @keyframes rocketSyllablePulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 6px 16px rgba(26, 86, 219, 0.4);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 10px 24px rgba(26, 86, 219, 0.7), 0 0 15px rgba(96, 165, 250, 0.5);
+        }
+      }
+      @keyframes rocketVoicePulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 8px 24px rgba(26, 86, 219, 0.5);
+        }
+        50% {
+          transform: scale(1.04);
+          box-shadow: 0 12px 30px rgba(26, 86, 219, 0.8), 0 0 18px rgba(96, 165, 250, 0.6);
+        }
+      }
+      .animate-pulse-slow-syllable {
+        animation: rocketSyllablePulse 2.5s ease-in-out infinite;
+        transition: all 0.2s ease;
+      }
+      .animate-pulse-slow-syllable:hover {
+        transform: scale(1.1) !important;
+        animation-play-state: paused;
+        box-shadow: 0 12px 28px rgba(26, 86, 219, 0.8), 0 0 20px rgba(96, 165, 250, 0.7) !important;
+        filter: brightness(1.15);
+      }
+      .animate-pulse-slow-voice {
+        animation: rocketVoicePulse 2.3s ease-in-out infinite;
+        transition: all 0.2s ease;
+      }
+      .animate-pulse-slow-voice:hover {
+        transform: scale(1.08) !important;
+        animation-play-state: paused;
+        box-shadow: 0 16px 36px rgba(26, 86, 219, 0.9), 0 0 25px rgba(96, 165, 250, 0.8) !important;
+        filter: brightness(1.2);
+      }
+    `;
+    if (!document.querySelector('#rocket-builder-button-pulse')) {
+      document.head.appendChild(rocketBtnStyles);
+    }
+  }, []);
+
   // Cargar palabra cuando cambia nivel, índice, o los niveles se actualizan (config personalizada)
   useEffect(() => {
     if (!gameOver) loadWord();
@@ -314,7 +364,7 @@ export default function RocketBuilder({ player, onFinish }) {
         });
       } catch (e) { console.error(e); }
     }
-    onFinish({ score, level, attempts });
+    onFinish({ score, level, attempts, sessionId });
   };
 
   // Inicializar Phaser
@@ -524,6 +574,7 @@ export default function RocketBuilder({ player, onFinish }) {
                 const isUsed = selectedSyllables.some(sel => sel === s + '_' + i);
                 return (
                   <button key={i} onClick={() => !isUsed && handleSyllableClick(s, i)}
+                    className="animate-pulse-slow-syllable"
                     style={{...styles.syllableBtn, opacity: isUsed ? 0.3 : 1, transform: isUsed ? 'scale(0.9)' : 'scale(1)'}}>
                     {s}
                   </button>
@@ -535,6 +586,7 @@ export default function RocketBuilder({ player, onFinish }) {
           {/* Botón de voz (nivel 10) */}
           {voiceMode && (
             <button onClick={startVoiceRecognition} disabled={listening}
+              className="animate-pulse-slow-voice"
               style={{...styles.voiceBtn, background: listening ? '#dc2626' : '#1a56db'}}>
               {listening ? '🎤 Escuchando...' : '🎤 Hablar'}
             </button>

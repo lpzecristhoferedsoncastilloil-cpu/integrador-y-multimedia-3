@@ -149,3 +149,10 @@ class ResultadosjuegosSerializer(serializers.ModelSerializer):
         model = Resultadosjuegos
         fields = '__all__'
 
+
+class ConfiguracionSmtpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConfiguracionSmtp
+        fields = '__all__'
+
+

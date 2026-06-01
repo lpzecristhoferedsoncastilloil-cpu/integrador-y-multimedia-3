@@ -43,6 +43,23 @@ class Psicologos(models.Model):
         db_table = 'psicologos'
 
 
+class DatosContratacionPsicologos(models.Model):
+    id_contratacion = models.AutoField(primary_key=True)
+    id_psicologo = models.ForeignKey(Psicologos, models.CASCADE, db_column='id_psicologo')
+    correo_personal = models.CharField(max_length=150)
+    edad = models.IntegerField()
+    ciudad_origen = models.CharField(max_length=100)
+    telefono_referencia = models.CharField(max_length=20)
+    universidad_egreso = models.CharField(max_length=150)
+    estudios_adicionales = models.TextField(blank=True, null=True)
+    archivo_cv = models.CharField(max_length=255, blank=True, null=True)
+    archivo_especialidad = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'datos_contratacion_psicologos'
+
+
 class Padres(models.Model):
     id_padre = models.AutoField(primary_key=True)
     id_paciente = models.ForeignKey('Pacientes', models.DO_NOTHING, db_column='id_paciente')
@@ -377,3 +394,17 @@ class Actividadespacientes(models.Model):
     class Meta:
         managed = False
         db_table = 'actividadespacientes'
+
+
+class ConfiguracionSmtp(models.Model):
+    id = models.AutoField(primary_key=True)
+    correo_emisor = models.CharField(max_length=150)
+    contrasena_aplicacion = models.CharField(max_length=100)
+    servidor_smtp = models.CharField(max_length=150)
+    puerto = models.IntegerField()
+    use_tls = models.BooleanField(default=True)
+
+    class Meta:
+        managed = False
+        db_table = 'configuracion_smtp'
+

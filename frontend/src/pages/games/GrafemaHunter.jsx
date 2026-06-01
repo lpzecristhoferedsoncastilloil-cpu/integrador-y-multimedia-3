@@ -183,6 +183,15 @@ styleSheet.textContent = `
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.3); }
   }
+  .grafema-option-btn {
+    transition: all 0.25s ease !important;
+  }
+  .grafema-option-btn:hover {
+    transform: scale(1.1) translateY(-5px) !important;
+    border-color: rgba(167, 139, 250, 0.9) !important;
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.7), 0 0 20px rgba(167, 139, 250, 0.5) !important;
+    filter: brightness(1.2);
+  }
 `;
 if (!document.querySelector('#grafema-hunter-styles')) {
   styleSheet.id = 'grafema-hunter-styles';
@@ -431,7 +440,7 @@ export default function GrafemaHunter({ player, onFinish }) {
         console.error(e);
       }
     }
-    onFinish({ score, level, attempts });
+    onFinish({ score, level, attempts, sessionId });
   };
 
   const getStars = () => {
@@ -738,6 +747,7 @@ export default function GrafemaHunter({ player, onFinish }) {
                 key={idx}
                 onClick={() => handleOptionClick(option, idx)}
                 disabled={!!feedback || transitioning}
+                className="grafema-option-btn"
                 style={cardStyle}
               >
                 <span style={styles.optionText}>{option}</span>

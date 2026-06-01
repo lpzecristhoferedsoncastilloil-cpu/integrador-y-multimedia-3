@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import GameLogin from './games/GameLogin'
 import RocketBuilder from './games/RocketBuilder'
 import GrafemaHunter from './games/GrafemaHunter'
+import PodioFinal from './games/PodioFinal'
 import api from '../services/api'
 import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -26,6 +27,76 @@ export default function Juegos() {
     { palabra: 'LUNA', silabas: ['LU', 'NA', 'BO', 'CA'], correcta: 0 },
     { palabra: 'PATO', silabas: ['PA', 'TO', 'SI', 'LO'], correcta: 0 },
   ]
+
+  useEffect(() => {
+    const gameButtonStyles = document.createElement('style');
+    gameButtonStyles.id = 'game-button-pulse-styles';
+    gameButtonStyles.textContent = `
+      @keyframes gameButtonPulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+        }
+        50% {
+          transform: scale(1.04);
+          box-shadow: 0 8px 24px rgba(124, 58, 237, 0.7), 0 0 15px rgba(167, 139, 250, 0.5);
+        }
+      }
+      @keyframes gameButtonPulseNormal {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+        }
+        50% {
+          transform: scale(1.03);
+          box-shadow: 0 6px 16px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+      }
+      @keyframes gameSyllablePulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 6px 16px rgba(26, 86, 219, 0.4);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 10px 24px rgba(26, 86, 219, 0.7), 0 0 15px rgba(96, 165, 250, 0.5);
+        }
+      }
+      .animate-pulse-slow-featured {
+        animation: gameButtonPulse 2.8s ease-in-out infinite;
+        transition: all 0.3s ease;
+      }
+      .animate-pulse-slow-featured:hover {
+        transform: scale(1.08) !important;
+        animation-play-state: paused;
+        box-shadow: 0 12px 30px rgba(124, 58, 237, 0.9), 0 0 25px rgba(167, 139, 250, 0.8) !important;
+        filter: brightness(1.15);
+      }
+      .animate-pulse-slow-normal {
+        animation: gameButtonPulseNormal 3s ease-in-out infinite;
+        transition: all 0.3s ease;
+      }
+      .animate-pulse-slow-normal:hover {
+        transform: scale(1.06) !important;
+        animation-play-state: paused;
+        box-shadow: 0 8px 20px rgba(255, 255, 255, 0.25) !important;
+        filter: brightness(1.2);
+      }
+      .animate-pulse-slow-syllable {
+        animation: gameSyllablePulse 2.5s ease-in-out infinite;
+        transition: all 0.2s ease;
+      }
+      .animate-pulse-slow-syllable:hover {
+        transform: scale(1.1) !important;
+        animation-play-state: paused;
+        box-shadow: 0 12px 28px rgba(26, 86, 219, 0.8), 0 0 20px rgba(96, 165, 250, 0.7) !important;
+        filter: brightness(1.15);
+      }
+    `;
+    if (!document.querySelector('#game-button-pulse-styles')) {
+      document.head.appendChild(gameButtonStyles);
+    }
+  }, []);
 
   // Cargar juegos adicionales desde la base de datos
   useEffect(() => {
@@ -80,7 +151,9 @@ export default function Juegos() {
     setGameFinishedData({
       score: results.score,
       level: results.level,
-      gameName: 'Constructor de Cohetes'
+      gameName: 'Constructor de Cohetes',
+      gameType: 'fonologica',
+      sessionId: results.sessionId
     })
   }
 
@@ -88,7 +161,9 @@ export default function Juegos() {
     setGameFinishedData({
       score: results.score,
       level: results.level,
-      gameName: 'La Caza del Grafema Perdido'
+      gameName: 'La Caza del Grafema Perdido',
+      gameType: 'grafema',
+      sessionId: results.sessionId
     })
   }
 
@@ -168,35 +243,33 @@ export default function Juegos() {
     return <GameLogin onLogin={handleLogin} />
   }
 
-  // Pantalla de Resultados
+  const handleRetryGame = () => {
+    const game = gameFinishedData.gameType === 'fonologica'
+      ? 'rocket_builder'
+      : gameFinishedData.gameType === 'grafema'
+        ? 'grafema_hunter'
+        : 'silabas_magicas';
+    
+    if (game === 'silabas_magicas') {
+      iniciarDemo();
+    }
+    setActiveGame(game);
+    setGameFinishedData(null);
+  }
+
+  const handleExitGame = () => {
+    setActiveGame(null);
+    setGameFinishedData(null);
+  }
+
+  // Pantalla de Resultados (Podio Animado Kahoot!)
   if (gameFinishedData) {
     return (
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🏆</div>
-          <h2 style={styles.title}>¡Buen trabajo, {player.nickname}!</h2>
-          <p style={styles.subtitle}>Has completado {gameFinishedData.gameName}</p>
-          <div style={styles.statsGrid}>
-            <div style={styles.statBox}>
-              <span style={styles.statLabel}>Puntaje</span>
-              <span style={styles.statValue}>{gameFinishedData.score}</span>
-            </div>
-            <div style={styles.statBox}>
-              <span style={styles.statLabel}>Progreso</span>
-              <span style={styles.statValue}>{gameFinishedData.level} niveles</span>
-            </div>
-          </div>
-          <p style={styles.dbHint}>Tus resultados se han guardado automáticamente en tu historial médico. 🧠</p>
-          <div style={styles.buttonGroup}>
-            <button style={styles.btnPrimary} onClick={salirAlLobby}>
-              🎮 Ir a la Sala de Juegos
-            </button>
-            <button style={styles.btnSecondary} onClick={handleLogout}>
-              🚪 Salir
-            </button>
-          </div>
-        </div>
-      </div>
+      <PodioFinal
+        sessionData={gameFinishedData}
+        onRetry={handleRetryGame}
+        onExit={handleExitGame}
+      />
     )
   }
 
@@ -232,7 +305,7 @@ export default function Juegos() {
                 <span style={styles.tag}>Sílabas</span>
                 <span style={styles.tag}>Voz Habilitada 🎤</span>
               </div>
-              <button style={styles.btnPlayFeatured} onClick={(e) => { e.stopPropagation(); setActiveGame('rocket_builder'); }}>
+              <button className="animate-pulse-slow-featured" style={styles.btnPlayFeatured} onClick={(e) => { e.stopPropagation(); setActiveGame('rocket_builder'); }}>
                 ¡Jugar Ahora!
               </button>
             </div>
@@ -248,7 +321,7 @@ export default function Juegos() {
                 <span style={styles.tag}>Visual</span>
                 <span style={styles.tag}>10 Niveles</span>
               </div>
-              <button style={{...styles.btnPlayFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}} onClick={(e) => { e.stopPropagation(); setActiveGame('grafema_hunter'); }}>
+              <button className="animate-pulse-slow-featured" style={{...styles.btnPlayFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}} onClick={(e) => { e.stopPropagation(); setActiveGame('grafema_hunter'); }}>
                 ¡Jugar Ahora!
               </button>
             </div>
@@ -262,7 +335,7 @@ export default function Juegos() {
                 <span style={styles.tag}>Velocidad</span>
                 <span style={styles.tag}>Lectura</span>
               </div>
-              <button style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('silabas_magicas'); iniciarDemo(); }}>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('silabas_magicas'); iniciarDemo(); }}>
                 ¡Jugar Ahora!
               </button>
             </div>
@@ -276,7 +349,7 @@ export default function Juegos() {
                 <div style={styles.tagGroup}>
                   <span style={styles.tag}>{jg.tipo === 'fonologico' ? 'Fonológico' : 'Mixto'}</span>
                 </div>
-                <button style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('silabas_magicas'); iniciarDemo(); }}>
+                <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('silabas_magicas'); iniciarDemo(); }}>
                   ¡Jugar Ahora!
                 </button>
               </div>
