@@ -2,24 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Trophy, RefreshCw, LogOut, Sparkles, Star, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-// A helper to get a cute kid-friendly animal emoji avatar based on nickname
-function getAnimalAvatar(nickname = '', fotoPaciente = '') {
-  if (fotoPaciente) {
-    return <img src={fotoPaciente} alt={nickname} className="w-12 h-12 rounded-full border-2 border-white object-cover shadow-md" />;
-  }
-  const animals = ['🦁', '🐯', '🐼', '🦊', '🐨', '🐰', '🐵', '🦄', '🐬', '🐸', '🦉', '🐝'];
-  let hash = 0;
-  for (let i = 0; i < nickname.length; i++) {
-    hash = nickname.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % animals.length;
-  return (
-    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl shadow-md border-2 border-indigo-200 select-none">
-      {animals[index]}
-    </div>
-  );
-}
+import AvatarRender from '../../components/AvatarRender';
 
 export default function PodioFinal({ sessionData, onRetry, onExit }) {
   const [loading, setLoading] = useState(true);
@@ -118,7 +101,7 @@ export default function PodioFinal({ sessionData, onRetry, onExit }) {
     );
   }
 
-  const { top_3 = [], current_score, current_position, total_participants, is_top_3, nickname, foto_paciente } = data || {};
+  const { top_3 = [], ranking = [], current_score, current_position, total_participants, is_top_3, nickname, foto_paciente } = data || {};
 
   // Mapeamos los ganadores del podio
   const oro = top_3.find(p => p.rank === 1);
@@ -187,7 +170,7 @@ export default function PodioFinal({ sessionData, onRetry, onExit }) {
         <div className="flex flex-col items-center flex-1 transition-all duration-700">
           {plata && (
             <div className={`flex flex-col items-center mb-2 transition-all duration-1000 ${showSilver ? 'opacity-100 scale-100 animate-avatar' : 'opacity-0 scale-50'}`}>
-              {getAnimalAvatar(plata.nickname, plata.foto)}
+              <AvatarRender avatar={plata.avatar} className="w-16 h-16" />
               <span className="text-sm font-bold mt-1 text-slate-300 truncate max-w-[85px]">{plata.nickname}</span>
               <span className="text-[11px] font-semibold text-slate-400 bg-slate-500/20 px-2 py-0.5 rounded-full mt-0.5">{plata.score} pts</span>
             </div>
@@ -219,7 +202,7 @@ export default function PodioFinal({ sessionData, onRetry, onExit }) {
             <div className={`flex flex-col items-center mb-2 transition-all duration-1000 z-10 ${showGold ? 'opacity-100 scale-110 animate-avatar' : 'opacity-0 scale-50'}`}>
               <div className="relative">
                 <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-2xl select-none">👑</span>
-                {getAnimalAvatar(oro.nickname, oro.foto)}
+                <AvatarRender avatar={oro.avatar} className="w-20 h-20" />
               </div>
               <span className="text-base font-black mt-1 text-yellow-300 truncate max-w-[95px] drop-shadow-sm">{oro.nickname}</span>
               <span className="text-xs font-bold text-yellow-400 bg-yellow-400/20 px-2.5 py-0.5 rounded-full mt-0.5 border border-yellow-400/30">{oro.score} pts</span>
@@ -240,7 +223,7 @@ export default function PodioFinal({ sessionData, onRetry, onExit }) {
         <div className="flex flex-col items-center flex-1 transition-all duration-700">
           {bronce && (
             <div className={`flex flex-col items-center mb-2 transition-all duration-1000 ${showBronze ? 'opacity-100 scale-100 animate-avatar' : 'opacity-0 scale-50'}`}>
-              {getAnimalAvatar(bronce.nickname, bronce.foto)}
+              <AvatarRender avatar={bronce.avatar} className="w-14 h-14" />
               <span className="text-sm font-bold mt-1 text-amber-500 truncate max-w-[85px]">{bronce.nickname}</span>
               <span className="text-[11px] font-semibold text-amber-500 bg-amber-600/20 px-2 py-0.5 rounded-full mt-0.5">{bronce.score} pts</span>
             </div>
@@ -276,6 +259,49 @@ export default function PodioFinal({ sessionData, onRetry, onExit }) {
             <span className="text-sm font-semibold text-yellow-100">
               ¡Excelente, <strong className="text-yellow-300 font-bold">{nickname}</strong>! Has entrado al <strong className="text-yellow-400 font-black text-base">Top 3 del Podio</strong> con tu grandiosa puntuación de <strong className="text-yellow-300 font-black">{current_score} pts</strong>.
             </span>
+          </div>
+        )}
+
+        {/* Tabla del Ranking Completo */}
+        {ranking.length > 0 && (
+          <div className="bg-slate-900/60 backdrop-blur-md border border-indigo-500/20 rounded-3xl p-5 shadow-2xl space-y-3.5">
+            <h2 className="text-base font-extrabold text-yellow-300 font-display flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-400" /> Tabla de Récords Históricos
+            </h2>
+            <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-indigo-500/30">
+              {ranking.map((item, index) => {
+                const isMe = item.nickname === nickname;
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all duration-300 ${
+                      isMe
+                        ? 'bg-yellow-400/10 border-yellow-400/40 shadow-md shadow-yellow-500/5'
+                        : 'bg-slate-950/40 border-indigo-500/10 hover:border-indigo-500/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs ${
+                        index === 0 ? 'bg-yellow-400 text-slate-950' :
+                        index === 1 ? 'bg-slate-300 text-slate-950' :
+                        index === 2 ? 'bg-amber-600 text-white' :
+                        'bg-slate-800 text-slate-400'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <AvatarRender avatar={item.avatar} className="w-8 h-8" />
+                      <span className={`text-sm font-bold ${isMe ? 'text-yellow-300' : 'text-slate-200'}`}>
+                        {item.nickname} {isMe && <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-1.5 py-0.5 rounded-full ml-1 font-extrabold uppercase">Tú</span>}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-black text-yellow-400">{item.score}</span>
+                      <span className="text-[10px] text-indigo-300 font-semibold uppercase">pts</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

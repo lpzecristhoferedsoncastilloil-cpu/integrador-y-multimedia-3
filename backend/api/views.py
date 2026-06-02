@@ -1108,6 +1108,49 @@ class ConfiguracionSmtpView(APIView):
         return Response(serializer.errors, status=400)
 
 
+def get_custom_avatar_by_paciente(cursor, id_paciente):
+    try:
+        cursor.execute('''
+            SELECT ap.color_piel, ap.color_ojos, ap.color_cabello,
+                   r.ruta_recurso as rostro_recurso,
+                   o.ruta_recurso as ojos_recurso,
+                   c.ruta_recurso as cabello_recurso,
+                   g.ruta_recurso as gorra_recurso,
+                   l.ruta_recurso as lentes_recurso
+        FROM avatar_paciente ap
+        LEFT JOIN estilos_avatar3d r ON ap.id_rostro = r.id_estilo
+        LEFT JOIN estilos_avatar3d o ON ap.id_ojos = o.id_estilo
+        LEFT JOIN estilos_avatar3d c ON ap.id_cabello = c.id_estilo
+        LEFT JOIN estilos_avatar3d g ON ap.id_gorra = g.id_estilo
+        LEFT JOIN estilos_avatar3d l ON ap.id_lentes = l.id_estilo
+        WHERE ap.id_paciente = %s
+    ''', [id_paciente])
+        row = cursor.fetchone()
+        if row:
+            return {
+                'color_piel': row[0] if row[0] else '#ffd8b3',
+                'color_ojos': row[1] if row[1] else '#4f46e5',
+                'color_cabello': row[2] if row[2] else '#1e1b4b',
+                'rostro_recurso': row[3] if row[3] else 'rostro_redondo',
+                'ojos_recurso': row[4] if row[4] else 'ojos_felices',
+                'cabello_recurso': row[5] if row[5] else 'cabello_corto',
+                'gorra_recurso': row[6],
+                'lentes_recurso': row[7]
+            }
+    except Exception as e:
+        pass
+    return {
+        'color_piel': '#ffd8b3',
+        'color_ojos': '#4f46e5',
+        'color_cabello': '#1e1b4b',
+        'rostro_recurso': 'rostro_redondo',
+        'ojos_recurso': 'ojos_felices',
+        'cabello_recurso': 'cabello_corto',
+        'gorra_recurso': None,
+        'lentes_recurso': None
+    }
+
+
 class GamePodioView(APIView):
     permission_classes = [AllowAny]
 
@@ -1128,16 +1171,17 @@ class GamePodioView(APIView):
                     return Response({'error': 'Sesión no encontrada'}, status=404)
                 
                 player_id, game_type, current_score, nickname, id_paciente, foto_paciente = session_row
+                current_avatar = get_custom_avatar_by_paciente(cursor, id_paciente)
                 
                 # 2. Obtener el puntaje máximo histórico de cada apodo/jugador para el ranking global en este game_type
                 # Excluimos los apodos duplicados
                 cursor.execute('''
-                    SELECT gp.nickname, MAX(gs.score) as max_score, p.foto_paciente
+                    SELECT gp.nickname, MAX(gs.score) as max_score, p.foto_paciente, gp.id_paciente
                     FROM game_sessions gs
                     JOIN game_players gp ON gs.player_id = gp.id
                     JOIN pacientes p ON gp.id_paciente = p.id_paciente
                     WHERE gs.game_type = %s
-                    GROUP BY gp.nickname, p.foto_paciente
+                    GROUP BY gp.nickname, p.foto_paciente, gp.id_paciente
                     ORDER BY max_score DESC
                 ''', [game_type])
                 
@@ -1145,11 +1189,13 @@ class GamePodioView(APIView):
                 
                 # Construir la lista global de mejores marcas únicas
                 ranking_list = []
-                for r_nick, r_score, r_foto in rows:
+                for r_nick, r_score, r_foto, r_paciente_id in rows:
+                    r_avatar = get_custom_avatar_by_paciente(cursor, r_paciente_id)
                     ranking_list.append({
                         'nickname': r_nick,
                         'score': r_score,
-                        'foto': r_foto
+                        'foto': r_foto,
+                        'avatar': r_avatar
                     })
                 
                 # 3. Calcular la posición exacta de este intento del niño
@@ -1177,6 +1223,7 @@ class GamePodioView(APIView):
                         'nickname': item['nickname'],
                         'score': item['score'],
                         'foto': item['foto'],
+                        'avatar': item['avatar'],
                         'rank': i + 1
                     })
                 
@@ -1191,8 +1238,108 @@ class GamePodioView(APIView):
                     'is_top_3': is_top_3,
                     'nickname': nickname,
                     'foto_paciente': foto_paciente,
-                    'top_3': top_3
+                    'avatar': current_avatar,
+                    'top_3': top_3,
+                    'ranking': ranking_list
                 })
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class OpcionesAvatarListView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        opciones = EstilosAvatar3d.objects.all()
+        serializer = EstilosAvatar3dSerializer(opciones, many=True)
+        return Response(serializer.data)
+
+
+class AvatarPacienteDetailView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, id_paciente):
+        try:
+            # Fuerza la conversión a entero para prevenir errores
+            try:
+                id_paciente_real = int(id_paciente)
+            except Exception:
+                id_paciente_real = id_paciente
+            
+            rostro_def = EstilosAvatar3d.objects.filter(categoria='rostro').first()
+            ojos_def = EstilosAvatar3d.objects.filter(categoria='ojos').first()
+            cabello_def = EstilosAvatar3d.objects.filter(categoria='cabello').first()
+            
+            avatar, created = AvatarPaciente.objects.get_or_create(
+                id_paciente_id=id_paciente_real,
+                defaults={
+                    'id_rostro': rostro_def,
+                    'id_ojos': ojos_def,
+                    'id_cabello': cabello_def,
+                    'id_gorra': None,
+                    'id_lentes': None,
+                    'color_piel': '#ffd8b3',
+                    'color_ojos': '#4f46e5',
+                    'color_cabello': '#1e1b4b'
+                }
+            )
+            serializer = AvatarPacienteSerializer(avatar)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+            
+    def post(self, request, id_paciente):
+        try:
+            data = request.data
+            
+            # Fuerza la conversión o extracción del ID numérico correcto
+            id_paciente_real = id_paciente
+            if isinstance(id_paciente_real, dict):
+                id_paciente_real = id_paciente_real.get('id_paciente') or id_paciente_real.get('id')
+            
+            if not str(id_paciente_real).isdigit():
+                # Intentamos obtener de la data
+                req_id = data.get('id_paciente')
+                if isinstance(req_id, dict):
+                    id_paciente_real = req_id.get('id_paciente')
+                elif req_id:
+                    id_paciente_real = req_id
+            
+            id_paciente_real = int(id_paciente_real)
+
+            # Extrae y convierte de forma segura las llaves foráneas
+            def get_clean_id(val):
+                if val is None:
+                    return None
+                if isinstance(val, dict):
+                    return val.get('id_estilo') or val.get('id')
+                if str(val).lower() in ['ninguno', 'null', 'undefined', '']:
+                    return None
+                try:
+                    return int(val)
+                except Exception:
+                    return None
+
+            rostro_id = get_clean_id(data.get('id_rostro'))
+            ojos_id = get_clean_id(data.get('id_ojos'))
+            cabello_id = get_clean_id(data.get('id_cabello'))
+            gorra_id = get_clean_id(data.get('id_gorra'))
+            lentes_id = get_clean_id(data.get('id_lentes'))
+
+            # Fuerza la conversión o extracción del ID numérico correcto
+            avatar, created = AvatarPaciente.objects.get_or_create(id_paciente_id=id_paciente_real)
+            
+            avatar.id_rostro_id = rostro_id
+            avatar.id_ojos_id = ojos_id
+            avatar.id_cabello_id = cabello_id
+            avatar.id_gorra_id = gorra_id
+            avatar.id_lentes_id = lentes_id
+            avatar.color_piel = data.get('color_piel', avatar.color_piel or '#ffd8b3')
+            avatar.color_ojos = data.get('color_ojos', avatar.color_ojos or '#4f46e5')
+            avatar.color_cabello = data.get('color_cabello', avatar.color_cabello or '#1e1b4b')
+            avatar.save()
+
+            serializer = AvatarPacienteSerializer(avatar)
+            return Response(serializer.data, status=200)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 

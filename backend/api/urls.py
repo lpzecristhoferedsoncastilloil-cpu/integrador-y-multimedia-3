@@ -43,6 +43,8 @@ urlpatterns = [
     path('games/upload_word_image', views.GameUploadWordImageView.as_view()),
     path('configuracion-smtp/', views.ConfiguracionSmtpView.as_view()),
     path('games/podio/<int:session_id>/', views.GamePodioView.as_view()),
+    path('avatar/opciones/', views.OpcionesAvatarListView.as_view()),
+    path('avatar/paciente/<int:id_paciente>/', views.AvatarPacienteDetailView.as_view()),
     
     path('', include(router.urls)),
 ]

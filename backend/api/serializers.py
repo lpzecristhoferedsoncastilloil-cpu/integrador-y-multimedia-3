@@ -156,3 +156,43 @@ class ConfiguracionSmtpSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class OpcionesAvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpcionesAvatar
+        fields = '__all__'
+
+
+class EstilosAvatar3dSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EstilosAvatar3d
+        fields = '__all__'
+
+
+class AvatarPacienteSerializer(serializers.ModelSerializer):
+    rostro_recurso = serializers.SerializerMethodField()
+    ojos_recurso = serializers.SerializerMethodField()
+    cabello_recurso = serializers.SerializerMethodField()
+    gorra_recurso = serializers.SerializerMethodField()
+    lentes_recurso = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AvatarPaciente
+        fields = '__all__'
+
+    def get_rostro_recurso(self, obj):
+        return obj.id_rostro.ruta_recurso if obj.id_rostro else 'rostro_redondo'
+
+    def get_ojos_recurso(self, obj):
+        return obj.id_ojos.ruta_recurso if obj.id_ojos else 'ojos_felices'
+
+    def get_cabello_recurso(self, obj):
+        return obj.id_cabello.ruta_recurso if obj.id_cabello else 'cabello_corto'
+
+    def get_gorra_recurso(self, obj):
+        return obj.id_gorra.ruta_recurso if obj.id_gorra else None
+
+    def get_lentes_recurso(self, obj):
+        return obj.id_lentes.ruta_recurso if obj.id_lentes else None
+
+
+

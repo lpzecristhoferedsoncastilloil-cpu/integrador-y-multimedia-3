@@ -408,3 +408,43 @@ class ConfiguracionSmtp(models.Model):
         managed = False
         db_table = 'configuracion_smtp'
 
+
+class OpcionesAvatar(models.Model):
+    id_opcion = models.AutoField(primary_key=True)
+    tipo_pieza = models.CharField(max_length=50)
+    ruta_recurso = models.CharField(max_length=255)
+    nombre_estilo = models.CharField(max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'opciones_avatar'
+
+
+class EstilosAvatar3d(models.Model):
+    id_estilo = models.AutoField(primary_key=True)
+    categoria = models.CharField(max_length=50)
+    nombre_estilo = models.CharField(max_length=150)
+    ruta_recurso = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 'estilos_avatar3d'
+
+
+class AvatarPaciente(models.Model):
+    id_avatar_paciente = models.AutoField(primary_key=True)
+    id_paciente = models.ForeignKey(Pacientes, models.CASCADE, db_column='id_paciente')
+    id_rostro = models.ForeignKey(EstilosAvatar3d, models.SET_NULL, null=True, blank=True, db_column='id_rostro', related_name='avatar_rostro')
+    id_ojos = models.ForeignKey(EstilosAvatar3d, models.SET_NULL, null=True, blank=True, db_column='id_ojos', related_name='avatar_ojos')
+    id_cabello = models.ForeignKey(EstilosAvatar3d, models.SET_NULL, null=True, blank=True, db_column='id_cabello', related_name='avatar_cabello')
+    id_gorra = models.ForeignKey(EstilosAvatar3d, models.SET_NULL, null=True, blank=True, db_column='id_gorra', related_name='avatar_gorra')
+    id_lentes = models.ForeignKey(EstilosAvatar3d, models.SET_NULL, null=True, blank=True, db_column='id_lentes', related_name='avatar_lentes')
+    color_piel = models.CharField(max_length=50, null=True, blank=True)
+    color_ojos = models.CharField(max_length=50, null=True, blank=True)
+    color_cabello = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        managed = False
+        db_table = 'avatar_paciente'
+
+

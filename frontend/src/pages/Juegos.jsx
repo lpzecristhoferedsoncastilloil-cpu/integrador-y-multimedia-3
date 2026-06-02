@@ -3,15 +3,50 @@ import GameLogin from './games/GameLogin'
 import RocketBuilder from './games/RocketBuilder'
 import GrafemaHunter from './games/GrafemaHunter'
 import PodioFinal from './games/PodioFinal'
+import AvatarRender from '../components/AvatarRender'
 import api from '../services/api'
-import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut } from 'lucide-react'
+import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut, Settings, Eye, Scissors, Crown, Glasses, Smile, Orbit } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function Juegos() {
   const [player, setPlayer] = useState(null)
-  const [activeGame, setActiveGame] = useState(null) // null, 'rocket_builder', 'silabas_magicas'
+  const [activeGame, setActiveGame] = useState(null)
   const [gameFinishedData, setGameFinishedData] = useState(null)
   const [dbGames, setDbGames] = useState([])
+
+  const [playerAvatar, setPlayerAvatar] = useState(null)
+  const [avatarOptions, setAvatarOptions] = useState([])
+  const [showConfigModal, setShowConfigModal] = useState(false)
+  const [tempAvatar, setTempAvatar] = useState(null)
+  const [creatorTab, setCreatorTab] = useState('rostro')
+  const [guardandoAvatar, setGuardandoAvatar] = useState(false)
+
+  useEffect(() => {
+    if (player?.id_paciente) {
+      const cargarAvatar = async () => {
+        try {
+          const res = await api.get(`/avatar/paciente/${player.id_paciente}/`)
+          setPlayerAvatar(res.data)
+        } catch (e) {
+          console.error('Error al cargar avatar:', e)
+        }
+      }
+      cargarAvatar()
+    }
+  }, [player?.id_paciente])
+
+  useEffect(() => {
+    if (avatarOptions.length > 0) return
+    const cargarOpciones = async () => {
+      try {
+        const res = await api.get('/avatar/opciones/')
+        setAvatarOptions(res.data)
+      } catch (e) {
+        console.error('Error al cargar opciones de avatar:', e)
+      }
+    }
+    cargarOpciones()
+  }, [showConfigModal])
 
   // Estado del juego demo (Sílabas Mágicas)
   const [vidas, setVidas] = useState(3)
@@ -62,6 +97,16 @@ export default function Juegos() {
           box-shadow: 0 10px 24px rgba(26, 86, 219, 0.7), 0 0 15px rgba(96, 165, 250, 0.5);
         }
       }
+      @keyframes modalFadeIn {
+        from {
+          transform: scale(0.9) translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1) translateY(0);
+          opacity: 1;
+        }
+      }
       .animate-pulse-slow-featured {
         animation: gameButtonPulse 2.8s ease-in-out infinite;
         transition: all 0.3s ease;
@@ -92,6 +137,21 @@ export default function Juegos() {
         box-shadow: 0 12px 28px rgba(26, 86, 219, 0.8), 0 0 20px rgba(96, 165, 250, 0.7) !important;
         filter: brightness(1.15);
       }
+      .option-card-hover {
+        transition: all 0.2s ease;
+      }
+      .option-card-hover:hover {
+        transform: scale(1.08);
+        border-color: #a78bfa !important;
+        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+      }
+      .color-circle-hover {
+        transition: all 0.2s ease;
+      }
+      .color-circle-hover:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      }
     `;
     if (!document.querySelector('#game-button-pulse-styles')) {
       document.head.appendChild(gameButtonStyles);
@@ -100,7 +160,7 @@ export default function Juegos() {
 
   // Cargar juegos adicionales desde la base de datos
   useEffect(() => {
-    if (!player) return
+    if (!player?.id_paciente) return
     const cargarJuegos = async () => {
       try {
         const res = await api.get('/juegos/')
@@ -122,7 +182,7 @@ export default function Juegos() {
       }
     }
     cargarJuegos()
-  }, [player])
+  }, [player?.id_paciente])
 
   // Temporizador para el juego demo
   useEffect(() => {
@@ -234,6 +294,84 @@ export default function Juegos() {
     })
   }
 
+  const abrirConfiguracion = () => {
+    // Buscar IDs de estilo por defecto en el catálogo cargado
+    const defRostro = avatarOptions.find(o => o.categoria?.toLowerCase() === 'rostro')?.id_estilo || 1;
+    const defOjos = avatarOptions.find(o => o.categoria?.toLowerCase() === 'ojos')?.id_estilo || 4;
+    const defCabello = avatarOptions.find(o => o.categoria?.toLowerCase() === 'cabello')?.id_estilo || 7;
+
+    setTempAvatar(playerAvatar ? {
+      ...playerAvatar,
+      id_rostro: playerAvatar.id_rostro?.id_estilo || playerAvatar.id_rostro_id || playerAvatar.id_rostro || defRostro,
+      id_ojos: playerAvatar.id_ojos?.id_estilo || playerAvatar.id_ojos_id || playerAvatar.id_ojos || defOjos,
+      id_cabello: playerAvatar.id_cabello?.id_estilo || playerAvatar.id_cabello_id || playerAvatar.id_cabello || defCabello,
+      id_gorra: playerAvatar.id_gorra?.id_estilo || playerAvatar.id_gorra_id || playerAvatar.id_gorra || null,
+      id_lentes: playerAvatar.id_lentes?.id_estilo || playerAvatar.id_lentes_id || playerAvatar.id_lentes || null,
+    } : {
+      id_rostro: defRostro,
+      id_ojos: defOjos,
+      id_cabello: defCabello,
+      id_gorra: null,
+      id_lentes: null,
+      color_piel: '#ffd8b3',
+      color_ojos: '#4f46e5',
+      color_cabello: '#1e1b4b',
+      rostro_recurso: 'rostro_redondo',
+      ojos_recurso: 'ojos_felices',
+      cabello_recurso: 'cabello_corto',
+      gorra_recurso: null,
+      lentes_recurso: null
+    })
+    setCreatorTab('rostro')
+    setShowConfigModal(true)
+  }
+
+  const handleSelectPiece = (tipo, idOption, recurso) => {
+    setTempAvatar(prev => ({
+      ...prev,
+      [`id_${tipo}`]: idOption,
+      [`${tipo}_recurso`]: recurso
+    }))
+  }
+
+  const handleSelectColor = (tipo, color) => {
+    setTempAvatar(prev => ({
+      ...prev,
+      [tipo]: color
+    }))
+  }
+
+  const guardarAvatar = async () => {
+    setGuardandoAvatar(true)
+    try {
+      const getCleanId = (val) => {
+        if (!val) return null;
+        if (typeof val === 'object') return val.id_estilo || val.id || null;
+        return val;
+      };
+
+      const payload = {
+        id_rostro: getCleanId(tempAvatar.id_rostro),
+        id_ojos: getCleanId(tempAvatar.id_ojos),
+        id_cabello: getCleanId(tempAvatar.id_cabello),
+        id_gorra: getCleanId(tempAvatar.id_gorra),
+        id_lentes: getCleanId(tempAvatar.id_lentes),
+        color_piel: tempAvatar.color_piel,
+        color_ojos: tempAvatar.color_ojos,
+        color_cabello: tempAvatar.color_cabello
+      }
+      const res = await api.post(`/avatar/paciente/${player.id_paciente}/`, payload)
+      setPlayerAvatar(res.data)
+      toast.success('¡Tu personaje espacial se guardó con éxito! 🤖✨', { icon: '👑' })
+      setShowConfigModal(false)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error al guardar tu personaje')
+    } finally {
+      setGuardandoAvatar(false)
+    }
+  }
+
   const salirAlLobby = () => {
     setActiveGame(null)
     setGameFinishedData(null)
@@ -278,14 +416,38 @@ export default function Juegos() {
     return (
       <div style={styles.lobbyContainer}>
         <div style={styles.lobbyHeader}>
+          {/* Esquina superior izquierda */}
           <div style={styles.brandGroup}>
             <Gamepad2 style={{ width: '32px', height: '32px', color: '#a78bfa' }} />
             <h1 style={styles.lobbyTitle}>Sala de Juegos NeuroGym</h1>
           </div>
+
+          {/* Centro superior: texto de bienvenida "¡Hola, [Apodo del Niño]!" grande, llamativo y centrado */}
+          <div style={styles.centeredWelcome}>
+            <span style={styles.largeWelcomeText}>👋 ¡Hola, <strong style={styles.glowNickname}>{player.nickname}</strong>!</span>
+          </div>
+
+          {/* Esquina superior derecha */}
           <div style={styles.userControls}>
-            <span style={styles.welcomeText}>👋 ¡Hola, <strong>{player.nickname}</strong>!</span>
+            {/* Visualización del avatar personalizado del niño */}
+            <div style={styles.avatarPreviewWrapper} onClick={abrirConfiguracion} title="¡Configurar mi personaje!">
+              <AvatarRender avatar={playerAvatar} className="w-10 h-10 hover:scale-110 transition-transform cursor-pointer" />
+            </div>
+
+            {/* Botón de Configuraciones engranaje */}
+            <button 
+              className="animate-pulse-slow-normal" 
+              style={styles.btnConfigLobby} 
+              onClick={abrirConfiguracion}
+            >
+              <Settings style={{ width: '18px', height: '18px', color: '#facc15' }} />
+              <span>Configuraciones</span>
+            </button>
+
+            {/* Botón Salir */}
             <button style={styles.btnLogoutLobby} onClick={handleLogout}>
-              <LogOut style={{ width: '16px', height: '16px' }} /> Salir
+              <LogOut style={{ width: '16px', height: '16px' }} /> 
+              <span>Salir</span>
             </button>
           </div>
         </div>
@@ -356,6 +518,222 @@ export default function Juegos() {
             ))}
           </div>
         </div>
+
+        {/* MODAL CREADOR DE AVATARES PERSONALIZADOS */}
+        {showConfigModal && tempAvatar && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent}>
+              
+              {/* Encabezado del Modal */}
+              <div style={styles.modalHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Orbit style={{ width: '28px', height: '28px', color: '#facc15' }} className="animate-spin" />
+                  <h3 style={styles.modalTitle}>Diseña tu Personaje Espacial</h3>
+                </div>
+                <button style={styles.btnCloseModal} onClick={() => setShowConfigModal(false)}>✕</button>
+              </div>
+
+              {/* Cuerpo del Modal */}
+              <div style={styles.modalBody}>
+                
+                {/* Panel Izquierdo: Vista Previa en Tiempo Real */}
+                <div style={styles.leftPreviewPanel}>
+                  <div style={styles.previewContainer}>
+                    <AvatarRender avatar={tempAvatar} className="w-56 h-56" />
+                  </div>
+                  <div style={styles.nicknameTag}>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#facc15' }}>{player.nickname}</span>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', textAlign: 'center', lineHeight: '1.4' }}>
+                    Selecciona los estilos y colores preferidos en el panel derecho.
+                  </p>
+                </div>
+
+                {/* Panel Derecho: Categorías y Opciones */}
+                <div style={styles.rightSelectorPanel}>
+                  
+                  {/* Pestañas de Navegación */}
+                  <div style={styles.tabBar}>
+                    {['rostro', 'ojos', 'cabello', 'gorra', 'lentes'].map((tab) => {
+                      let tabIcon = null;
+                      if (tab === 'rostro') tabIcon = <Smile className="w-4 h-4 mr-1.5 inline-block" />;
+                      if (tab === 'ojos') tabIcon = <Eye className="w-4 h-4 mr-1.5 inline-block" />;
+                      if (tab === 'cabello') tabIcon = <Scissors className="w-4 h-4 mr-1.5 inline-block" />;
+                      if (tab === 'gorra') tabIcon = <Crown className="w-4 h-4 mr-1.5 inline-block" />;
+                      if (tab === 'lentes') tabIcon = <Glasses className="w-4 h-4 mr-1.5 inline-block" />;
+
+                      return (
+                        <button
+                          key={tab}
+                          onClick={() => setCreatorTab(tab)}
+                          className="hover:scale-105 transition-all duration-200"
+                          style={{
+                            ...styles.tabButton,
+                            ...(creatorTab === tab ? styles.tabButtonActive : {})
+                          }}
+                        >
+                          {tabIcon}
+                          {tab.toUpperCase()}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Contenido de la Pestaña */}
+                  <div style={styles.optionsContent}>
+                    
+                    {/* PARTE A: Seleccionar Forma/Estilo */}
+                    <div>
+                      <h4 style={styles.sectionSubtitle}>Selecciona el Estilo:</h4>
+                      <div className="grid grid-cols-3 gap-4 bg-transparent max-h-[220px] overflow-y-auto p-1 scrollbar-thin">
+                        
+                        {/* Botón de "Ninguno" para gorra y lentes */}
+                        {(creatorTab === 'gorra' || creatorTab === 'lentes') && (
+                          <button
+                            onClick={() => handleSelectPiece(creatorTab, null, null)}
+                            className={`option-card-hover ${tempAvatar[`id_${creatorTab}`] === null ? 'animate-pulse-slow-normal' : ''}`}
+                            style={{
+                              ...styles.optionCard,
+                              ...(tempAvatar[`id_${creatorTab}`] === null ? styles.optionCardActive : {})
+                            }}
+                          >
+                            <span style={{ fontSize: '24px' }}>✕</span>
+                            <span style={{ fontSize: '11px', fontWeight: '800', marginTop: '4px' }}>Ninguno</span>
+                          </button>
+                        )}
+
+                        {avatarOptions
+                          .filter(opt => opt.categoria?.toLowerCase() === creatorTab?.toLowerCase())
+                          .map((opt) => {
+                            const currentId = tempAvatar[`id_${creatorTab}`];
+                            const activeId = currentId?.id_estilo || currentId?.id || currentId;
+                            const isActive = activeId === opt.id_estilo;
+                            
+                            // Volumetric mini-character preview representation
+                            let previewAvatar = {};
+                            if (opt.categoria?.toLowerCase() === 'rostro') {
+                              previewAvatar = { color_piel: '#ffd8b3', rostro_recurso: opt.ruta_recurso };
+                            } else if (opt.categoria?.toLowerCase() === 'ojos') {
+                              previewAvatar = { color_piel: '#ffd8b3', rostro_recurso: 'rostro_redondo', ojos_recurso: opt.ruta_recurso, color_ojos: '#4f46e5' };
+                            } else if (opt.categoria?.toLowerCase() === 'cabello') {
+                              previewAvatar = { color_piel: '#ffd8b3', rostro_recurso: 'rostro_redondo', cabello_recurso: opt.ruta_recurso, color_cabello: '#1e1b4b' };
+                            } else if (opt.categoria?.toLowerCase() === 'gorra') {
+                              previewAvatar = { color_piel: '#ffd8b3', rostro_recurso: 'rostro_redondo', gorra_recurso: opt.ruta_recurso };
+                            } else if (opt.categoria?.toLowerCase() === 'lentes') {
+                              previewAvatar = { color_piel: '#ffd8b3', rostro_recurso: 'rostro_redondo', lentes_recurso: opt.ruta_recurso };
+                            }
+
+                            return (
+                              <button
+                                key={opt.id_estilo}
+                                onClick={() => handleSelectPiece(creatorTab, opt.id_estilo, opt.ruta_recurso)}
+                                className={`option-card-hover ${isActive ? 'animate-pulse-slow-normal' : ''}`}
+                                style={{
+                                  ...styles.optionCard,
+                                  ...(isActive ? styles.optionCardActive : {})
+                                }}
+                              >
+                                <AvatarRender avatar={previewAvatar} className="w-14 h-14" />
+                                <span style={{ fontSize: '11px', fontWeight: '700', marginTop: '6px', textAlign: 'center', lineHeight: '1.2' }}>
+                                  {opt.nombre_estilo}
+                                </span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+
+                    {/* PARTE B: Seleccionar Color (Únicamente para Rostro, Ojos y Cabello) */}
+                    {(creatorTab === 'rostro' || creatorTab === 'ojos' || creatorTab === 'cabello') && (
+                      <div style={{ marginTop: '10px' }}>
+                        <h4 style={styles.sectionSubtitle}>Selecciona el Color:</h4>
+                        <div style={styles.colorsGrid}>
+                          {creatorTab === 'rostro' && [
+                            '#ffd8b3', '#f1c27d', '#ffdbac', '#e0ac69', '#8d5524', '#ffcccc'
+                          ].map((col) => (
+                            <button
+                              key={col}
+                              onClick={() => handleSelectColor('color_piel', col)}
+                              className="color-circle-hover"
+                              style={{
+                                ...styles.colorCircle,
+                                backgroundColor: col,
+                                border: tempAvatar.color_piel === col ? '4px solid #facc15' : '2px solid rgba(255,255,255,0.2)'
+                              }}
+                            />
+                          ))}
+
+                          {creatorTab === 'ojos' && [
+                            '#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#3b82f6', '#7c3aed', '#000000'
+                          ].map((col) => (
+                            <button
+                              key={col}
+                              onClick={() => handleSelectColor('color_ojos', col)}
+                              className="color-circle-hover"
+                              style={{
+                                ...styles.colorCircle,
+                                backgroundColor: col,
+                                border: tempAvatar.color_ojos === col ? '4px solid #facc15' : '2px solid rgba(255,255,255,0.2)'
+                              }}
+                            />
+                          ))}
+
+                          {creatorTab === 'cabello' && [
+                            '#1e1b4b', '#b45309', '#facc15', '#15803d', '#a21caf', '#e11d48', '#475569', '#ffffff'
+                          ].map((col) => (
+                            <button
+                              key={col}
+                              onClick={() => handleSelectColor('color_cabello', col)}
+                              className="color-circle-hover"
+                              style={{
+                                ...styles.colorCircle,
+                                backgroundColor: col,
+                                border: tempAvatar.color_cabello === col ? '4px solid #facc15' : '2px solid rgba(255,255,255,0.2)'
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Pie del Modal */}
+              <div style={styles.modalFooter}>
+                <button 
+                  style={styles.btnCancelModal} 
+                  onClick={() => setShowConfigModal(false)}
+                  disabled={guardandoAvatar}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="animate-pulse-slow-featured" 
+                  style={{
+                    ...styles.btnSaveModal,
+                    cursor: guardandoAvatar ? 'not-allowed' : 'pointer'
+                  }} 
+                  onClick={guardarAvatar}
+                  disabled={guardandoAvatar}
+                >
+                  {guardandoAvatar ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" style={{ display: 'inline', marginRight: '6px', color: '#fff' }} />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar Personaje Space'
+                  )}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -493,32 +871,84 @@ const styles = {
     flexDirection: 'column'
   },
   lobbyHeader: {
-    height: '70px',
-    background: 'rgba(255, 255, 255, 0.03)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    height: '80px',
+    background: 'rgba(15, 23, 42, 0.65)',
+    borderBottom: '2px solid rgba(255, 255, 255, 0.08)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '0 40px',
-    backdropFilter: 'blur(10px)'
+    backdropFilter: 'blur(12px)',
+    position: 'relative',
+    zIndex: 20
   },
   brandGroup: { display: 'flex', alignItems: 'center', gap: '12px' },
-  lobbyTitle: { fontSize: '20px', fontWeight: '800', color: '#fff', margin: 0, letterSpacing: '0.5px' },
-  userControls: { display: 'flex', alignItems: 'center', gap: '20px' },
+  lobbyTitle: { fontSize: '18px', fontWeight: '800', color: '#fff', margin: 0, letterSpacing: '0.5px' },
+  
+  centeredWelcome: {
+    position: 'absolute',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    textAlign: 'center',
+    pointerEvents: 'none'
+  },
+  largeWelcomeText: {
+    fontSize: '25px',
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: '0.5px',
+    textShadow: '0 0 10px rgba(167, 139, 250, 0.4), 0 0 20px rgba(167, 139, 250, 0.2)',
+  },
+  glowNickname: {
+    background: 'linear-gradient(135deg, #facc15 0%, #fb923c 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    fontWeight: '900'
+  },
+  avatarPreviewWrapper: {
+    border: '2.5px solid rgba(167, 139, 250, 0.5)',
+    borderRadius: '50%',
+    padding: '2px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+    boxShadow: '0 0 12px rgba(167, 139, 250, 0.3)'
+  },
+  btnConfigLobby: {
+    background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)',
+    border: '1px solid rgba(167, 139, 250, 0.35)',
+    color: '#fff',
+    padding: '8px 18px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.35)'
+  },
+  
+  userControls: { display: 'flex', alignItems: 'center', gap: '16px' },
   welcomeText: { fontSize: '14px', color: '#cbd5e1' },
   btnLogoutLobby: {
     background: 'rgba(239, 68, 68, 0.15)',
     border: '1px solid rgba(239, 68, 68, 0.3)',
     color: '#ef4444',
     padding: '8px 16px',
-    borderRadius: '10px',
+    borderRadius: '12px',
     fontSize: '13px',
-    fontWeight: '600',
+    fontWeight: '700',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 10px rgba(239, 68, 68, 0.1)'
   },
   lobbySubtitle: {
     fontSize: '18px',
@@ -604,6 +1034,217 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     transition: 'all 0.2s'
+  },
+
+  // MODAL AVATAR CREATOR
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(2, 6, 23, 0.88)',
+    backdropFilter: 'blur(10px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '20px'
+  },
+  modalContent: {
+    background: 'linear-gradient(135deg, #131238 0%, #080a1c 100%)',
+    border: '2px solid rgba(167, 139, 250, 0.3)',
+    borderRadius: '32px',
+    width: '100%',
+    maxWidth: '860px',
+    boxShadow: '0 25px 60px -12px rgba(124, 58, 237, 0.5)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    animation: 'modalFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
+  },
+  modalHeader: {
+    padding: '20px 30px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: 'rgba(255, 255, 255, 0.02)'
+  },
+  modalTitle: {
+    fontSize: '22px',
+    fontWeight: '900',
+    color: '#fff',
+    margin: 0,
+    fontFamily: 'Inter, sans-serif'
+  },
+  btnCloseModal: {
+    background: 'none',
+    border: 'none',
+    color: '#94a3b8',
+    fontSize: '22px',
+    cursor: 'pointer',
+    padding: '4px',
+    transition: 'color 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalBody: {
+    padding: '30px',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1.3fr',
+    gap: '30px',
+    maxHeight: '480px',
+    overflowY: 'auto'
+  },
+  leftPreviewPanel: {
+    background: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
+    borderRadius: '24px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: 'inset 0 0 24px rgba(0, 0, 0, 0.3)'
+  },
+  previewContainer: {
+    background: 'rgba(15, 23, 42, 0.65)',
+    borderRadius: '50%',
+    padding: '10px',
+    boxShadow: '0 12px 36px rgba(124, 58, 237, 0.25)',
+    border: '3.5px solid rgba(167, 139, 250, 0.35)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '240px',
+    height: '240px',
+    overflow: 'visible'
+  },
+  nicknameTag: {
+    marginTop: '18px',
+    background: 'rgba(250, 204, 21, 0.12)',
+    border: '1.5px solid rgba(250, 204, 21, 0.35)',
+    padding: '6px 20px',
+    borderRadius: '12px',
+    fontWeight: '900',
+    letterSpacing: '0.5px'
+  },
+  rightSelectorPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px'
+  },
+  tabBar: {
+    display: 'flex',
+    gap: '8px',
+    overflowX: 'auto',
+    paddingBottom: '8px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+  },
+  tabButton: {
+    background: 'rgba(255, 255, 255, 0.04)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    color: '#94a3b8',
+    padding: '8px 14px',
+    borderRadius: '10px',
+    fontSize: '11px',
+    fontWeight: '800',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    letterSpacing: '0.5px'
+  },
+  tabButtonActive: {
+    background: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+    border: '1px solid #c084fc',
+    color: '#fff',
+    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.35)'
+  },
+  optionsContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px'
+  },
+  sectionSubtitle: {
+    fontSize: '12px',
+    fontWeight: '800',
+    color: '#a78bfa',
+    margin: '0 0 10px 0',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  },
+  optionsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(95px, 1fr))',
+    gap: '12px',
+    maxHeight: '190px',
+    overflowY: 'auto',
+    padding: '4px'
+  },
+  optionCard: {
+    background: 'rgba(255, 255, 255, 0.03)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '18px',
+    padding: '12px 6px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    color: '#fff',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+  },
+  optionCardActive: {
+    background: 'rgba(124, 58, 237, 0.15)',
+    border: '2px solid #a78bfa',
+    boxShadow: '0 0 14px rgba(167, 139, 250, 0.35)',
+    transform: 'scale(1.03)'
+  },
+  colorsGrid: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+    padding: '4px'
+  },
+  colorCircle: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    transition: 'transform 0.2s',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.25)'
+  },
+  modalFooter: {
+    padding: '20px 30px',
+    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+    display: 'flex',
+    justifyContent: 'end',
+    gap: '16px',
+    background: 'rgba(0, 0, 0, 0.2)'
+  },
+  btnCancelModal: {
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    color: '#cbd5e1',
+    padding: '10px 22px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  btnSaveModal: {
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    border: 'none',
+    color: '#fff',
+    padding: '10px 24px',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: '800',
+    transition: 'all 0.2s',
+    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.45)'
   },
 
   // GAME MODES VIEWPORTS (Sin márgenes)
