@@ -3,7 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import RutaProtegida from './components/RutaProtegida'
 
-import Landing from './pages/Landing'
+import LandingPublicitaria from './pages/LandingPublicitaria'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Pacientes from './pages/Pacientes'
@@ -20,7 +20,7 @@ export default function App() {
       <BrowserRouter>
         <Toaster position="top-right" toastOptions={{ style: { borderRadius: '12px', fontFamily: 'Inter, sans-serif' } }} />
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<LandingPublicitaria />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<RutaProtegida><Dashboard /></RutaProtegida>} />
           <Route path="/pacientes" element={<RutaProtegida><Pacientes /></RutaProtegida>} />
