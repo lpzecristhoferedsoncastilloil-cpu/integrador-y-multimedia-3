@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Neurogym QA - Panel de Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --secondary: #06b6d4;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --error: #ef4444;
+      --terminal-bg: #090d16;
+      --terminal-text: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+      color: white;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      opacity: 0.9;
+      margin-top: 5px;
+      font-size: 1rem;
+    }
+
+    .badge-status {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Selector de Tests */
+    .test-selector-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .btn-sm {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sm:hover {
+      background: #e2e8f0;
+    }
+
+    .test-list-container {
+      max-height: 480px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .test-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .test-item:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .test-item input[type="checkbox"] {
+      margin-top: 4px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .test-info {
+      flex: 1;
+    }
+
+    .test-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .test-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .test-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    .tag-funcional { background: #e0f2fe; color: #0369a1; }
+    .tag-no-funcional { background: #fef3c7; color: #b45309; }
+
+    /* Controles de Ejecución */
+    .btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+      transition: all 0.2s;
+    }
+
+    .btn-main:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-main:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Consola de Progreso */
+    .console-container {
+      background: var(--terminal-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+      margin-bottom: 15px;
+    }
+
+    .console-header h3 {
+      font-family: 'JetBrains Mono', monospace;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .dot-container {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .console-log {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      padding-right: 10px;
+    }
+
+    .console-log::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .console-log::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .console-log::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .log-entry {
+      margin-bottom: 6px;
+      border-left: 2px solid transparent;
+      padding-left: 8px;
+    }
+    
+    .log-info { border-color: var(--secondary); color: #cbd5e1; }
+    .log-success { border-color: var(--success); color: #a7f3d0; font-weight: bold; }
+    .log-error { border-color: var(--error); color: #fecaca; }
+    .log-cmd { border-color: #64748b; color: #86efac; }
+
+    /* Panel de Reportes */
+    .report-card {
+      text-align: center;
+      background: #fafafa;
+      border: 1px dashed var(--border);
+    }
+
+    .report-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .btn-report {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .btn-pdf {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-pdf:hover {
+      background: #dc2626;
+    }
+
+    .btn-html {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-html:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Animaciones */
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>Panel de QA Inteligente</h1>
+        <p>Control de ejecución de pruebas automatizadas aisladas para Neurogym</p>
+      </div>
+      <div id="connectionStatus" class="badge-status">Servidor Activo</div>
+    </header>
+
+    <div class="grid">
+      <!-- Columna Principal: Entrada y Selección -->
+      <div>
+        <div class="card">
+          <h2>Configuración del Entorno de Pruebas</h2>
+          <div class="form-group">
+            <label for="targetUrl">URL / Host Objetivo</label>
+            <input type="text" id="targetUrl" class="form-control" value="http://localhost:5173" placeholder="Ej: http://localhost:5173 o https://neurogym-demo.com">
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Selección de Casos de Uso (Gherkin BDD)</h2>
+          <div class="test-selector-actions">
+            <button class="btn-sm" onclick="selectTests('all')">Seleccionar Todos</button>
+            <button class="btn-sm" onclick="selectTests('funcional')">Solo Funcionales</button>
+            <button class="btn-sm" onclick="selectTests('no-funcional')">Solo No Funcionales</button>
+            <button class="btn-sm" onclick="selectTests('none')">Desmarcar Todos</button>
+          </div>
+
+          <div class="test-list-container" id="testList">
+            <!-- Cargado dinámicamente -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Lateral: Consola y Descarga -->
+      <div>
+        <div class="card" style="padding: 20px;">
+          <button id="runBtn" class="btn-main" onclick="startExecution()">
+            <span>EJECUTAR PRUEBAS</span>
+          </button>
+        </div>
+
+        <!-- Monitor de Recursos del Sistema -->
+        <div class="card" style="padding: 20px;">
+          <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Monitor de Recursos (CPU y RAM)</h2>
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+              <strong>Uso del CPU:</strong>
+              <span id="cpuUsageVal">0%</span>
+            </div>
+            <div style="width: 100%; border-radius: 5px; height: 8px; background: #e2e8f0; overflow: hidden; margin-bottom: 15px;">
+              <div id="cpuBar" style="width: 0%; height: 100%; background: #4f46e5; transition: width 0.4s ease-in-out;"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px;">
+              <strong>Uso de RAM:</strong>
+              <span id="ramUsageVal">0% (0.00 GB / 0.00 GB)</span>
+            </div>
+            <div style="width: 100%; border-radius: 5px; height: 8px; background: #e2e8f0; overflow: hidden;">
+              <div id="ramBar" style="width: 0%; height: 100%; background: #06b6d4; transition: width 0.4s ease-in-out;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card report-card" id="reportCard" style="display: none;">
+          <h2>Reporte Generado</h2>
+          <p class="test-desc">La ejecución finalizó. Puedes descargar los reportes consolidados abajo:</p>
+          <div class="report-actions">
+            <a href="/api/download-pdf" class="btn-report btn-pdf" download>
+              PDF Report
+            </a>
+            <a href="/api/view-html" class="btn-report btn-html" target="_blank">
+              Ver HTML
+            </a>
+          </div>
+        </div>
+
+        <!-- Módulo de Envío de Email -->
+        <div class="card" id="emailCard" style="display: none; padding: 20px;">
+          <h2 style="font-size: 1.1rem; margin-bottom: 10px;">Enviar Reporte por Correo</h2>
+          <p class="test-desc" style="margin-bottom: 12px; font-size: 0.75rem;">Envía el reporte consolidado PDF usando Gmail o SMTP personalizado.</p>
+          
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label style="font-size: 0.7rem; font-weight: bold;">Servidor SMTP</label>
+            <input type="text" id="smtpHost" class="form-control" value="smtp.gmail.com" style="padding: 8px; font-size: 0.85rem; height: auto;">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.7rem; font-weight: bold;">Usuario / Correo</label>
+              <input type="text" id="smtpUser" class="form-control" placeholder="tu_correo@gmail.com" style="padding: 8px; font-size: 0.85rem; height: auto;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 0.7rem; font-weight: bold;">Puerto</label>
+              <input type="text" id="smtpPort" class="form-control" value="465" style="padding: 8px; font-size: 0.85rem; height: auto;">
+            </div>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label style="font-size: 0.7rem; font-weight: bold;">Contraseña de Aplicación (Gmail)</label>
+            <input type="password" id="smtpPass" class="form-control" placeholder="Clave de 16 caracteres" style="padding: 8px; font-size: 0.85rem; height: auto;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label style="font-size: 0.7rem; font-weight: bold;">Enviar a (Destinatario)</label>
+            <input type="email" id="toEmail" class="form-control" placeholder="destinatario@gmail.com" style="padding: 8px; font-size: 0.85rem; height: auto;">
+          </div>
+
+          <button id="sendEmailBtn" class="btn-main" onclick="sendEmailReport()" style="padding: 10px; font-size: 0.9rem; width: 100%; border-radius: 8px;">
+            <span>Mandar por Correo</span>
+          </button>
+          <div id="emailLog" style="margin-top: 8px; font-size: 0.75rem; text-align: center; font-weight: 600;"></div>
+        </div>
+
+        <div class="console-container">
+          <div class="console-header">
+            <h3>Terminal de Salida</h3>
+            <div class="dot-container">
+              <div class="dot dot-red"></div>
+              <div class="dot dot-yellow"></div>
+              <div class="dot dot-green"></div>
+            </div>
+          </div>
+          <div class="console-log" id="consoleLog">
+Esperando órdenes... Selecciona los tests y presiona "EJECUTAR PRUEBAS".
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tests = [
+      { id: "01_login_exitoso", tag: "@Caso1_LoginExitoso", title: "1. Login Exitoso", desc: "Verificación de inicio de sesión con pausa inteligente.", type: "funcional" },
+      { id: "02_login_incorrecto", tag: "@Caso2_LoginIncorrecto", title: "2. Login Incorrecto", desc: "Validación de rechazo ante credenciales erróneas.", type: "funcional" },
+      { id: "03_login_correo_invalido", tag: "@Caso3_LoginCorreoInvalido", title: "3. Login Correo Inválido", desc: "Validación del formato del correo del usuario.", type: "funcional" },
+      { id: "04_registro_exitoso", tag: "@Caso4_RegistroExitoso", title: "4. Registro Exitoso", desc: "Registro inteligente y dinámico utilizando Faker.", type: "funcional" },
+      { id: "05_registro_contrasenas_distintas", tag: "@Caso5_RegistroContrasenasDiferentes", title: "5. Registro Contraseñas Dispares", desc: "Validación de igualdad de claves en registro.", type: "funcional" },
+      { id: "06_registro_campos_vacios", tag: "@Caso6_RegistroCamposVacios", title: "6. Registro Campos Vacíos", desc: "Control de obligatoriedad en campos de perfil.", type: "funcional" },
+      { id: "07_recuperacion_contrasena", tag: "@Caso7_RecuperacionContrasena", title: "7. Olvido de Contraseña", desc: "Validación de flujo para recuperar contraseña.", type: "funcional" },
+      { id: "08_navegacion_menu", tag: "@Caso8_NavegacionMenu", title: "8. Navegación del Menú", desc: "Saltos entre vistas a través de navbar y sidebar.", type: "funcional" },
+      { id: "09_interaccion_juegos", tag: "@Caso9_InteraccionJuegos", title: "9. Selección de Juegos", desc: "Acceso a la biblioteca e inicio del juego de memoria.", type: "funcional" },
+      { id: "10_logout", tag: "@Caso10_Logout", title: "10. Cierre de Sesión", desc: "Cerrar sesión de forma segura y volver a Login.", type: "funcional" },
+      { id: "11_edicion_perfil", tag: "@Caso11_EdicionPerfil", title: "11. Edición de Perfil", desc: "Modificación de datos del perfil con Faker.", type: "funcional" },
+      { id: "12_performance_tiempo_carga", tag: "@Caso12_PerformanceTiempoCarga", title: "12. Rendimiento (Tiempo Carga)", desc: "Auditoría de carga inicial de página (< 3000ms).", type: "no-funcional" },
+      { id: "13_enlaces_rotos", tag: "@Caso13_EnlacesRotos", title: "13. Enlaces Rotos", desc: "Escaneo preventivo de hyperlinks (HTTP 404/500).", type: "no-funcional" },
+      { id: "14_accesibilidad_basica", tag: "@Caso14_AccesibilidadBasica", title: "14. Accesibilidad Básica", desc: "Verificación de tags ARIA y descripciones ALT.", type: "no-funcional" },
+      { id: "15_responsividad_mobile", tag: "@Caso15_ResponsividadMobile", title: "15. Responsividad Móvil", desc: "Redimensión a 375px y verificación de menú colapsado.", type: "no-funcional" },
+      { id: "16_registro_paciente_menor", tag: "@Caso16_RegistroPacienteMenor", title: "16. Paciente Menor de Edad", desc: "Registro de niño/adolescente (tutor obligatorio) y DB check.", type: "funcional" },
+      { id: "17_registro_paciente_mayor", tag: "@Caso17_RegistroPacienteMayor", title: "17. Paciente Mayor de Edad", desc: "Registro de paciente mayor de edad y DB check.", type: "funcional" }
+    ];
+
+    // Cargar la lista de tests al iniciar
+    const listContainer = document.getElementById("testList");
+    tests.forEach(test => {
+      const item = document.createElement("div");
+      item.className = "test-item";
+      item.innerHTML = `
+        <input type="checkbox" id="chk_${test.id}" value="${test.tag}" checked>
+        <div class="test-info" onclick="toggleCheckbox('${test.id}')">
+          <div class="test-title">${test.title}</div>
+          <div class="test-desc">${test.desc}</div>
+          <span class="test-tag tag-${test.type}">${test.type === 'funcional' ? 'Funcional' : 'No Funcional'}</span>
+        </div>
+      `;
+      listContainer.appendChild(item);
+    });
+
+    function toggleCheckbox(id) {
+      const chk = document.getElementById(`chk_${id}`);
+      chk.checked = !chk.checked;
+    }
+
+    function selectTests(type) {
+      tests.forEach(test => {
+        const chk = document.getElementById(`chk_${test.id}`);
+        if (type === 'all') chk.checked = true;
+        else if (type === 'none') chk.checked = false;
+        else if (type === 'funcional') chk.checked = test.type === 'funcional';
+        else if (type === 'no-funcional') chk.checked = test.type === 'no-funcional';
+      });
+    }
+
+    function writeLog(text, type = "info") {
+      const consoleLog = document.getElementById("consoleLog");
+      const span = document.createElement("div");
+      span.className = `log-entry log-${type}`;
+      
+      const cleanText = text.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+      span.textContent = cleanText;
+      
+      consoleLog.appendChild(span);
+      consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    function startExecution() {
+      const targetUrl = document.getElementById("targetUrl").value.trim();
+      if (!targetUrl) {
+        alert("Por favor introduce un Host o URL objetivo válido.");
+        return;
+      }
+
+      // Obtener los tags seleccionados
+      const selectedTags = tests
+        .filter(t => document.getElementById(`chk_${t.id}`).checked)
+        .map(t => t.tag);
+
+      if (selectedTags.length === 0) {
+        alert("Debes seleccionar al menos un caso de uso para ejecutar.");
+        return;
+      }
+
+      // Deshabilitar controles
+      const runBtn = document.getElementById("runBtn");
+      runBtn.disabled = true;
+      runBtn.innerHTML = `<div class="spinner"></div><span>EJECUTANDO...</span>`;
+      document.getElementById("reportCard").style.display = "none";
+      
+      const consoleLog = document.getElementById("consoleLog");
+      consoleLog.innerHTML = "";
+      writeLog(`[QA Control] Iniciando ejecución de ${selectedTags.length} pruebas contra ${targetUrl}...`, "cmd");
+
+      // Establecer conexión por Server-Sent Events (SSE) enviando los tags seleccionados
+      const tagsParam = selectedTags.join(",");
+      const sseUrl = `/api/run-tests?url=${encodeURIComponent(targetUrl)}&tags=${encodeURIComponent(tagsParam)}`;
+      
+      const eventSource = new EventSource(sseUrl);
+
+      eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === "stdout") {
+          let logType = "info";
+          if (data.text.includes("passed") || data.text.includes("PASÓ") || data.text.includes("✓")) logType = "success";
+          else if (data.text.includes("failed") || data.text.includes("FALLÓ") || data.text.includes("✗")) logType = "error";
+          else if (data.text.includes("Feature") || data.text.includes("Escenario") || data.text.includes("[Test Case]")) logType = "cmd";
+          
+          writeLog(data.text, logType);
+        } else if (data.type === "done") {
+          writeLog(`[QA Control] Suite finalizada con éxito. Código de salida: ${data.code}`, "success");
+          eventSource.close();
+          finalizeRun(true);
+        } else if (data.type === "error") {
+          writeLog(`[QA Control] Error en el proceso: ${data.error}`, "error");
+          eventSource.close();
+          finalizeRun(false);
+        }
+      };
+
+      eventSource.onerror = function(err) {
+        writeLog("[QA Control] Conexión SSE cerrada o interrumpida.", "error");
+        eventSource.close();
+        finalizeRun(false);
+      };
+    }
+
+    function finalizeRun(success) {
+      const runBtn = document.getElementById("runBtn");
+      runBtn.disabled = false;
+      runBtn.innerHTML = `<span>EJECUTAR PRUEBAS</span>`;
+      
+      if (success) {
+        document.getElementById("reportCard").style.display = "block";
+        document.getElementById("emailCard").style.display = "block";
+      }
+    }
+
+    // --- Monitoreo de Recursos en Tiempo Real ---
+    async function updateSystemResources() {
+      try {
+        const response = await fetch("/api/resources");
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById("cpuUsageVal").textContent = `${data.cpu}%`;
+          document.getElementById("cpuBar").style.width = `${data.cpu}%`;
+          
+          document.getElementById("ramUsageVal").textContent = `${data.ram}% (${data.ramUsedGb} GB / ${data.ramTotalGb} GB)`;
+          document.getElementById("ramBar").style.width = `${data.ram}%`;
+        }
+      } catch (err) {
+        // Silenciar fallos de red temporales
+      }
+    }
+    // Consultar recursos cada 2 segundos
+    setInterval(updateSystemResources, 2000);
+    updateSystemResources(); // Primera carga
+
+    // --- Enviar Reporte PDF por Correo SMTP ---
+    async function sendEmailReport() {
+      const smtpHost = document.getElementById("smtpHost").value.trim();
+      const smtpPort = document.getElementById("smtpPort").value.trim();
+      const smtpUser = document.getElementById("smtpUser").value.trim();
+      const smtpPass = document.getElementById("smtpPass").value.trim();
+      const toEmail = document.getElementById("toEmail").value.trim();
+      const emailLog = document.getElementById("emailLog");
+      const sendBtn = document.getElementById("sendEmailBtn");
+
+      if (!smtpUser || !smtpPass || !toEmail) {
+        alert("Por favor rellena el usuario de correo, la contraseña de aplicación y el destinatario.");
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = `<div class="spinner" style="width:14px; height:14px; display:inline-block; vertical-align:middle; margin-right:5px;"></div><span>ENVIANDO...</span>`;
+      emailLog.style.color = "var(--text-muted)";
+      emailLog.textContent = "Conectando con el servidor SMTP...";
+
+      try {
+        const response = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ smtpHost, smtpPort, smtpUser, smtpPass, toEmail })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          emailLog.style.color = "var(--success)";
+          emailLog.textContent = "✓ ¡Reporte PDF enviado con éxito!";
+        } else {
+          emailLog.style.color = "var(--error)";
+          emailLog.textContent = `Error: ${data.error}`;
+        }
+      } catch (err) {
+        emailLog.style.color = "var(--error)";
+        emailLog.textContent = "Error al intentar contactar con el servidor Express.";
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = `<span>Mandar por Correo</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

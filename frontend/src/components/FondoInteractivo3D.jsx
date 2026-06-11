@@ -27,26 +27,28 @@ function CuboTubularNeon() {
     { pos: [H, 0, H], rot: [0, 0, 0] }
   ];
 
+
+  //cubo 
   return (
     <group>
       {vertices.map((pos, idx) => (
         <mesh key={`v-${idx}`} position={pos}>
           <sphereGeometry args={[radius * 1.1, 16, 16]} />
           <meshStandardMaterial 
-            color={0xda70d6} 
+            color={0xda70d6}      
             emissive={0xda70d6} 
             emissiveIntensity={1.8} 
             roughness={0.2}
           />
         </mesh>
       ))}
-
+//tubos
       {aristas.map((arista, idx) => (
         <mesh key={`a-${idx}`} position={arista.pos} rotation={arista.rot}>
           <cylinderGeometry args={[radius, radius, H * 2, 16]} />
           <meshStandardMaterial 
-            color={0xda70d6} 
-            emissive={0xda70d6} 
+            color={0xa855f7} 
+            emissive={0xa855f7} 
             emissiveIntensity={1.8} 
             roughness={0.2}
           />
@@ -131,7 +133,7 @@ function EscenaFiguras() {
       >
         <torusKnotGeometry args={[1.0, 0.3, 100, 16]} />
         <meshStandardMaterial 
-          color={0xa255f7} 
+          color={0xa855f7} 
           roughness={0.12} 
           metalness={0.85} 
           envMapIntensity={1.0}
@@ -159,7 +161,7 @@ export default function FondoInteractivo3D() {
       width: '100vw',
       height: '100vh',
       zIndex: -1,
-      backgroundColor: '#20203f',
+      backgroundColor: '#865699',
       overflow: 'hidden'
     }}>
       <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>

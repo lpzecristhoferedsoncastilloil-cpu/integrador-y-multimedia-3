@@ -5,8 +5,20 @@ import GrafemaHunter from './games/GrafemaHunter'
 import PodioFinal from './games/PodioFinal'
 import AvatarRender from '../components/AvatarRender'
 import api from '../services/api'
-import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut, Settings, Eye, Scissors, Crown, Glasses, Smile, Orbit } from 'lucide-react'
+import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut, Settings, Eye, Scissors, Crown, Glasses, Smile, Orbit, Compass, Brain, Sparkles, Search, Waves, Package, Bell, Cpu, Type, Award, Activity } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+import Game1Maze from './games/Game1Maze'
+import Game2Cheese from './games/Game2Cheese'
+import Game3Hangman from './games/Game3Hangman'
+import Game4SyllableMachine from './games/Game4SyllableMachine'
+import Game5River from './games/Game5River'
+import Game5_1River from './games/Game5_1River'
+import Game6Warehouse from './games/Game6Warehouse'
+import Game6_1Warehouse from './games/Game6_1Warehouse'
+import Game7Temple from './games/Game7Temple'
+import Game7_1Temple from './games/Game7_1Temple'
+import Game8Train from './games/Game8Train'
 
 export default function Juegos() {
   const [player, setPlayer] = useState(null)
@@ -227,6 +239,16 @@ export default function Juegos() {
     })
   }
 
+  const handleFinishGeneric = (results, gameName, gameType) => {
+    setGameFinishedData({
+      score: results.score,
+      level: results.level,
+      gameName: gameName,
+      gameType: gameType,
+      sessionId: results.sessionId
+    })
+  }
+
   // Lógica del juego Demo
   const iniciarDemo = () => {
     setVidas(3)
@@ -245,10 +267,10 @@ export default function Juegos() {
 
     if (correcto) {
       setPuntaje(p => p + 10)
-      toast.success('¡Correcto! +10 puntos', { icon: '⭐' })
+      toast.success('¡Correcto! +10 puntos')
     } else {
       setVidas(v => v - 1)
-      toast.error('Incorrecto', { icon: '❌' })
+      toast.error('Incorrecto')
     }
 
     setTimeout(() => {
@@ -362,7 +384,7 @@ export default function Juegos() {
       }
       const res = await api.post(`/avatar/paciente/${player.id_paciente}/`, payload)
       setPlayerAvatar(res.data)
-      toast.success('¡Tu personaje espacial se guardó con éxito! 🤖✨', { icon: '👑' })
+      toast.success('¡Tu personaje espacial se guardó con éxito!')
       setShowConfigModal(false)
     } catch (e) {
       console.error(e)
@@ -386,7 +408,9 @@ export default function Juegos() {
       ? 'rocket_builder'
       : gameFinishedData.gameType === 'grafema'
         ? 'grafema_hunter'
-        : 'silabas_magicas';
+        : gameFinishedData.gameType === 'silabas_magicas'
+          ? 'silabas_magicas'
+          : gameFinishedData.gameType;
     
     if (game === 'silabas_magicas') {
       iniciarDemo();
@@ -424,7 +448,7 @@ export default function Juegos() {
 
           {/* Centro superior: texto de bienvenida "¡Hola, [Apodo del Niño]!" grande, llamativo y centrado */}
           <div style={styles.centeredWelcome}>
-            <span style={styles.largeWelcomeText}>👋 ¡Hola, <strong style={styles.glowNickname}>{player.nickname}</strong>!</span>
+            <span style={styles.largeWelcomeText}>¡Hola, <strong style={styles.glowNickname}>{player.nickname}</strong>!</span>
           </div>
 
           {/* Esquina superior derecha */}
@@ -458,14 +482,16 @@ export default function Juegos() {
           <div style={styles.gamesGrid}>
             {/* Juego 1: Constructor de Cohetes (Principal Phaser) */}
             <div style={styles.gameCardFeatured} onClick={() => setActiveGame('rocket_builder')}>
-              <div style={styles.badgeFeatured}>RECOMENDADO ⭐</div>
-              <span style={{ fontSize: '50px' }}>🚀</span>
+              <div style={styles.badgeFeatured}>RECOMENDADO</div>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Orbit className="w-12 h-12 text-indigo-400 animate-pulse" />
+              </div>
               <h3 style={styles.gameCardTitle}>Constructor de Cohetes</h3>
               <p style={styles.gameCardDesc}>Forma palabras ordenando las sílabas. ¡Construye tu cohete y lánzalo al espacio!</p>
               <div style={styles.tagGroup}>
                 <span style={styles.tag}>Phaser 2D</span>
                 <span style={styles.tag}>Sílabas</span>
-                <span style={styles.tag}>Voz Habilitada 🎤</span>
+                <span style={styles.tag}>Voz Habilitada</span>
               </div>
               <button className="animate-pulse-slow-featured" style={styles.btnPlayFeatured} onClick={(e) => { e.stopPropagation(); setActiveGame('rocket_builder'); }}>
                 ¡Jugar Ahora!
@@ -474,8 +500,10 @@ export default function Juegos() {
 
             {/* Juego 2: La Caza del Grafema Perdido */}
             <div style={styles.gameCardFeatured} onClick={() => setActiveGame('grafema_hunter')}>
-              <div style={{...styles.badgeFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>NUEVO 🔥</div>
-              <span style={{ fontSize: '50px' }}>🔍</span>
+              <div style={{...styles.badgeFeatured, background: 'linear-gradient(135deg, #f59e0b, #d97706)'}}>NUEVO</div>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Search className="w-12 h-12 text-yellow-400 animate-bounce" />
+              </div>
               <h3 style={styles.gameCardTitle}>La Caza del Grafema Perdido</h3>
               <p style={styles.gameCardDesc}>¡Encuentra la letra o sílaba que falta para completar la palabra! Entrena tu reconocimiento visual.</p>
               <div style={styles.tagGroup}>
@@ -490,7 +518,9 @@ export default function Juegos() {
 
             {/* Juego 3: Sílabas Mágicas (Demo) */}
             <div style={styles.gameCard} onClick={() => { setActiveGame('silabas_magicas'); iniciarDemo(); }}>
-              <span style={{ fontSize: '50px' }}>✨</span>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Sparkles className="w-12 h-12 text-purple-400 animate-pulse" />
+              </div>
               <h3 style={styles.gameCardTitle}>Sílabas Mágicas</h3>
               <p style={styles.gameCardDesc}>Identifica rápidamente la primera sílaba de la palabra antes de que se acabe el tiempo.</p>
               <div style={styles.tagGroup}>
@@ -502,12 +532,175 @@ export default function Juegos() {
               </button>
             </div>
 
+            {/* Game 1: El Laberinto de las Habitaciones */}
+            <div style={styles.gameCard} onClick={() => setActiveGame('maze')}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Compass className="w-12 h-12 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Laberinto</h3>
+              <p style={styles.gameCardDesc}>Explora un laberinto en 3D respondiendo acertijos sobre orientación y puntos cardinales.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Orientación</span>
+              </div>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('maze'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
+            {/* Game 2: El Reto del Queso y los Ratones */}
+            <div style={styles.gameCard} onClick={() => setActiveGame('cheese')}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Award className="w-12 h-12 text-yellow-400 animate-bounce" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Reto del Queso</h3>
+              <p style={styles.gameCardDesc}>Ayuda a los ratones a alcanzar el queso identificando palabras que riman entre sí en 3D.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Rimas</span>
+              </div>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('cheese'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
+            {/* Game 3: El Rescate de las Letras */}
+            <div style={styles.gameCard} onClick={() => setActiveGame('hangman')}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Type className="w-12 h-12 text-pink-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Rescate de las Letras</h3>
+              <p style={styles.gameCardDesc}>Salva al astronauta adivinando las letras de la palabra misteriosa en el calabozo 3D.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Ortografía</span>
+              </div>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('hangman'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
+            {/* Game 4: La Máquina de las Sílabas */}
+            <div style={styles.gameCard} onClick={() => setActiveGame('machine')}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Cpu className="w-12 h-12 text-rose-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>La Máquina de Sílabas</h3>
+              <p style={styles.gameCardDesc}>Combina prefijos y sufijos en la línea de montaje de la máquina espacial para formar palabras.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Morfología</span>
+              </div>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('machine'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
+            {/* Game 5: El Río de las Palabras Cruzadas */}
+            <div style={styles.gameCard}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Waves className="w-12 h-12 text-blue-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Río Cósmico</h3>
+              <p style={styles.gameCardDesc}>Esquiva los obstáculos del río espacial recolectando sinónimos y antónimos correctos.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Semántica</span>
+              </div>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('river7'); }}
+                >
+                  Jugar (Niños 7 años)
+                </button>
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('river'); }}
+                >
+                  Jugar (Niños 10 años)
+                </button>
+              </div>
+            </div>
+
+            {/* Game 6: El Almacén de las Letras Perdidas */}
+            <div style={styles.gameCard}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Package className="w-12 h-12 text-emerald-400 animate-bounce" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Almacén</h3>
+              <p style={styles.gameCardDesc}>Encuentra y clasifica palabras en una sopa de letras 3D interactiva adaptada por edad.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Gramática</span>
+              </div>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('warehouse7'); }}
+                >
+                  Jugar (Niños 7 años)
+                </button>
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('warehouse'); }}
+                >
+                  Jugar (Niños 10 años)
+                </button>
+              </div>
+            </div>
+
+            {/* Game 7: El Eco de las Sílabas */}
+            <div style={styles.gameCard}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Bell className="w-12 h-12 text-amber-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Eco de las Sílabas</h3>
+              <p style={styles.gameCardDesc}>Identifica la sílaba tónica al ritmo del gong y clasifica palabras por su acentuación.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Acentuación</span>
+              </div>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('temple7'); }}
+                >
+                  Jugar (Niños 7 años)
+                </button>
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('temple'); }}
+                >
+                  Jugar (Niños 10 años)
+                </button>
+              </div>
+            </div>
+
+            {/* Game 8: El Tren de las Letras */}
+            <div style={styles.gameCard} onClick={() => setActiveGame('train')}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Activity className="w-12 h-12 text-purple-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>El Tren de las Letras</h3>
+              <p style={styles.gameCardDesc}>Clasifica juguetes 3D arrastrándolos al vagón que coincide con su letra inicial.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Fonemas</span>
+              </div>
+              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('train'); }}>
+                ¡Jugar Ahora!
+              </button>
+            </div>
+
             {/* Juegos cargados dinámicamente de la base de datos */}
             {dbGames.map((jg, idx) => (
               <div style={styles.gameCard} key={idx} onClick={() => { setActiveGame('silabas_magicas'); iniciarDemo(); }}>
-                <span style={{ fontSize: '50px' }}>🧠</span>
+                <div className="flex items-center justify-center p-3 mb-2">
+                  <Brain className="w-12 h-12 text-cyan-400 animate-pulse" />
+                </div>
                 <h3 style={styles.gameCardTitle}>{jg.nombre}</h3>
-                <p style={styles.gameCardDesc}>{jg.descripcion || 'Entrenamiento cognitivo terapéutico diseñado por tu psicólogo.'}</p>
+                <p style={styles.gameCardDesc}>{jg.descripcion || 'Entrenamiento cognitivo diseñado por tu psicólogo.'}</p>
                 <div style={styles.tagGroup}>
                   <span style={styles.tag}>{jg.tipo === 'fonologico' ? 'Fonológico' : 'Mixto'}</span>
                 </div>
@@ -743,7 +936,7 @@ export default function Juegos() {
     return (
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
-          <span style={styles.playerTag}>👤 Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
         </div>
         <div style={styles.gameBody}>
           <RocketBuilder player={player} onFinish={handleFinishRocket} />
@@ -757,7 +950,7 @@ export default function Juegos() {
     return (
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
-          <span style={styles.playerTag}>👤 Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
         </div>
         <div style={styles.gameBody}>
           <GrafemaHunter player={player} onFinish={handleFinishGrafema} />
@@ -771,7 +964,7 @@ export default function Juegos() {
     return (
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
-          <span style={styles.playerTag}>👤 Jugador: <strong>{player.nickname}</strong></span>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
           <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBodyDemo}>
@@ -822,6 +1015,171 @@ export default function Juegos() {
               <Loader2 className="animate-spin" style={{ width: '48px', height: '48px', margin: '0 auto', color: '#a78bfa' }} />
             </div>
           )}
+        </div>
+      </div>
+    )
+  }
+
+  // 5. Jugando: El Laberinto de las Habitaciones (3D R3F)
+  if (activeGame === 'maze') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game1Maze player={player} onFinish={(res) => handleFinishGeneric(res, 'El Laberinto de las Habitaciones', 'maze')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 6. Jugando: El Reto del Queso y los Ratones (3D R3F)
+  if (activeGame === 'cheese') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game2Cheese player={player} onFinish={(res) => handleFinishGeneric(res, 'El Reto del Queso y los Ratones', 'cheese')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 7. Jugando: El Rescate de las Letras (3D R3F)
+  if (activeGame === 'hangman') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game3Hangman player={player} onFinish={(res) => handleFinishGeneric(res, 'El Rescate de las Letras', 'hangman')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 8. Jugando: La Máquina de las Sílabas (3D R3F)
+  if (activeGame === 'machine') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game4SyllableMachine player={player} onFinish={(res) => handleFinishGeneric(res, 'La Máquina de las Sílabas', 'machine')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 9. Jugando: El Río de las Palabras Cruzadas (3D R3F)
+  if (activeGame === 'river') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game5River player={player} onFinish={(res) => handleFinishGeneric(res, 'El Río de las Palabras Cruzadas', 'river')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 9.1 Jugando: El Río Cósmico para Niños de 7 años (3D R3F)
+  if (activeGame === 'river7') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game5_1River player={player} onFinish={(res) => handleFinishGeneric(res, 'El Río Cósmico - 7 años', 'river')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 10. Jugando: El Almacén de las Letras Perdidas (3D R3F)
+  if (activeGame === 'warehouse') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game6Warehouse player={player} onFinish={(res) => handleFinishGeneric(res, 'El Almacén de las Letras Perdidas', 'warehouse')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 10.1 Jugando: El Almacén para Niños de 7 años (3D R3F)
+  if (activeGame === 'warehouse7') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game6_1Warehouse player={player} onFinish={(res) => handleFinishGeneric(res, 'El Almacén - 7 años', 'warehouse')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 11. Jugando: El Eco de las Sílabas (3D R3F) – 10 años
+  if (activeGame === 'temple') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game7Temple player={player} onFinish={(res) => handleFinishGeneric(res, 'El Eco de las Sílabas', 'temple')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 11.1 Jugando: El Eco de las Sílabas – 7 años
+  if (activeGame === 'temple7') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game7_1Temple player={player} onFinish={(res) => handleFinishGeneric(res, 'El Eco de las Sílabas - 7 años', 'temple')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 12. Jugando: El Tren de las Letras (3D R3F)
+  if (activeGame === 'train') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game8Train player={player} onFinish={(res) => handleFinishGeneric(res, 'El Tren de las Letras', 'train')} />
         </div>
       </div>
     )
@@ -1249,12 +1607,13 @@ const styles = {
 
   // GAME MODES VIEWPORTS (Sin márgenes)
   gameContainer: {
-    minHeight: '100vh',
+    height: '100vh',
     background: '#090d16',
     display: 'flex',
     flexDirection: 'column',
     color: '#fff',
-    fontFamily: 'Inter, sans-serif'
+    fontFamily: 'Inter, sans-serif',
+    overflow: 'hidden'
   },
   gameHeader: {
     height: '60px',
@@ -1279,11 +1638,13 @@ const styles = {
     transition: 'all 0.2s'
   },
   gameBody: {
-    flex: 1,
+    height: 'calc(100vh - 60px)',
+    width: '100%',
     display: 'flex',
     alignItems: 'stretch',
     justifyContent: 'center',
-    padding: '0px'
+    padding: '0px',
+    overflow: 'hidden'
   },
 
   // DEMO GAME (Sílabas Mágicas)

@@ -1,0 +1,148 @@
+================================================================================
+          SUBSISTEMA DE PRUEBAS AUTOMATIZADO E INTELIGENTE - NEUROGYM
+================================================================================
+
+Este subsistema ha sido diseñado como un módulo de control de calidad (QA) 100%
+aislado y autónomo ubicado bajo la carpeta `D:\IA\integradior 3\neurogym\test`.
+Su propósito es interactuar dinámicamente con cualquier URL/Host que se provea,
+escaneando de forma inteligente la UI y ejecutando flujos de prueba (funcionales
+y no funcionales) sin perturbar el código base del frontend o backend principal.
+
+Adicionalmente, se incluye un **Panel de Control Web** interactivo que permite
+seleccionar pruebas, configurar el Host y ver la consola de salida en vivo,
+permitiendo descargar los reportes PDF consolidados.
+
+--------------------------------------------------------------------------------
+1. TECNOLOGÍAS UTILIZADAS Y POR QUÉ SE ELIGIERON
+--------------------------------------------------------------------------------
+- Playwright: Motor de automatización moderno que provee esperas automáticas
+  (auto-waiting), renderizado rápido y soporte excelente para múltiples contextos.
+- Cucumber.js: Habilita BDD (Desarrollo Guiado por Comportamiento) para documentar
+  casos en el lenguaje Given-When-Then (Gherkin).
+- Faker (@faker-js/faker): Biblioteca de generación de datos para registrar perfiles
+  ficticios dinámicamente.
+- Express.js: Servidor local ligero utilizado para desplegar la interfaz web del
+  Panel de Control e interactuar mediante APIs de transmisión en vivo (SSE).
+- mysql2: Cliente de conexión a base de datos MySQL/MariaDB para verificar de forma
+  directa en XAMPP que los datos insertados por la interfaz gráfica realmente se
+  hayan guardado en el servidor backend.
+- Generación Híbrida de PDF: Las pruebas guardan capturas de pantalla de cada paso
+  en Base64. Al terminar la suite completa, se genera un reporte HTML visualmente
+  enriquecido y se usa Playwright Chromium de manera headless para imprimirlo a
+  un archivo PDF profesional en `reports/pdf/reporte_ejecucion.pdf`.
+
+--------------------------------------------------------------------------------
+2. ESTRUCTURA DE ARCHIVOS Y CARPETAS
+--------------------------------------------------------------------------------
+D:\IA\integradior 3\neurogym\test\
+│
+├── package.json              => Declaración de scripts de ejecución y dependencias.
+├── playwright.config.js      => Ajustes globales (timeouts, viewports móvil y desktop).
+├── cucumber.js               => Configuración de Cucumber v10 sin paths fijos para filtrado.
+├── server.js                 => Servidor Express para levantar el Panel de Control Web.
+├── informacion_sistema.txt   => Este manual explicativo.
+│
+├── public/
+│   └── index.html            => Interfaz de usuario del Panel de Control (CSS Premium).
+│
+├── reports/                  => Almacenamiento final de reportes de ejecución.
+│   ├── screenshots/          => Carpeta interna para evidencias (capturas).
+│   └── pdf/                  => Almacenamiento de reportes PDF y HTML generados.
+│
+└── src/                      => Código fuente del subsistema de pruebas.
+    │
+    ├── config/
+    │   └── settings.js       => Configuración global (Hosts, DB MySQL XAMPP y Timeouts).
+    │
+    ├── generator/
+    │   └── dataGenerator.js  => Genera datos falsos con Faker.
+    │
+    ├── scanner/
+    │   ├── domScanner.js     => Cerebro del escaneo inteligente y heurística tolerante a fallos.
+    │   └── elementMapper.js  => Caché en memoria para no re-escanear elementos en cada paso.
+    │
+    ├── reporter/
+    │   ├── htmlTemplate.js   => Maqueta HTML con diseño visual de línea de tiempo por paso.
+    │   └── pdfGenerator.js   => Compila el HTML y lo imprime a PDF con Playwright.
+    │
+    └── bdd/                  => Estructura de pruebas Cucumber Gherkin.
+        ├── features/         => Escenarios de uso con tags únicos para filtrado (@Caso1...).
+        ├── step_definitions/ => Codificación en JS de los pasos de pruebas.
+        │   ├── common_steps.js      => Pasos comunes y lógica de prompts.
+        │   ├── registro_steps.js    => Formularios de pacientes y consulta MySQL.
+        │   └── non_functional_steps.js => Rendimiento, enlaces rotos y accesibilidad.
+        │
+        └── support/
+            ├── resultsHolder.js     => Acumulador de evidencias y restablecimiento de memoria.
+            ├── world.js             => Inicializador de Playwright y sesión (storageState).
+            └── hooks.js             => Before/After/AfterStep para capturas y consolidación.
+
+--------------------------------------------------------------------------------
+3. FILTRADO REAL Y DINÁMICO POR TAGS
+--------------------------------------------------------------------------------
+Cada archivo de características en `src/bdd/features/` posee un tag único en su cabecera
+(ej. `@Caso1_LoginExitoso`, `@Caso16_RegistroPacienteMenor`).
+- Al seleccionar casillas en el Panel de Control Web, la UI recopila estos tags y los
+  envía como un parámetro separado por comas a la API `/api/run-tests`.
+- El servidor Express captura la cadena de tags, la formatea con el operador "or"
+  (ej. `@Caso1_LoginExitoso or @Caso16_RegistroPacienteMenor`) y ejecuta Cucumber
+  utilizando el argumento `--tags`.
+- El archivo `cucumber.js` no tiene configurado ningún path fijo. De este modo,
+  Cucumber.js ejecuta estrictamente y en exclusiva las pruebas cuyos tags coincidan
+  con la selección de la pantalla web, reflejándose de forma 100% dinámica en el
+  resumen del reporte final (QA counters).
+
+--------------------------------------------------------------------------------
+4. ALGORITMO DE DIÁLOGO INTERACTIVO (LOGIN REAL) Y CONTINUIDAD
+--------------------------------------------------------------------------------
+- En las pruebas de tipo Happy Path / Inicio Exitoso, Playwright inyecta un listener
+  del evento dialog:
+  ```javascript
+  page.on('dialog', async dialog => { ... });
+  ```
+- Llama a `page.evaluate(() => prompt(...))` de manera secuencial para solicitar el
+  correo y la contraseña en la ventana headed de Chromium.
+- Tras el ingreso, Playwright ejecuta una espera activa (`waitForURL` / `waitForLoadState('networkidle')`)
+  para asegurar que el inicio de sesión concluyó y la sesión de cookies está guardada.
+- El `domScanner.js` vuelve a escanear dinámicamente la nueva vista privada
+  (Dashboard, Pacientes, etc.) para que los pasos subsiguientes del test (navegar,
+  llenar formularios, etc.) continúen sin interrupciones sobre la sesión autenticada.
+- Las pruebas posteriores leen la sesión de `reports/storageState.json` y se saltan
+  el login automáticamente.
+
+--------------------------------------------------------------------------------
+5. HOOK AFTERSTEP Y TRAZABILIDAD CRONOLÓGICA
+--------------------------------------------------------------------------------
+En `src/bdd/support/hooks.js`, el hook `AfterStep` se ejecuta obligatoriamente al
+finalizar cada paso de Gherkin:
+1. Toma una captura del viewport activo en formato Base64:
+   `const screenshotBase64 = await this.page.screenshot({ encoding: 'base64' });`
+2. Indexa la captura en el acumulador global mediante:
+   `resultsHolder.addStepEvidence(text, screenshotBase64, status);`
+3. Al finalizar la prueba, el acumulador asigna estos pasos al testCaseData.
+4. El reportero HTML `htmlTemplate.js` itera sobre este listado estructurado,
+   dibujando una caja de estado (Verde = PASSED, Rojo = FAILED) y la captura
+   Base64 correspondiente de forma ordenada y cronológica debajo de cada paso.
+
+--------------------------------------------------------------------------------
+6. CONEXIÓN A BASE DE DATOS LOCAL (XAMPP / MYSQL)
+--------------------------------------------------------------------------------
+La suite incluye pruebas de integridad backend-frontend mediante la librería `mysql2`.
+- Los datos de conexión están en `src/config/settings.js` (puerto, host, root, db).
+- En el test de creación de paciente (`registro_steps.js`), al completarse la
+  interacción gráfica y el botón de submit, el test ejecuta una consulta directa:
+  `SELECT * FROM pacientes WHERE nombre_completo = ?`
+- Si la fila no existe, la prueba de QA falla a nivel de persistencia de datos.
+- El reporte PDF final incluye el mensaje de verificación exitosa de la base de datos
+  y el ID asignado por MySQL.
+
+--------------------------------------------------------------------------------
+7. ENDPOINTS DE EXPRESS DE DESCARGA
+--------------------------------------------------------------------------------
+El Panel de Control Web levanta en `http://localhost:3000` exponiendo las siguientes rutas:
+- `/api/run-tests` => Dispara la suite vía Server-Sent Events (SSE) en modo headed.
+- `/api/download-pdf` => Descarga el reporte PDF enviando los headers explícitos
+  `Content-Type: application/pdf` y `Content-Disposition`.
+- `/api/view-html` => Renderiza el reporte HTML intermedio en una pestaña nueva
+  del navegador (`Content-Type: text/html`).
+================================================================================

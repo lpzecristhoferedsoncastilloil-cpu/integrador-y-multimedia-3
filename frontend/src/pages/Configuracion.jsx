@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
 import { useAuth } from '../context/AuthContext'
-import { User, Lock, Bell, Palette, Save, Loader2, Check, Plus, Trash2, Pencil, Upload, UserPlus, Mail } from 'lucide-react'
+import { User, Lock, Bell, Palette, Save, Loader2, Check, Plus, Trash2, Pencil, Upload, UserPlus, Mail, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 
@@ -51,6 +51,7 @@ export default function Configuracion() {
   })
   const [cargandoSmtp, setCargandoSmtp] = useState(false)
   const [guardandoSmtp, setGuardandoSmtp] = useState(false)
+  const [verContrasenaSmtp, setVerContrasenaSmtp] = useState(false)
 
   useEffect(() => {
     if (tab === 'configuracion_smtp') {
@@ -864,14 +865,23 @@ export default function Configuracion() {
 
                     <div className="col-span-2">
                       <label className="block text-xs font-semibold text-gray-600 mb-1">Contraseña de Aplicación o Contraseña de Correo *</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="••••••••••••••••"
-                        value={formSmtp.contrasena_aplicacion || ''}
-                        onChange={e => setFormSmtp({ ...formSmtp, contrasena_aplicacion: e.target.value })}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono bg-white text-gray-800"
-                      />
+                      <div className="relative">
+                        <input
+                          type={verContrasenaSmtp ? 'text' : 'password'}
+                          required
+                          placeholder="••••••••••••••••"
+                          value={formSmtp.contrasena_aplicacion || ''}
+                          onChange={e => setFormSmtp({ ...formSmtp, contrasena_aplicacion: e.target.value })}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono bg-white text-gray-800 pr-12"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setVerContrasenaSmtp(!verContrasenaSmtp)}
+                          className="absolute right-3.5 top-2.5 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                        >
+                          {verContrasenaSmtp ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                       <p className="text-[10px] text-gray-400 mt-1">Si usas Gmail, asegúrate de generar una 'Contraseña de Aplicación' de 16 dígitos en tu panel de seguridad de Google.</p>
                     </div>
 

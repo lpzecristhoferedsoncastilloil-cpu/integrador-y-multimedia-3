@@ -725,6 +725,9 @@ class GameSessionCompleteView(APIView):
     def put(self, request, session_id):
         total_time_seconds = request.data.get('total_time_seconds', 0)
         final_score = request.data.get('final_score', 0)
+        req_correct = request.data.get('correct_attempts')
+        req_incorrect = request.data.get('incorrect_attempts')
+        req_total = request.data.get('total_attempts')
         
         from django.db import connection
         from django.utils import timezone
@@ -750,23 +753,36 @@ class GameSessionCompleteView(APIView):
                 GAME_NAMES = {
                     'fonologica': 'Constructor de Cohetes',
                     'grafema': 'La Caza del Grafema Perdido',
+                    'maze': 'El Laberinto de las Habitaciones',
+                    'cheese': 'El Reto del Queso y los Ratones',
+                    'hangman': 'El Rescate de las Letras',
+                    'machine': 'La Máquina de las Sílabas',
+                    'river': 'El Río de las Palabras Cruzadas',
+                    'warehouse': 'El Almacén de las Letras Perdidas',
+                    'temple': 'El Eco de las Sílabas',
+                    'train': 'El Tren de las Letras',
                 }
                 nombre_juego = GAME_NAMES.get(game_type, game_type or 'Juego Desconocido')
                 logger.info(f'[SESSION_COMPLETE] session={session_id} paciente={id_paciente} level={session_level}')
                 
                 # 2. Contar intentos de sílabas
-                cursor.execute('''
-                    SELECT 
-                        COUNT(*) as total,
-                        COALESCE(SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END), 0) as correct,
-                        COALESCE(SUM(CASE WHEN is_correct = 0 THEN 1 ELSE 0 END), 0) as incorrect
-                    FROM game_attempts
-                    WHERE session_id = %s
-                ''', [session_id])
-                att_row = cursor.fetchone()
-                total_attempts = att_row[0] or 0
-                correct_attempts = att_row[1] or 0
-                incorrect_attempts = att_row[2] or 0
+                if req_correct is not None and req_incorrect is not None and req_total is not None:
+                    total_attempts = int(req_total)
+                    correct_attempts = int(req_correct)
+                    incorrect_attempts = int(req_incorrect)
+                else:
+                    cursor.execute('''
+                        SELECT 
+                            COUNT(*) as total,
+                            COALESCE(SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END), 0) as correct,
+                            COALESCE(SUM(CASE WHEN is_correct = 0 THEN 1 ELSE 0 END), 0) as incorrect
+                        FROM game_attempts
+                        WHERE session_id = %s
+                    ''', [session_id])
+                    att_row = cursor.fetchone()
+                    total_attempts = att_row[0] or 0
+                    correct_attempts = att_row[1] or 0
+                    incorrect_attempts = att_row[2] or 0
                 
                 # 3. Contar intentos de voz
                 cursor.execute('''

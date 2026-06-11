@@ -1,19 +1,19 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
-  Brain, LayoutDashboard, Users, Calendar, Gamepad2,
+  Brain, LayoutGrid, Users, Calendar, Gamepad2,
   BarChart3, FileText, Settings, LogOut, ChevronRight
 } from 'lucide-react'
 
 const menu = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/pacientes', icon: Users, label: 'Pacientes' },
-  { path: '/calendario', icon: Calendar, label: 'Calendario' },
-  { path: '/juegos', icon: Gamepad2, label: 'Juegos' },
-  { path: '/tests', icon: FileText, label: 'Tests' },
-  { path: '/estadisticas', icon: BarChart3, label: 'Estadísticas' },
-  { path: '/reportes', icon: FileText, label: 'Reportes' },
-  { path: '/configuracion', icon: Settings, label: 'Configuración' },
+  { path: '/dashboard', icon: LayoutGrid, label: 'Dashboard', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/pacientes', icon: Users, label: 'Pacientes', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/calendario', icon: Calendar, label: 'Calendario', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/juegos', icon: Gamepad2, label: 'Juegos', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/tests', icon: FileText, label: 'Tests', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/estadisticas', icon: BarChart3, label: 'Estadísticas', animateClass: 'group-hover:-translate-y-1 transition-transform duration-300' },
+  { path: '/reportes', icon: FileText, label: 'Reportes', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/configuracion', icon: Settings, label: 'Configuración', animateClass: 'group-hover:rotate-45 transition-transform duration-500' },
 ]
 
 export default function Sidebar() {
@@ -32,9 +32,9 @@ export default function Sidebar() {
     <div className="w-[260px] h-screen text-white fixed left-0 top-0 flex flex-col z-40" style={{ background: 'var(--ng-sidebar-bg)' }}>
 
       <div className="p-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--ng-sidebar-active)' }}>
-            <Brain className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110" style={{ background: 'var(--ng-sidebar-active)' }}>
+            <Brain className="w-6 h-6 text-white transition-transform duration-500 group-hover:rotate-12" />
           </div>
           <div>
             <p className="font-bold text-lg leading-none">NeuroGym</p>
@@ -58,22 +58,22 @@ export default function Sidebar() {
 
       <nav className="flex-1 px-4 py-4 overflow-y-auto space-y-1">
         <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider px-3 mb-3">Menú Principal</p>
-        {menu.map(({ path, icon: Icon, label }) => {
+        {menu.map(({ path, icon: Icon, label, animateClass }) => {
           const activo = pathname === path
           return (
             <Link
               key={path}
               to={path}
-              className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+              className={`group flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
                 activo
                   ? 'text-white shadow-lg'
                   : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`}
               style={activo ? { background: 'var(--ng-sidebar-active)', boxShadow: `0 10px 15px -3px color-mix(in srgb, var(--ng-primary) 30%, transparent)` } : {}}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              <Icon className={`w-5 h-5 flex-shrink-0 ${animateClass}`} />
               <span className="text-sm font-medium flex-1">{label}</span>
-              {activo && <ChevronRight className="w-4 h-4 opacity-70" />}
+              {activo && <ChevronRight className="w-4 h-4 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5" />}
             </Link>
           )
         })}
@@ -82,9 +82,9 @@ export default function Sidebar() {
       <div className="p-4 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition"
+          className="group flex items-center gap-3 w-full px-3 py-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-1" />
           <span className="text-sm font-medium">Cerrar Sesión</span>
         </button>
       </div>

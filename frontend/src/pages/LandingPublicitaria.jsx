@@ -13,9 +13,34 @@ import {
   Sparkles, 
   CheckCircle, 
   X, 
-  Play
+  Play,
+  Crown,
+  Lightbulb,
+  Rocket,
+  Search
 } from 'lucide-react';
 import FondoInteractivo3D from '../components/FondoInteractivo3D';
+
+// Componente auxiliar para cargar imágenes del juego de forma segura.
+// Si el archivo no existe (retorna error de carga), renderiza un ícono vectorial de Lucide con micro-animaciones.
+function SafeGameIcon({ src, alt, fallbackIcon: FallbackIcon, colorClass, animationClass }) {
+  const [error, setError] = useState(false);
+
+  return (
+    <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-white/10 group-hover:border-purple-500/30 transition-all duration-300">
+      {error ? (
+        <FallbackIcon className={`w-10 h-10 ${colorClass} ${animationClass}`} />
+      ) : (
+        <img 
+          src={src} 
+          alt={alt} 
+          className={`w-10 h-10 object-contain ${animationClass}`}
+          onError={() => setError(true)}
+        />
+      )}
+    </div>
+  );
+}
 
 export default function LandingPublicitaria() {
   const [showDemoModal, setShowDemoModal] = useState(false);
@@ -46,9 +71,9 @@ export default function LandingPublicitaria() {
 
       {/* NAVBAR */}
       <nav className="fixed top-0 w-full z-50 bg-black/30 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center transition-all duration-300">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 animate-pulse">
-            <Brain className="text-white w-6 h-6" />
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 transition-transform duration-300 group-hover:scale-110">
+            <Brain className="text-white w-6 h-6 transition-transform duration-500 group-hover:rotate-12" />
           </div>
           <div>
             <span className="text-2xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent tracking-wider">
@@ -249,20 +274,15 @@ export default function LandingPublicitaria() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Tarjeta 1 */}
-          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 flex flex-col justify-between">
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-16 h-16 bg-purple-500/10 border border-purple-500/30 rounded-2xl flex items-center justify-center mb-6">
-                <img 
-                  src="/images/game_cohete.png" 
-                  alt="Cohete" 
-                  className="w-10 h-10 object-contain error-fallback"
-                  onError={(e) => {
-                    // Fallback a SVG si la imagen no existe en disco
-                    e.target.style.display = 'none';
-                    e.target.parentNode.innerHTML = '🚀';
-                  }}
-                />
-              </div>
+              <SafeGameIcon 
+                src="/images/game_cohete.png" 
+                alt="Cohete" 
+                fallbackIcon={Rocket} 
+                colorClass="text-purple-400" 
+                animationClass="group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform duration-300"
+              />
               <h3 className="text-2xl font-bold text-white mb-4">Constructor de Cohetes</h3>
               <p className="text-gray-300 font-light leading-relaxed mb-6">
                 Entrenamiento de conciencia silábica. Los niños ordenan sílabas dispersas en el espacio para formar palabras correctamente. Al lograrlo, ¡su cohete despega a la siguiente galaxia!
@@ -272,19 +292,15 @@ export default function LandingPublicitaria() {
           </div>
 
           {/* Tarjeta 2 */}
-          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-pink-500/50 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)] transition-all duration-300 flex flex-col justify-between">
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-pink-500/50 hover:shadow-[0_0_30px_rgba(244,63,94,0.15)] transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-16 h-16 bg-pink-500/10 border border-pink-500/30 rounded-2xl flex items-center justify-center mb-6">
-                <img 
-                  src="/images/game_grafema.png" 
-                  alt="Lupa" 
-                  className="w-10 h-10 object-contain"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentNode.innerHTML = '🔍';
-                  }}
-                />
-              </div>
+              <SafeGameIcon 
+                src="/images/game_grafema.png" 
+                alt="Lupa" 
+                fallbackIcon={Search} 
+                colorClass="text-pink-400" 
+                animationClass="group-hover:scale-110 transition-transform duration-300"
+              />
               <h3 className="text-2xl font-bold text-white mb-4">La Caza del Grafema Perdido</h3>
               <p className="text-gray-300 font-light leading-relaxed mb-6">
                 Discriminación visual avanzada. El paciente debe encontrar la letra o sílaba faltante que completa la palabra clave, potenciando el reconocimiento visual a través de 10 niveles de dificultad.
@@ -294,19 +310,15 @@ export default function LandingPublicitaria() {
           </div>
 
           {/* Tarjeta 3 */}
-          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-300 flex flex-col justify-between">
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-3xl p-8 hover:border-indigo-500/50 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-16 h-16 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl flex items-center justify-center mb-6">
-                <img 
-                  src="/images/game_silabas.png" 
-                  alt="Destellos" 
-                  className="w-10 h-10 object-contain"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentNode.innerHTML = '✨';
-                  }}
-                />
-              </div>
+              <SafeGameIcon 
+                src="/images/game_silabas.png" 
+                alt="Destellos" 
+                fallbackIcon={Sparkles} 
+                colorClass="text-indigo-400" 
+                animationClass="group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300"
+              />
               <h3 className="text-2xl font-bold text-white mb-4">Sílabas Mágicas</h3>
               <p className="text-gray-300 font-light leading-relaxed mb-6">
                 Velocidad y fluidez de lectura. Ejercicios cronometrados de alta intensidad cognitiva donde el niño identifica rápidamente la primera sílaba de la palabra proyectada antes de que el tiempo expire.
@@ -430,10 +442,10 @@ export default function LandingPublicitaria() {
               </div>
 
               {/* Primer Lugar (Centro) */}
-              <div className="flex flex-col items-center w-32 relative">
+              <div className="flex flex-col items-center w-32 relative group/podio">
                 <div className="absolute -top-10 flex flex-col items-center">
-                  <div className="w-8 h-8 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center font-bold text-lg shadow-lg border-2 border-white animate-bounce">
-                    👑
+                  <div className="w-8 h-8 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center font-bold text-lg shadow-lg border-2 border-white animate-bounce group-hover/podio:scale-110 transition-transform duration-200">
+                    <Crown className="w-4 h-4 text-yellow-900" />
                   </div>
                 </div>
                 <div className="mb-2 text-center">
@@ -632,8 +644,9 @@ export default function LandingPublicitaria() {
                   <button className="bg-white/5 border border-white/10 hover:bg-purple-600 hover:border-purple-400 rounded-xl py-4 font-bold text-lg text-white transition">MA</button>
                 </div>
 
-                <div className="mt-10 p-3 bg-purple-500/10 text-purple-300 rounded-xl text-xs border border-purple-500/20">
-                  💡 Pista: Es un vehículo espacial que viaja a las estrellas.
+                <div className="mt-10 p-3 bg-purple-500/10 text-purple-300 rounded-xl text-xs border border-purple-500/20 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-purple-300 flex-shrink-0 animate-pulse" />
+                  <span>Pista: Es un vehículo espacial que viaja a las estrellas.</span>
                 </div>
               </div>
             </div>
