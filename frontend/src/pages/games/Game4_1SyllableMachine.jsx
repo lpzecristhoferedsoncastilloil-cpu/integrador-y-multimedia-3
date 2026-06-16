@@ -4,7 +4,7 @@ import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import { Settings, Play, Info, HelpCircle } from 'lucide-react';
 import api from '../../services/api';
 
-// SVG drawings representing prefix concepts for 10-year-olds
+// SVG drawings for 7-year-olds
 const DrawingSVG = ({ type }) => {
   const normType = type.toLowerCase()
     .replace('é', 'e')
@@ -14,135 +14,199 @@ const DrawingSVG = ({ type }) => {
     .replace('ú', 'u');
 
   switch (normType) {
-    case 'despeinar':
+    case 'perro':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#f43f5e" />
-          <path d="M 25 50 L 75 50 M 25 50 L 25 60 M 35 50 L 35 60 M 45 50 L 45 60 M 55 50 L 55 60 M 65 50 L 65 60 M 75 50 L 75 60" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-          <path d="M 40 30 L 60 42 M 60 30 L 40 42" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="40" cy="30" r="3" stroke="#ffffff" strokeWidth="2" fill="none" />
-          <circle cx="60" cy="30" r="3" stroke="#ffffff" strokeWidth="2" fill="none" />
+          <circle cx="50" cy="50" r="40" fill="#d97706" />
+          <ellipse cx="30" cy="50" rx="6" ry="10" fill="#fef08a" />
+          <ellipse cx="70" cy="50" rx="6" ry="10" fill="#fef08a" />
+          <path d="M 20 20 Q 10 40 25 50" stroke="#d97706" strokeWidth="8" fill="none" strokeLinecap="round" />
+          <path d="M 80 20 Q 90 40 75 50" stroke="#d97706" strokeWidth="8" fill="none" strokeLinecap="round" />
+          <circle cx="40" cy="45" r="5" fill="#000" />
+          <circle cx="60" cy="45" r="5" fill="#000" />
+          <polygon points="45,55 55,55 50,62" fill="#000" />
+          <path d="M 45 68 Q 50 72 55 68" stroke="#000" strokeWidth="3" fill="none" />
         </svg>
       );
-    case 'injusto':
+    case 'gato':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#64748b" />
-          <line x1="50" y1="20" x2="50" y2="75" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-          <line x1="30" y1="75" x2="70" y2="75" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-          <line x1="25" y1="30" x2="75" y2="45" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-          <line x1="25" y1="30" x2="20" y2="55" stroke="#ffffff" strokeWidth="2" />
-          <line x1="25" y1="30" x2="30" y2="55" stroke="#ffffff" strokeWidth="2" />
-          <path d="M 15 55 Q 25 60 35 55 Z" fill="#ffffff" />
-          <line x1="75" y1="45" x2="70" y2="70" stroke="#ffffff" strokeWidth="2" />
-          <line x1="75" y1="45" x2="80" y2="70" stroke="#ffffff" strokeWidth="2" />
-          <path d="M 65 70 Q 75 75 85 70 Z" fill="#ffffff" />
+          <circle cx="50" cy="55" r="35" fill="#94a3b8" />
+          <polygon points="20,35 30,10 45,30" fill="#94a3b8" />
+          <polygon points="80,35 70,10 55,30" fill="#94a3b8" />
+          <polygon points="23,32 30,15 40,28" fill="#fda4af" />
+          <polygon points="77,32 70,15 60,28" fill="#fda4af" />
+          <ellipse cx="40" cy="50" rx="4" ry="6" fill="#22c55e" />
+          <ellipse cx="60" cy="50" rx="4" ry="6" fill="#22c55e" />
+          <circle cx="40" cy="50" r="2" fill="#000" />
+          <circle cx="60" cy="50" r="2" fill="#000" />
+          <polygon points="47,60 53,60 50,64" fill="#fda4af" />
+          <line x1="25" y1="58" x2="10" y2="56" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="25" y1="62" x2="8" y2="64" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="75" y1="58" x2="90" y2="56" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="75" y1="62" x2="92" y2="64" stroke="#e2e8f0" strokeWidth="2" />
         </svg>
       );
-    case 'desatar':
+    case 'mono':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#0d9488" />
-          <path d="M 15 50 Q 30 35 42 50" stroke="#ffffff" strokeWidth="6" fill="none" strokeLinecap="round" />
-          <path d="M 85 50 Q 70 65 58 50" stroke="#ffffff" strokeWidth="6" fill="none" strokeLinecap="round" />
-          <line x1="50" y1="35" x2="50" y2="42" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-          <line x1="50" y1="65" x2="50" y2="58" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="20" cy="45" r="12" fill="#78350f" />
+          <circle cx="80" cy="45" r="12" fill="#78350f" />
+          <circle cx="20" cy="45" r="7" fill="#fbcfe8" />
+          <circle cx="80" cy="45" r="7" fill="#fbcfe8" />
+          <circle cx="50" cy="50" r="35" fill="#78350f" />
+          <ellipse cx="40" cy="52" rx="15" ry="18" fill="#fbcfe8" />
+          <ellipse cx="60" cy="52" rx="15" ry="18" fill="#fbcfe8" />
+          <ellipse cx="50" cy="62" rx="20" ry="15" fill="#fbcfe8" />
+          <circle cx="42" cy="45" r="3" fill="#000" />
+          <circle cx="58" cy="45" r="3" fill="#000" />
+          <ellipse cx="50" cy="54" rx="3" ry="2" fill="#000" />
+          <path d="M 42 63 Q 50 69 58 63" stroke="#000" strokeWidth="2.5" fill="none" />
         </svg>
       );
-    case 'reescribir':
+    case 'rana':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#0284c7" />
-          <rect x="30" y="25" width="35" height="45" rx="3" fill="#ffffff" />
-          <line x1="37" y1="35" x2="58" y2="35" stroke="#94a3b8" strokeWidth="2.5" />
-          <line x1="37" y1="45" x2="58" y2="45" stroke="#94a3b8" strokeWidth="2.5" />
-          <line x1="37" y1="55" x2="50" y2="55" stroke="#94a3b8" strokeWidth="2.5" />
-          <path d="M 52 65 L 75 35 L 80 40 L 57 70 Z" fill="#eab308" />
-          <polygon points="52,65 50,72 57,70" fill="#000" />
-          <path d="M 25 75 A 15 15 0 0 1 45 75" fill="none" stroke="#facc15" strokeWidth="3" strokeLinecap="round" />
-          <polygon points="45,71 49,75 45,79" fill="#facc15" />
+          <circle cx="35" cy="30" r="12" fill="#22c55e" />
+          <circle cx="65" cy="30" r="12" fill="#22c55e" />
+          <circle cx="35" cy="30" r="8" fill="#fff" />
+          <circle cx="65" cy="30" r="8" fill="#fff" />
+          <circle cx="35" cy="30" r="4" fill="#000" />
+          <circle cx="65" cy="30" r="4" fill="#000" />
+          <ellipse cx="50" cy="55" rx="38" ry="28" fill="#22c55e" />
+          <circle cx="24" cy="58" r="6" fill="#fda4af" />
+          <circle cx="76" cy="58" r="6" fill="#fda4af" />
+          <path d="M 36 62 Q 50 72 64 62" stroke="#15803d" strokeWidth="3.5" fill="none" strokeLinecap="round" />
         </svg>
       );
-    case 'subsuelo':
+    case 'lobo':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#15803d" />
-          <rect x="20" y="25" width="60" height="10" fill="#22c55e" />
-          <rect x="20" y="35" width="60" height="20" fill="#b45309" />
-          <rect x="20" y="55" width="60" height="20" fill="#475569" />
-          <line x1="50" y1="20" x2="50" y2="48" stroke="#ffffff" strokeWidth="3.5" />
-          <rect x="42" y="16" width="16" height="4" fill="#ffffff" />
-          <polygon points="44,48 56,48 50,60" fill="#cbd5e1" />
+          <polygon points="25,35 20,10 40,30" fill="#64748b" />
+          <polygon points="75,35 80,10 60,30" fill="#64748b" />
+          <circle cx="50" cy="55" r="32" fill="#64748b" />
+          <polygon points="20,55 10,65 30,65" fill="#475569" />
+          <polygon points="80,55 90,65 70,65" fill="#475569" />
+          <polygon points="45,55 55,55 50,78" fill="#475569" />
+          <polygon points="34,46 44,48 40,42" fill="#eab308" />
+          <polygon points="66,46 56,48 60,42" fill="#eab308" />
+          <circle cx="39" cy="45" r="1.5" fill="#000" />
+          <circle cx="61" cy="45" r="1.5" fill="#000" />
+          <ellipse cx="50" cy="74" rx="4" ry="3" fill="#000" />
         </svg>
       );
-    case 'inutil':
+    case 'pato':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#4b5563" />
-          <circle cx="50" cy="50" r="22" stroke="#ffffff" strokeWidth="6" fill="none" />
-          <line x1="32" y1="32" x2="68" y2="68" stroke="#ef4444" strokeWidth="6" strokeLinecap="round" />
+          <circle cx="50" cy="45" r="28" fill="#facc15" />
+          <ellipse cx="42" cy="40" rx="3" ry="5" fill="#000" />
+          <ellipse cx="58" cy="40" rx="3" ry="5" fill="#000" />
+          <ellipse cx="50" cy="54" rx="14" ry="7" fill="#f97316" />
+          <line x1="38" y1="54" x2="62" y2="54" stroke="#c2410c" strokeWidth="1.5" />
         </svg>
       );
-    case 'television':
+    case 'vaca':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#1e293b" />
-          <rect x="22" y="32" width="56" height="42" rx="6" fill="#475569" stroke="#ffffff" strokeWidth="3" />
-          <rect x="28" y="38" width="36" height="30" fill="#000000" />
-          <line x1="50" y1="32" x2="35" y2="15" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-          <line x1="50" y1="32" x2="65" y2="15" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-          <circle cx="35" cy="15" r="3" fill="#ef4444" />
-          <circle cx="65" cy="15" r="3" fill="#ef4444" />
-          <circle cx="70" cy="44" r="3" fill="#ffffff" />
-          <circle cx="70" cy="52" r="3" fill="#ffffff" />
+          <circle cx="50" cy="45" r="30" fill="#fff" stroke="#cbd5e1" strokeWidth="2" />
+          <path d="M 24 30 Q 30 25 35 32 Z" fill="#000" />
+          <path d="M 70 30 Q 75 40 65 45 Z" fill="#000" />
+          <ellipse cx="50" cy="60" rx="22" ry="12" fill="#fda4af" />
+          <circle cx="43" cy="60" r="2.5" fill="#e11d48" />
+          <circle cx="57" cy="60" r="2.5" fill="#e11d48" />
+          <circle cx="38" cy="40" r="3.5" fill="#000" />
+          <circle cx="62" cy="40" r="3.5" fill="#000" />
+          <ellipse cx="16" cy="35" rx="8" ry="14" fill="#fff" stroke="#cbd5e1" strokeWidth="1.5" transform="rotate(-30 16 35)" />
+          <ellipse cx="84" cy="35" rx="8" ry="14" fill="#fff" stroke="#cbd5e1" strokeWidth="1.5" transform="rotate(30 84 35)" />
         </svg>
       );
-    case 'antivirus':
+    case 'loro':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#4338ca" />
-          <path d="M 32 30 L 50 20 L 68 30 C 68 50 50 68 50 68 C 50 68 32 50 32 30 Z" fill="#2563eb" stroke="#ffffff" strokeWidth="3.5" strokeLinejoin="round" />
-          <path d="M 42 45 L 48 51 L 58 39" stroke="#10b981" strokeWidth="4.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="50" cy="45" r="28" fill="#22c55e" />
+          <ellipse cx="40" cy="40" rx="3.5" ry="5.5" fill="#fff" />
+          <ellipse cx="60" cy="40" rx="3.5" ry="5.5" fill="#fff" />
+          <circle cx="40" cy="40" r="2" fill="#000" />
+          <circle cx="60" cy="40" r="2" fill="#000" />
+          <polygon points="46,48 54,48 50,65" fill="#f59e0b" />
+          <path d="M 22 40 C 15 50 18 65 24 70" stroke="#3b82f6" strokeWidth="6" fill="none" strokeLinecap="round" />
+          <path d="M 78 40 C 85 50 82 65 76 70" stroke="#ef4444" strokeWidth="6" fill="none" strokeLinecap="round" />
         </svg>
       );
-    case 'prehistoria':
+    case 'oso':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#78350f" />
-          <line x1="30" y1="68" x2="70" y2="52" stroke="#451a03" strokeWidth="6" strokeLinecap="round" />
-          <line x1="30" y1="52" x2="70" y2="68" stroke="#451a03" strokeWidth="6" strokeLinecap="round" />
-          <path d="M 50 20 C 62 38 58 60 50 62 C 42 60 38 38 50 20 Z" fill="#ef4444" />
-          <path d="M 50 32 C 58 45 55 58 50 60 C 45 58 42 45 50 32 Z" fill="#f97316" />
-          <path d="M 50 42 C 54 50 52 58 50 59 C 48 58 46 50 50 42 Z" fill="#facc15" />
+          <circle cx="25" cy="30" r="10" fill="#7c2d12" />
+          <circle cx="75" cy="30" r="10" fill="#7c2d12" />
+          <circle cx="25" cy="30" r="5" fill="#ffedd5" />
+          <circle cx="75" cy="30" r="5" fill="#ffedd5" />
+          <circle cx="50" cy="52" r="32" fill="#7c2d12" />
+          <ellipse cx="50" cy="62" rx="14" ry="10" fill="#ffedd5" />
+          <circle cx="38" cy="46" r="3.5" fill="#000" />
+          <circle cx="62" cy="46" r="3.5" fill="#000" />
+          <ellipse cx="50" cy="58" rx="3.5" ry="2.5" fill="#000" />
         </svg>
       );
-    case 'superheroe':
+    case 'sol':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#b91c1c" />
-          <polygon points="50,22 58,38 76,41 63,54 66,72 50,64 34,72 37,54 24,41 42,38" fill="#facc15" stroke="#ffffff" strokeWidth="2.5" strokeLinejoin="round" />
+          <circle cx="50" cy="50" r="22" fill="#f59e0b" />
+          <circle cx="50" cy="50" r="16" fill="#eab308" />
+          <path d="M 50 10 L 50 22 M 50 78 L 50 90 M 10 50 L 22 50 M 78 50 L 90 50 M 22 22 L 31 31 M 69 69 L 78 78 M 22 69 L 31 60 M 69 22 L 60 31" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" />
         </svg>
       );
-    case 'contradecir':
+    case 'pez':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#312e81" />
-          <rect x="22" y="28" width="34" height="22" rx="4" fill="#f43f5e" />
-          <polygon points="28,50 34,50 30,55" fill="#f43f5e" />
-          <line x1="30" y1="39" x2="48" y2="39" stroke="#ffffff" strokeWidth="2.5" />
-          <rect x="44" y="44" width="34" height="22" rx="4" fill="#06b6d4" />
-          <polygon points="72,66 66,66 70,71" fill="#06b6d4" />
-          <line x1="52" y1="55" x2="70" y2="55" stroke="#ffffff" strokeWidth="2.5" />
+          <path d="M 15 50 Q 45 20 80 50 Q 45 80 15 50 Z" fill="#fb923c" />
+          <polygon points="15,50 5,35 5,65" fill="#f97316" />
+          <circle cx="68" cy="45" r="3" fill="#000" />
+          <path d="M 72 52 Q 68 55 64 52" stroke="#fff" strokeWidth="2.5" fill="none" />
         </svg>
       );
-    case 'multicolor':
+    case 'casa':
       return (
         <svg viewBox="0 0 100 100" className="w-16 h-16">
-          <circle cx="50" cy="50" r="40" fill="#e2e8f0" />
-          <path d="M 50 50 L 50 14 A 36 36 0 0 1 86 50 Z" fill="#ef4444" />
-          <path d="M 50 50 L 86 50 A 36 36 0 0 1 50 86 Z" fill="#10b981" />
-          <path d="M 50 50 L 50 86 A 36 36 0 0 1 14 50 Z" fill="#3b82f6" />
-          <path d="M 50 50 L 14 50 A 36 36 0 0 1 50 14 Z" fill="#facc15" />
+          <polygon points="50,15 15,45 85,45" fill="#ef4444" />
+          <rect x="25" y="45" width="50" height="40" fill="#fcd34d" />
+          <rect x="42" y="58" width="16" height="27" fill="#b45309" />
+          <rect x="30" y="50" width="12" height="12" fill="#38bdf8" />
+          <rect x="58" y="50" width="12" height="12" fill="#38bdf8" />
+        </svg>
+      );
+    case 'luna':
+      return (
+        <svg viewBox="0 0 100 100" className="w-16 h-16">
+          <path d="M 65 20 A 35 35 0 1 0 65 90 A 28 28 0 1 1 65 20" fill="#fef08a" stroke="#facc15" strokeWidth="1" />
+          <circle cx="42" cy="45" r="2.5" fill="#ca8a04" />
+          <path d="M 38 56 Q 44 60 40 52" stroke="#ca8a04" strokeWidth="2" fill="none" />
+        </svg>
+      );
+    case 'flor':
+      return (
+        <svg viewBox="0 0 100 100" className="w-16 h-16">
+          <circle cx="50" cy="32" r="14" fill="#ec4899" />
+          <circle cx="50" cy="68" r="14" fill="#ec4899" />
+          <circle cx="32" cy="50" r="14" fill="#ec4899" />
+          <circle cx="68" cy="50" r="14" fill="#ec4899" />
+          <circle cx="37" cy="37" r="14" fill="#ec4899" />
+          <circle cx="63" cy="63" r="14" fill="#ec4899" />
+          <circle cx="37" cy="63" r="14" fill="#ec4899" />
+          <circle cx="63" cy="37" r="14" fill="#ec4899" />
+          <circle cx="50" cy="50" r="14" fill="#eab308" />
+        </svg>
+      );
+    case 'coche':
+      return (
+        <svg viewBox="0 0 100 100" className="w-16 h-16">
+          <path d="M 15 65 L 15 50 Q 15 45 25 45 L 35 45 Q 40 30 50 30 L 75 30 Q 85 30 85 45 L 85 65 Z" fill="#3b82f6" />
+          <rect x="25" y="48" width="55" height="17" fill="#2563eb" />
+          <polygon points="38,45 42,34 52,34 52,45" fill="#cbd5e1" />
+          <rect x="56" y="34" width="22" height="11" fill="#cbd5e1" />
+          <circle cx="32" cy="70" r="12" fill="#1e293b" />
+          <circle cx="32" cy="70" r="5" fill="#94a3b8" />
+          <circle cx="68" cy="70" r="12" fill="#1e293b" />
+          <circle cx="68" cy="70" r="5" fill="#94a3b8" />
         </svg>
       );
     default:
@@ -150,43 +214,43 @@ const DrawingSVG = ({ type }) => {
   }
 };
 
-// Word recipes grouped by 6 levels (3 words per level)
+// Word recipes grouped by 6 levels (3 words per level) - Adapted for 7-year-olds
 const LEVELS_RECIPES = [
-  // Level 1: Very Easy (2 parts, prefix visible)
+  // Level 1: Very Easy (2 parts)
   [
-    { parts: ['DES', 'PEINAR'], full: 'DESPEINAR', meaning: '¿Cómo está tu cabello al despertarte de la cama?' },
-    { parts: ['IN', 'JUSTO'], full: 'INJUSTO', meaning: '¿Qué sientes cuando una acción no es equitativa?' },
-    { parts: ['DES', 'ATAR'], full: 'DESATAR', meaning: '¿Qué le haces a un nudo ciego para poder soltarlo?' },
+    { parts: ['CA', 'SA'], full: 'CASA', meaning: '¿En dónde vives bonito con toda tu familia?' },
+    { parts: ['MO', 'NO'], full: 'MONO', meaning: '¿Qué animal travieso come plátanos y salta en los árboles?' },
+    { parts: ['PA', 'TO'], full: 'PATO', meaning: 'Ave con plumas que nada y hace cua-cua' },
   ],
-  // Level 2: Easy (2 parts, prefix visible)
+  // Level 2: Easy (2 parts)
   [
-    { parts: ['RE', 'ESCRIBIR'], full: 'REESCRIBIR', meaning: '¿Qué haces para corregir y mejorar un texto escrito?' },
-    { parts: ['SUB', 'SUELO'], full: 'SUBSUELO', meaning: '¿Cómo se le llama a la capa oculta bajo la tierra?' },
-    { parts: ['IN', 'ÚTIL'], full: 'INÚTIL', meaning: '¿Cómo calificas a un objeto que ya no sirve para nada?' },
+    { parts: ['GA', 'TO'], full: 'GATO', meaning: 'Mascota muy suave que hace miau y ronronea' },
+    { parts: ['LU', 'NA'], full: 'LUNA', meaning: '¿Qué brilla en el cielo oscuro cuando nos vamos a dormir?' },
+    { parts: ['O', 'SO'], full: 'OSO', meaning: 'Animal grande y peludo que duerme en invierno' },
   ],
-  // Level 3: Medium (2 parts, prefix visible)
+  // Level 3: Medium (2 parts)
   [
-    { parts: ['TELE', 'VISIÓN'], full: 'TELEVISIÓN', meaning: '¿En qué pantalla ves tus series y dibujos animados?' },
-    { parts: ['ANTI', 'VIRUS'], full: 'ANTIVIRUS', meaning: '¿Qué escudo protege tu computadora de archivos malos?' },
-    { parts: ['PRE', 'HISTORIA'], full: 'PREHISTORIA', meaning: '¿En qué época lejana vivían los grandes dinosaurios?' },
+    { parts: ['RA', 'NA'], full: 'RANA', meaning: 'Animalito verde que salta y canta cruac-cruac' },
+    { parts: ['LO', 'BO'], full: 'LOBO', meaning: 'Animal salvaje del bosque que aúlla a la luna' },
+    { parts: ['LO', 'RO'], full: 'LORO', meaning: 'Ave de plumas verdes que repite tus palabras' },
   ],
-  // Level 4: Medium-Hard (2 parts, prefix visible)
+  // Level 4: Medium-Hard (2 parts)
   [
-    { parts: ['SUPER', 'HÉROE'], full: 'SUPERHÉROE', meaning: '¿Quién vuela con capa, tiene poderes y salva a la gente?' },
-    { parts: ['CONTRA', 'DECIR'], full: 'CONTRADECIR', meaning: '¿Qué haces al afirmar lo opuesto de lo que otro dice?' },
-    { parts: ['MULTI', 'COLOR'], full: 'MULTICOLOR', meaning: '¿Cómo describes un objeto lleno de muchos colores?' },
+    { parts: ['CO', 'CHE'], full: 'COCHE', meaning: 'Vehículo para pasear con ruedas y motor' },
+    { parts: ['VA', 'CA'], full: 'VACA', meaning: 'Animal del campo que da leche y hace muuu' },
+    { parts: ['PE', 'RRO'], full: 'PERRO', meaning: 'Tu fiel amigo peludo que ladra y hace guau' },
   ],
-  // Level 5: Hard (3 parts, all empty slots to be filled!)
+  // Level 5: Hard (3 parts, empty slots, simple 3-syllable words)
   [
-    { parts: ['IN', 'ROM', 'PIBLE'], full: 'INROMPIBLE', meaning: 'Algo sumamente resistente que no se puede romper' },
-    { parts: ['DES', 'COLO', 'RAR'], full: 'DESCOLORAR', meaning: 'Quitar o perder el color de un objeto o prenda' },
-    { parts: ['SUB', 'MA', 'RINO'], full: 'SUBMARINO', meaning: 'Nave o barco capaz de viajar bajo el agua del mar' },
+    { parts: ['PE', 'LO', 'TA'], full: 'PELOTA', meaning: 'Juguete redondo que rueda y usamos para jugar al fútbol' },
+    { parts: ['ZA', 'PA', 'TO'], full: 'ZAPATO', meaning: 'Prenda que nos ponemos en los pies para salir a correr' },
+    { parts: ['TO', 'MA', 'TE'], full: 'TOMATE', meaning: 'Verdura roja, redonda y muy rica en las ensaladas' },
   ],
-  // Level 6: Very Hard (3 parts, all empty slots to be filled!)
+  // Level 6: Very Hard (3 parts, empty slots, simple 3-syllable words)
   [
-    { parts: ['SUPER', 'MERC', 'ADO'], full: 'SUPERMERCADO', meaning: 'Establecimiento comercial grande de alimentos' },
-    { parts: ['IN', 'COM', 'PLETO'], full: 'INCOMPLETO', meaning: 'Que le falta alguna parte y no está terminado' },
-    { parts: ['DES', 'A', 'CORDAR'], full: 'DESACORDAR', meaning: 'No estar de acuerdo o romper el consenso' },
+    { parts: ['CA', 'MI', 'SA'], full: 'CAMISA', meaning: 'Prenda de vestir con botones y mangas largas' },
+    { parts: ['PA', 'JA', 'RO'], full: 'PÁJARO', meaning: 'Animalito con plumas que canta por las mañanas' },
+    { parts: ['CO', 'CI', 'NA'], full: 'COCINA', meaning: 'El lugar de la casa donde se prepara la comida deliciosa' },
   ],
 ];
 
@@ -307,7 +371,7 @@ const SyllableBlock = (props) => {
   );
 };
 
-const Game4SyllableMachine = ({ player, onFinish }) => {
+const Game4_1SyllableMachine = ({ player, onFinish }) => {
 
   const playCorrectSound = () => {
     try {
@@ -502,7 +566,7 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
         setCorrectCount(newCorrectCount);
       playCorrectSound();;
       playCorrectSound();
-        setFeedback(`¡CORRECTO! ${recipeParts.join(' + ')} = ${recipe.full}`);
+        setFeedback(`¡EXCELENTE! ${recipeParts.join(' + ')} = ${recipe.full}`);
         
         setTimeout(() => {
           setSelectedBlocks([]);
@@ -526,7 +590,7 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
           }
         }, 2000);
       } else {
-        setFeedback(`¡Bien! "${block.text}" colocado. Sigue con la siguiente parte.`);
+        setFeedback(`¡Muy bien! "${block.text}" colocado. Sigue con la siguiente sílaba.`);
         setTimeout(() => setFeedback(''), 1500);
       }
     } else {
@@ -537,7 +601,7 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
   const handleIncorrectClick = () => {
     const newIncorrectCount = incorrectCount + 1;
     setIncorrectCount(newIncorrectCount);
-    setFeedback('¡ERROR! Cortocircuito - Banda atascada 3s');
+    setFeedback('¡ERROR! Banda atascada por 3 segundos');
     setJamUntil(Date.now() + 3000);
     setSelectedBlocks([]); // Reset selection for this word attempt
 
@@ -587,8 +651,8 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
       {/* HUD (Glassmorphic) */}
       <div className="absolute top-4 left-4 p-5 bg-slate-900/80 backdrop-blur-md border border-indigo-500/20 rounded-2xl text-white shadow-xl z-10 font-sans">
         <div className="text-sm space-y-1.5">
-          <div className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Línea de Ensamblaje</div>
-          <div className="text-base font-extrabold text-purple-300">Nivel: {currentLevel} / 6</div>
+          <div className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Fábrica de Sílabas (7 años)</div>
+          <div className="text-base font-extrabold text-cyan-300">Nivel: {currentLevel} / 6</div>
           <div className="text-sm font-semibold text-indigo-300">Progreso Nivel: {levelScore} / {LEVEL_WIN_SCORE}</div>
           <div className="text-xs text-emerald-400 font-medium">Puntaje Total: {correctCount * 200}</div>
           <div className="text-xs text-rose-400 font-bold">Errores: {incorrectCount} / {MAX_FAILS}</div>
@@ -596,7 +660,7 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
             {selectedBlocks.length > 0 ? (
               <span>Armando: {selectedBlocks.map(b => b.text).join(' + ')}</span>
             ) : (
-              <span>Selecciona un bloque para comenzar</span>
+              <span>Elige una sílaba para armar la palabra</span>
             )}
           </div>
         </div>
@@ -606,7 +670,7 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 p-5 bg-slate-900/80 backdrop-blur-md border border-indigo-500/20 rounded-2xl text-white shadow-xl max-w-sm text-center z-10">
         <div className="font-sans text-sm flex flex-col items-center">
           <div className="text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
-            <Info className="w-3.5 h-3.5 text-purple-400 animate-pulse" /> ENSAMBLA LA PALABRA
+            <Info className="w-3.5 h-3.5 text-cyan-400 animate-pulse" /> PALABRA A ARMAR
           </div>
           
           {/* Level 1-4 Drawing Help */}
@@ -619,11 +683,11 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
           <div className="text-indigo-200 font-bold mb-1 text-sm">
             {recipe.parts.length === 2 ? (
               <>
-                Combina: <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 1 ? selectedBlocks[0].text : '[Prefijo]'}</span> + <span className="text-cyan-400 font-black">{selectedBlocks.length >= 2 ? selectedBlocks[1].text : '[Sufijo]'}</span>
+                Arma: <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 1 ? selectedBlocks[0].text : '¿?'}</span> + <span className="text-cyan-400 font-black">{selectedBlocks.length >= 2 ? selectedBlocks[1].text : '¿?'}</span>
               </>
             ) : (
               <>
-                Combina: <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 1 ? selectedBlocks[0].text : '[Prefijo]'}</span> + <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 2 ? selectedBlocks[1].text : '[Raíz]'}</span> + <span className="text-cyan-400 font-black">{selectedBlocks.length >= 3 ? selectedBlocks[2].text : '[Sufijo]'}</span>
+                Arma: <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 1 ? selectedBlocks[0].text : '¿?'}</span> + <span className="text-pink-400 font-extrabold">{selectedBlocks.length >= 2 ? selectedBlocks[1].text : '¿?'}</span> + <span className="text-cyan-400 font-black">{selectedBlocks.length >= 3 ? selectedBlocks[2].text : '¿?'}</span>
               </>
             )}
           </div>
@@ -673,18 +737,18 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
             
             <div className="space-y-4 text-sm text-gray-200">
               <p>
-                Combina las partes correctas (prefijos, raíces, sufijos) en las dos líneas de montaje paralelas para construir la palabra de la pista.
+                Elige y combina las sílabas correctas para formar la palabra descrita en la pista central de la pantalla.
               </p>
               
               <div className="space-y-2">
                 <h4 className="font-bold text-indigo-200 text-xs">Pasos para jugar:</h4>
                 <ul className="list-decimal list-inside space-y-1.5 pl-1 text-xs">
-                  <li>Mira el dibujo de ayuda y lee la pista (ej. El dibujo de <b>INJUSTO</b>).</li>
-                  <li>Selecciona las partes correspondientes en orden (ej: <b>IN</b> en la banda de atrás y luego <b>JUSTO</b> en la banda de adelante).</li>
-                  <li>Los bloques <b>Rosas (Prefijos/Raíces)</b> avanzan en la banda de atrás (de izquierda a derecha).</li>
-                  <li>Los bloques <b>Azules (Sufijos)</b> avanzan en la banda de adelante (de derecha a izquierda).</li>
-                  <li>En los niveles 5 y 6, debes armar palabras de 3 partes en orden guiándote por la pista de texto.</li>
-                  <li>¡Evita fallar 10 veces para no sobrecargar el sistema!</li>
+                  <li>Mira el dibujo de ayuda y lee la pista (ej. El dibujo de una <b>CASA</b>).</li>
+                  <li>Selecciona las dos sílabas correspondientes (ej: <b>CA</b> en la banda de atrás y luego <b>SA</b> en la banda de adelante).</li>
+                  <li>Las sílabas de atrás <b>Rosas</b> van de izquierda a derecha.</li>
+                  <li>Las sílabas de adelante <b>Azules</b> van de derecha a izquierda.</li>
+                  <li>En los niveles 5 y 6, debes armar palabras de 3 sílabas en orden guiándote por la pista de texto.</li>
+                  <li>¡No te equivoques más de 10 veces!</li>
                 </ul>
               </div>
               
@@ -694,24 +758,24 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
                 {/* Visual indicator of correct */}
                 <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5">
                   <div className="flex gap-1.5">
-                    <div className="w-8 h-6 bg-emerald-500 rounded flex items-center justify-center text-[10px] font-black text-white">DES</div>
-                    <div className="w-11 h-6 bg-emerald-500 rounded flex items-center justify-center text-[9px] font-black text-white">PEINAR</div>
+                    <div className="w-8 h-6 bg-emerald-500 rounded flex items-center justify-center text-[10px] font-black text-white">CA</div>
+                    <div className="w-8 h-6 bg-emerald-500 rounded flex items-center justify-center text-[10px] font-black text-white">SA</div>
                   </div>
                   <div className="text-xs">
                     <strong className="text-emerald-400 text-xs animate-pulse">¡CORRECTO! 🟢</strong>
-                    <p className="text-[10px] text-gray-300">Si se ensamblan bien, sumas progreso.</p>
+                    <p className="text-[10px] text-gray-300">Si lo haces bien, sumas progreso.</p>
                   </div>
                 </div>
 
                 {/* Visual indicator of incorrect */}
                 <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/30 rounded-xl p-2.5">
                   <div className="flex gap-1.5">
-                    <div className="w-8 h-6 bg-rose-500 rounded flex items-center justify-center text-[10px] font-black text-white">IN</div>
-                    <div className="w-8 h-6 bg-cyan-500 rounded flex items-center justify-center text-[10px] font-black text-white">VIRUS</div>
+                    <div className="w-8 h-6 bg-rose-500 rounded flex items-center justify-center text-[10px] font-black text-white">BO</div>
+                    <div className="w-8 h-6 bg-cyan-500 rounded flex items-center justify-center text-[10px] font-black text-white">SA</div>
                   </div>
                   <div className="text-xs">
                     <strong className="text-rose-400 text-xs animate-pulse">¡INCORRECTO! 🔴</strong>
-                    <p className="text-[10px] text-gray-300">Si fallas, la banda se atascará 3 segundos. Máximo 10 fallas.</p>
+                    <p className="text-[10px] text-gray-300">Si te equivocas, la máquina se detiene 3 segundos.</p>
                   </div>
                 </div>
               </div>
@@ -730,4 +794,4 @@ const Game4SyllableMachine = ({ player, onFinish }) => {
   );
 };
 
-export default Game4SyllableMachine;
+export default Game4_1SyllableMachine;

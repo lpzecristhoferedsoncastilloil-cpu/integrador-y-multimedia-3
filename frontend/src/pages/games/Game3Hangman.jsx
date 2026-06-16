@@ -4,6 +4,326 @@ import { OrbitControls, PerspectiveCamera, Text } from '@react-three/drei';
 import { HelpCircle, RefreshCw, LogOut, Trophy } from 'lucide-react';
 import api from '../../services/api';
 
+// SVG drawings representing hints for the target words
+const DrawingSVG = ({ type }) => {
+  const normType = type.toLowerCase()
+    .replace('é', 'e')
+    .replace('í', 'i')
+    .replace('ó', 'o')
+    .replace('á', 'a')
+    .replace('ú', 'u');
+
+  switch (normType) {
+    case 'sol':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="22" fill="#f59e0b" />
+          <circle cx="50" cy="50" r="16" fill="#eab308" />
+          <path d="M 50 10 L 50 22 M 50 78 L 50 90 M 10 50 L 22 50 M 78 50 L 90 50 M 22 22 L 31 31 M 69 69 L 78 78 M 22 69 L 31 60 M 69 22 L 60 31" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+      );
+    case 'casa':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <polygon points="50,15 15,45 85,45" fill="#ef4444" />
+          <rect x="25" y="45" width="50" height="40" fill="#fcd34d" />
+          <rect x="42" y="58" width="16" height="27" fill="#b45309" />
+          <rect x="30" y="50" width="12" height="12" fill="#38bdf8" />
+          <rect x="58" y="50" width="12" height="12" fill="#38bdf8" />
+        </svg>
+      );
+    case 'gato':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="55" r="35" fill="#94a3b8" />
+          <polygon points="20,35 30,10 45,30" fill="#94a3b8" />
+          <polygon points="80,35 70,10 55,30" fill="#94a3b8" />
+          <polygon points="23,32 30,15 40,28" fill="#fda4af" />
+          <polygon points="77,32 70,15 60,28" fill="#fda4af" />
+          <ellipse cx="40" cy="50" rx="4" ry="6" fill="#22c55e" />
+          <ellipse cx="60" cy="50" rx="4" ry="6" fill="#22c55e" />
+          <circle cx="40" cy="50" r="2" fill="#000" />
+          <circle cx="60" cy="50" r="2" fill="#000" />
+          <polygon points="47,60 53,60 50,64" fill="#fda4af" />
+          <line x1="25" y1="58" x2="10" y2="56" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="25" y1="62" x2="8" y2="64" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="75" y1="58" x2="90" y2="56" stroke="#e2e8f0" strokeWidth="2" />
+          <line x1="75" y1="62" x2="92" y2="64" stroke="#e2e8f0" strokeWidth="2" />
+        </svg>
+      );
+    case 'pato':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="45" r="28" fill="#facc15" />
+          <ellipse cx="42" cy="40" rx="3" ry="5" fill="#000" />
+          <ellipse cx="58" cy="40" rx="3" ry="5" fill="#000" />
+          <ellipse cx="50" cy="54" rx="14" ry="7" fill="#f97316" />
+          <line x1="38" y1="54" x2="62" y2="54" stroke="#c2410c" strokeWidth="1.5" />
+        </svg>
+      );
+    case 'luna':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <path d="M 65 20 A 35 35 0 1 0 65 90 A 28 28 0 1 1 65 20" fill="#fef08a" stroke="#facc15" strokeWidth="1" />
+          <circle cx="42" cy="45" r="2.5" fill="#ca8a04" />
+          <path d="M 38 56 Q 44 60 40 52" stroke="#ca8a04" strokeWidth="2" fill="none" />
+        </svg>
+      );
+    case 'mesa':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="15" y="40" width="70" height="12" rx="4" fill="#854d0e" />
+          <rect x="20" y="48" width="60" height="4" fill="#a16207" />
+          <rect x="22" y="52" width="6" height="30" fill="#713f12" />
+          <rect x="72" y="52" width="6" height="30" fill="#713f12" />
+          <rect x="32" y="52" width="5" height="25" fill="#451a03" opacity="0.7" />
+          <rect x="63" y="52" width="5" height="25" fill="#451a03" opacity="0.7" />
+        </svg>
+      );
+    case 'lapiz':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="20" y="40" width="10" height="20" rx="2" fill="#f472b6" transform="rotate(-30 25 50)" />
+          <rect x="28" y="40" width="6" height="20" fill="#94a3b8" transform="rotate(-30 31 50)" />
+          <rect x="34" y="40" width="36" height="20" fill="#eab308" transform="rotate(-30 52 50)" />
+          <rect x="34" y="45" width="36" height="10" fill="#ca8a04" transform="rotate(-30 52 50)" />
+          <polygon points="65,30 80,45 68,52" fill="#fed7aa" transform="rotate(-30 71 42)" />
+          <polygon points="73,38 80,45 75,48" fill="#1e293b" transform="rotate(-30 76 43)" />
+        </svg>
+      );
+    case 'nube':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <path d="M 25 60 A 15 15 0 0 1 35 35 A 20 20 0 0 1 70 35 A 15 15 0 0 1 80 60 Z" fill="#e0f2fe" stroke="#38bdf8" strokeWidth="3" />
+          <path d="M 30 60 A 10 10 0 0 1 38 42 A 15 15 0 0 1 65 42 A 10 10 0 0 1 75 60 Z" fill="#ffffff" />
+        </svg>
+      );
+    case 'escuela':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="20" y="40" width="60" height="45" rx="4" fill="#dc2626" />
+          <polygon points="50,15 15,40 85,40" fill="#991b1b" />
+          <rect x="42" y="60" width="16" height="25" fill="#f59e0b" />
+          <circle cx="46" cy="72" r="2" fill="#78350f" />
+          <rect x="28" y="48" width="12" height="12" rx="2" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+          <rect x="60" y="48" width="12" height="12" rx="2" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+          <line x1="50" y1="15" x2="50" y2="5" stroke="#94a3b8" strokeWidth="2" />
+          <polygon points="50,5 65,9 50,13" fill="#facc15" />
+        </svg>
+      );
+    case 'jirafa':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#fef08a" />
+          <rect x="40" y="45" width="20" height="45" fill="#f59e0b" rx="2" />
+          <circle cx="45" cy="55" r="4" fill="#b45309" />
+          <circle cx="55" cy="65" r="5" fill="#b45309" />
+          <circle cx="46" cy="78" r="4" fill="#b45309" />
+          <rect x="35" y="25" width="30" height="25" fill="#f59e0b" rx="6" />
+          <ellipse cx="50" cy="44" rx="14" ry="7" fill="#fef08a" />
+          <circle cx="45" cy="44" r="1.5" fill="#b45309" />
+          <circle cx="55" cy="44" r="1.5" fill="#b45309" />
+          <circle cx="43" cy="32" r="3.5" fill="#000" />
+          <circle cx="57" cy="32" r="3.5" fill="#000" />
+          <circle cx="44" cy="31" r="1" fill="#fff" />
+          <circle cx="58" cy="31" r="1" fill="#fff" />
+          <ellipse cx="32" cy="24" rx="3" ry="8" fill="#f59e0b" transform="rotate(-30 32 24)" />
+          <ellipse cx="68" cy="24" rx="3" ry="8" fill="#f59e0b" transform="rotate(30 68 24)" />
+          <line x1="45" y1="25" x2="42" y2="15" stroke="#b45309" strokeWidth="2.5" />
+          <circle cx="42" cy="14" r="3" fill="#b45309" />
+          <line x1="55" y1="25" x2="58" y2="15" stroke="#b45309" strokeWidth="2.5" />
+          <circle cx="58" cy="14" r="3" fill="#b45309" />
+        </svg>
+      );
+    case 'pelota':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#3b82f6" />
+          <path d="M 50 10 A 40 40 0 0 0 10 50 A 40 40 0 0 0 50 90 A 28 40 0 0 1 50 10" fill="#ef4444" />
+          <path d="M 50 10 A 40 40 0 0 1 90 50 A 40 40 0 0 1 50 90 A 28 40 0 0 0 50 10" fill="#facc15" />
+          <circle cx="50" cy="50" r="8" fill="#ffffff" />
+        </svg>
+      );
+    case 'platano':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#ecfdf5" />
+          <path d="M 25 30 C 50 30 75 45 75 70 C 55 65 35 50 25 30 Z" fill="#eab308" stroke="#ca8a04" strokeWidth="1.5" />
+          <path d="M 25 30 Q 23 28 20 28 Q 23 32 25 30" fill="#713f12" />
+          <path d="M 75 70 Q 78 74 80 75 Q 76 72 75 70" fill="#451a03" stroke="#451a03" strokeWidth="2" />
+        </svg>
+      );
+    case 'dragon':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#10b981" />
+          <polygon points="35,25 30,10 42,20" fill="#facc15" />
+          <polygon points="65,25 70,10 58,20" fill="#facc15" />
+          <ellipse cx="32" cy="58" rx="8" ry="6" fill="#059669" />
+          <ellipse cx="68" cy="58" rx="8" ry="6" fill="#059669" />
+          <ellipse cx="50" cy="62" rx="16" ry="12" fill="#6ee7b7" />
+          <circle cx="45" cy="58" r="2.5" fill="#047857" />
+          <circle cx="55" cy="58" r="2.5" fill="#047857" />
+          <circle cx="38" cy="40" r="5" fill="#fff" />
+          <circle cx="62" cy="40" r="5" fill="#fff" />
+          <circle cx="38" cy="40" r="2.5" fill="#000" />
+          <circle cx="62" cy="40" r="2.5" fill="#000" />
+          <path d="M 45 68 Q 50 90 55 68 Z" fill="#ef4444" />
+          <path d="M 47 68 Q 50 82 53 68 Z" fill="#f97316" />
+        </svg>
+      );
+    case 'estrella':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <polygon points="50,10 63,38 93,38 69,56 78,86 50,68 22,86 31,56 7,38 37,38" fill="#facc15" stroke="#eab308" strokeWidth="3" strokeLinejoin="round" />
+          <circle cx="42" cy="45" r="2" fill="#451a03" />
+          <circle cx="58" cy="45" r="2" fill="#451a03" />
+          <path d="M 46 54 Q 50 58 54 54" stroke="#451a03" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </svg>
+      );
+    case 'ventana':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="20" y="20" width="60" height="60" rx="4" fill="#b45309" stroke="#78350f" strokeWidth="2" />
+          <rect x="26" y="26" width="21" height="21" fill="#38bdf8" />
+          <rect x="53" y="26" width="21" height="21" fill="#38bdf8" />
+          <rect x="26" y="53" width="21" height="21" fill="#38bdf8" />
+          <rect x="53" y="53" width="21" height="21" fill="#38bdf8" />
+          <path d="M 30 26 L 42 26 L 26 42 L 26 30 Z" fill="#ffffff" opacity="0.4" />
+          <path d="M 57 26 L 69 26 L 53 42 L 53 30 Z" fill="#ffffff" opacity="0.4" />
+        </svg>
+      );
+    case 'zapato':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <path d="M 20 70 Q 50 78 85 70 L 85 64 Q 50 72 20 64 Z" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1" />
+          <path d="M 22 64 C 20 50 35 40 50 40 L 75 50 C 82 52 85 60 85 64 Z" fill="#ef4444" />
+          <ellipse cx="52" cy="40" rx="10" ry="4" fill="#ffffff" />
+          <path d="M 22 64 C 21 58 26 52 32 52 C 34 58 32 64 22 64 Z" fill="#ffffff" />
+          <line x1="48" y1="45" x2="58" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+          <line x1="44" y1="49" x2="54" y2="56" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case 'bicicleta':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#f0fdfa" />
+          <circle cx="32" cy="65" r="14" stroke="#475569" strokeWidth="4" fill="none" />
+          <circle cx="32" cy="65" r="11" stroke="#cbd5e1" strokeWidth="1.5" fill="none" />
+          <circle cx="68" cy="65" r="14" stroke="#475569" strokeWidth="4" fill="none" />
+          <circle cx="68" cy="65" r="11" stroke="#cbd5e1" strokeWidth="1.5" fill="none" />
+          <circle cx="32" cy="65" r="2.5" fill="#1e293b" />
+          <circle cx="68" cy="65" r="2.5" fill="#1e293b" />
+          <path d="M 32 65 L 48 45 L 68 65 L 56 45 L 32 65 M 48 45 L 48 35 M 56 45 L 58 32" stroke="#0d9488" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="44" y1="35" x2="52" y2="35" stroke="#1e293b" strokeWidth="4.5" strokeLinecap="round" />
+          <path d="M 52 32 L 62 32 L 66 38" stroke="#1e293b" strokeWidth="3" fill="none" strokeLinecap="round" />
+        </svg>
+      );
+    case 'elefante':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <ellipse cx="25" cy="48" rx="20" ry="24" fill="#94a3b8" />
+          <ellipse cx="27" cy="48" rx="14" ry="18" fill="#fda4af" opacity="0.6" />
+          <ellipse cx="75" cy="48" rx="20" ry="24" fill="#94a3b8" />
+          <ellipse cx="73" cy="48" rx="14" ry="18" fill="#fda4af" opacity="0.6" />
+          <circle cx="50" cy="52" r="26" fill="#cbd5e1" />
+          <circle cx="42" cy="46" r="3.5" fill="#000" />
+          <circle cx="58" cy="46" r="3.5" fill="#000" />
+          <circle cx="43" cy="45" r="1" fill="#fff" />
+          <circle cx="59" cy="45" r="1" fill="#fff" />
+          <path d="M 46 56 Q 50 82 58 80 Q 62 78 60 74 Q 54 75 52 62" stroke="#cbd5e1" strokeWidth="10" fill="none" strokeLinecap="round" />
+          <path d="M 38 60 Q 34 68 32 64 Q 35 58 38 60 Z" fill="#ffffff" />
+          <path d="M 62 60 Q 66 68 68 64 Q 65 58 62 60 Z" fill="#ffffff" />
+        </svg>
+      );
+    case 'mariposa':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <path d="M 50 50 Q 20 20 22 42 Q 22 62 50 54" fill="#ec4899" />
+          <path d="M 50 50 Q 25 75 30 58 Q 30 45 50 50" fill="#a855f7" />
+          <path d="M 50 50 Q 80 20 78 42 Q 78 62 50 54" fill="#ec4899" />
+          <path d="M 50 50 Q 75 75 70 58 Q 70 45 50 50" fill="#a855f7" />
+          <circle cx="32" cy="38" r="4" fill="#fdf2f8" />
+          <circle cx="68" cy="38" r="4" fill="#fdf2f8" />
+          <ellipse cx="50" cy="50" rx="3.5" ry="22" fill="#1e293b" />
+          <circle cx="50" cy="25" r="4.5" fill="#1e293b" />
+          <path d="M 48 22 Q 42 12 36 14" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M 52 22 Q 58 12 64 14" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </svg>
+      );
+    case 'castillo':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="10" y="78" width="80" height="10" rx="2" fill="#475569" />
+          <rect x="30" y="45" width="40" height="35" fill="#94a3b8" />
+          <rect x="35" y="40" width="30" height="6" fill="#64748b" />
+          <rect x="32" y="34" width="6" height="6" fill="#475569" />
+          <rect x="47" y="34" width="6" height="6" fill="#475569" />
+          <rect x="62" y="34" width="6" height="6" fill="#475569" />
+          <rect x="20" y="35" width="12" height="45" fill="#cbd5e1" />
+          <polygon points="26,18 18,35 34,35" fill="#ef4444" />
+          <rect x="68" y="35" width="12" height="45" fill="#cbd5e1" />
+          <polygon points="74,18 66,35 82,35" fill="#ef4444" />
+          <path d="M 42 80 L 42 64 A 8 8 0 0 1 58 64 L 58 80 Z" fill="#451a03" />
+          <rect x="24" y="45" width="4" height="8" fill="#1e293b" />
+          <rect x="72" y="45" width="4" height="8" fill="#1e293b" />
+        </svg>
+      );
+    case 'durazno':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#fef2f2" />
+          <path d="M 50 30 C 25 30 25 75 50 82 C 75 75 75 30 50 30 Z" fill="#fb923c" stroke="#ea580c" strokeWidth="1.5" />
+          <path d="M 50 30 C 32 30 32 75 50 82 Z" fill="#ef4444" opacity="0.8" />
+          <path d="M 50 30 Q 52 20 55 16" stroke="#78350f" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          <path d="M 52 22 Q 68 18 64 30 Q 52 26 52 22 Z" fill="#22c55e" />
+        </svg>
+      );
+    case 'astronauta':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#0f172a" />
+          <rect x="35" y="70" width="30" height="20" rx="4" fill="#e2e8f0" />
+          <rect x="42" y="74" width="16" height="4" fill="#3b82f6" />
+          <circle cx="50" cy="46" r="28" fill="#ffffff" stroke="#cbd5e1" strokeWidth="2" />
+          <path d="M 32 46 C 32 32 68 32 68 46 C 68 56 32 56 32 46 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="3" />
+          <path d="M 36 44 Q 50 35 64 44" stroke="#ffffff" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+          <circle cx="40" cy="48" r="1.5" fill="#ffffff" />
+        </svg>
+      );
+    case 'biblioteca':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <rect x="15" y="15" width="70" height="70" rx="4" fill="#b45309" stroke="#78350f" strokeWidth="3.5" />
+          <line x1="15" y1="50" x2="85" y2="50" stroke="#78350f" strokeWidth="4" />
+          <rect x="22" y="24" width="8" height="24" fill="#ef4444" rx="1" />
+          <rect x="31" y="20" width="7" height="28" fill="#3b82f6" rx="1" />
+          <rect x="39" y="26" width="9" height="22" fill="#facc15" rx="1" />
+          <rect x="52" y="22" width="8" height="26" fill="#10b981" rx="1" transform="rotate(15 52 48)" />
+          <rect x="20" y="58" width="9" height="24" fill="#a855f7" rx="1" />
+          <rect x="30" y="54" width="7" height="28" fill="#f97316" rx="1" />
+          <rect x="60" y="56" width="9" height="26" fill="#ec4899" rx="1" />
+          <rect x="70" y="58" width="8" height="24" fill="#06b6d4" rx="1" />
+        </svg>
+      );
+    case 'dinosaurio':
+      return (
+        <svg viewBox="0 0 100 100" className="w-14 h-14">
+          <circle cx="50" cy="50" r="40" fill="#ecfdf5" />
+          <polygon points="25,40 15,45 23,52" fill="#f59e0b" />
+          <polygon points="30,26 22,28 26,38" fill="#f59e0b" />
+          <path d="M 28 80 C 28 50 35 25 55 25 C 70 25 75 40 75 48 C 75 54 65 58 55 58 C 50 58 46 68 46 80 Z" fill="#10b981" />
+          <circle cx="62" cy="45" r="4" fill="#059669" opacity="0.5" />
+          <circle cx="58" cy="36" r="3.5" fill="#fff" />
+          <circle cx="58" cy="36" r="2" fill="#000" />
+          <path d="M 68 48 Q 60 52 56 46" stroke="#047857" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
 const WORDS_EASY = [
   { word: 'SOL', hint: 'Brilla de día en el cielo' },
   { word: 'CASA', hint: 'Lugar donde vivimos con la familia' },
@@ -61,6 +381,7 @@ const LetterBlock = (props) => {
   const { letter, position, isUsed, isCorrect, onClick } = filterProps(props);
   const meshRef = useRef();
   const groupRef = useRef();
+  const [isHovered, setIsHovered] = useState(false);
 
   useFrame((state) => {
     if (groupRef.current && !isUsed) {
@@ -71,19 +392,50 @@ const LetterBlock = (props) => {
 
   const handleClick = (e) => {
     e.stopPropagation();
-    if (!isUsed && onClick) onClick(letter);
+    if (!isUsed && onClick) {
+      onClick(letter);
+      setIsHovered(false);
+      document.body.style.cursor = 'default';
+    }
   };
 
   // Space theme colors: Unused purple, Correct emerald, Incorrect rose
-  const color = isUsed ? (isCorrect ? '#10b981' : '#f43f5e') : '#8b5cf6';
+  const standardColor = isUsed ? (isCorrect ? '#10b981' : '#f43f5e') : '#8b5cf6';
+  const color = (isHovered && !isUsed) ? '#a78bfa' : standardColor;
+  const emissive = (isHovered && !isUsed) ? '#22d3ee' : '#000000';
+  const emissiveIntensity = (isHovered && !isUsed) ? 1.5 : 0;
+  const scale = (isHovered && !isUsed) ? [1.1, 1.1, 1.1] : [1, 1, 1];
 
   return (
-    <group ref={groupRef} position={position} onClick={handleClick}>
+    <group 
+      ref={groupRef} 
+      position={position} 
+      onClick={handleClick}
+      scale={scale}
+      onPointerOver={(e) => {
+        if (!isUsed) {
+          e.stopPropagation();
+          setIsHovered(true);
+          document.body.style.cursor = 'pointer';
+        }
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setIsHovered(false);
+        document.body.style.cursor = 'default';
+      }}
+    >
       <mesh ref={meshRef} castShadow>
-        <boxGeometry args={[0.7, 0.7, 0.3]} />
-        <meshLambertMaterial color={color} opacity={isUsed ? 0.5 : 1} transparent />
+        <boxGeometry args={[1.12, 1.12, 0.48]} />
+        <meshLambertMaterial 
+          color={color} 
+          emissive={emissive}
+          emissiveIntensity={emissiveIntensity}
+          opacity={isUsed ? 0.5 : 1} 
+          transparent 
+        />
       </mesh>
-      <Text position={[0, 0, 0.16]} fontSize={0.4} color="#ffffff" anchorX="center" anchorY="middle" fontWeight="bold">
+      <Text position={[0, 0, 0.25]} fontSize={0.64} color={isHovered && !isUsed ? "#0c0c2e" : "#ffffff"} anchorX="center" anchorY="middle" fontWeight="bold">
         {letter}
       </Text>
     </group>
@@ -96,7 +448,7 @@ const HangmanStructure = (props) => {
   const ropeColor = '#a78bfa';
 
   return (
-    <group position={[-5, 0, 0]}>
+    <group position={[-5, 0, 0]} scale={[1.3, 1.3, 1.3]}>
       {/* Base */}
       <mesh position={[0, 0.1, 0]} receiveShadow>
         <boxGeometry args={[3, 0.2, 1]} />
@@ -190,6 +542,24 @@ const DungeonScene = () => {
 };
 
 const Game3Hangman = ({ player, onFinish }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentWord, setCurrentWord] = useState(() => getWordForLevel(1));
   const [guessedLetters, setGuessedLetters] = useState(new Set());
@@ -250,6 +620,8 @@ const Game3Hangman = ({ player, onFinish }) => {
     if (correctLetters.has(letter)) {
       const newCorrectCount = correctCount + 1;
       setCorrectCount(newCorrectCount);
+      playCorrectSound();;
+      playCorrectSound();
       setFeedback(`¡Correcto! "${letter}" está en la palabra.`);
       
       const allRevealed = wordLetters.every(l => newGuessed.has(l));
@@ -312,9 +684,9 @@ const Game3Hangman = ({ player, onFinish }) => {
       return {
         letter,
         position: [
-          (col - cols / 2 + 0.5) * 1.0 + 3.5,
-          0.5,
-          (row - rows / 2 + 0.5) * 1.0 + 2,
+          (col - cols / 2 + 0.5) * 1.6 + 4.5,
+          0.7,
+          (row - rows / 2 + 0.5) * 1.9 + 2.0,
         ],
       };
     });
@@ -358,12 +730,15 @@ const Game3Hangman = ({ player, onFinish }) => {
         </div>
       </div>
 
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 p-5 bg-slate-900/80 backdrop-blur-md border border-indigo-500/20 rounded-2xl text-white shadow-xl max-w-xs text-center z-10">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 p-4 bg-slate-900/80 backdrop-blur-md border border-indigo-500/20 rounded-2xl text-white shadow-xl max-w-xs text-center z-10 flex flex-col items-center gap-3">
+        <div className="w-18 h-18 bg-slate-950/40 rounded-xl flex items-center justify-center border border-indigo-500/10 p-2 shadow-inner">
+          <DrawingSVG type={currentWord.word} />
+        </div>
         <div className="font-sans text-sm flex flex-col items-center">
           <div className="text-gray-400 font-bold uppercase tracking-wider text-[10px] mb-1 flex items-center gap-1">
             <HelpCircle className="w-3.5 h-3.5 text-purple-400" /> PISTA
           </div>
-          <div className="text-indigo-200 font-semibold">{currentWord.hint}</div>
+          <div className="text-indigo-200 font-semibold text-xs leading-relaxed">{currentWord.hint}</div>
         </div>
       </div>
 

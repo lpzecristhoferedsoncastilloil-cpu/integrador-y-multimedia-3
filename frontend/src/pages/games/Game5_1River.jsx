@@ -420,6 +420,24 @@ const CameraController = () => {
 };
 
 const Game5_1River = ({ player, onFinish }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [currentLevel, setCurrentLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(0); // always 0 for 1 round per level
   const [lane, setLane] = useState(1);
@@ -591,6 +609,8 @@ const Game5_1River = ({ player, onFinish }) => {
             } else if (log.isCorrect) {
               const newCorrectCount = correctCount + 1;
               setCorrectCount(newCorrectCount);
+      playCorrectSound();;
+      playCorrectSound();
               setFeedback(`¡CORRECTO! Encontraste el animal: ${log.word} 🟢`);
               setTimeout(() => setFeedback(''), 1200);
 

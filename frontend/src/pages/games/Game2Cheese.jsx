@@ -32,7 +32,6 @@ const ROUNDS = [
 ];
 
 const MAX_MICE = 6;
-const MOUSE_SPEED = 0.06; // Scaled up by 1.5 from 0.04 to match 1.5x size increase
 const TIMER_SECONDS = 45;
 const LEVEL_WIN_SCORE = 3; // 3 correct answers required to pass level
 const MAX_LIVES = 3;
@@ -64,7 +63,7 @@ const CheeseBoard = () => {
   );
 };
 
-const Mouse = ({ mouseData, onMouseClick }) => {
+const Mouse = ({ mouseData, onMouseClick, mouseSpeed }) => {
   const groupRef = useRef();
   const bodyRef = useRef();
 
@@ -74,8 +73,8 @@ const Mouse = ({ mouseData, onMouseClick }) => {
     const dz = mouseData.targetZ - mouseData.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
     if (dist > 0.1) {
-      mouseData.x += (dx / dist) * MOUSE_SPEED * (mouseData.speedBoost || 1);
-      mouseData.z += (dz / dist) * MOUSE_SPEED * (mouseData.speedBoost || 1);
+      mouseData.x += (dx / dist) * mouseSpeed * (mouseData.speedBoost || 1);
+      mouseData.z += (dz / dist) * mouseSpeed * (mouseData.speedBoost || 1);
     }
     groupRef.current.position.x = mouseData.x;
     groupRef.current.position.z = mouseData.z;
@@ -87,38 +86,62 @@ const Mouse = ({ mouseData, onMouseClick }) => {
 
   const handleClick = (e) => {
     e.stopPropagation();
-    if (onMouseClick) onMouseClick(mouseData);
+    if (onMouseClick) {
+      onMouseClick(mouseData);
+      document.body.style.cursor = 'default';
+    }
   };
 
-  // Scaled entire mouse model and Billboard text by 1.5 to make it 50% larger
+  // Scaled entire mouse model and Billboard text by 1.8 to make it 20% larger than 1.5x
   return (
-    <group ref={groupRef} position={[mouseData.x, 0, mouseData.z]} onClick={handleClick} scale={1.5}>
-      <mesh ref={bodyRef} position={[0, 0.3, 0]}>
+    <group 
+      ref={groupRef} 
+      position={[mouseData.x, 0, mouseData.z]} 
+      onClick={handleClick} 
+      scale={1.8}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        document.body.style.cursor = 'default';
+      }}
+    >
+      <mesh ref={bodyRef} position={[0, 0.3, 0]} onClick={handleClick}>
         <sphereGeometry args={[0.3, 12, 12]} />
         <meshLambertMaterial color="#94a3b8" />
       </mesh>
-      <mesh position={[0, 0.55, 0.15]}>
+      <mesh position={[0, 0.55, 0.15]} onClick={handleClick}>
         <sphereGeometry args={[0.18, 12, 12]} />
         <meshLambertMaterial color="#cbd5e1" />
       </mesh>
-      <mesh position={[-0.1, 0.7, 0.1]}>
+      <mesh position={[-0.1, 0.7, 0.1]} onClick={handleClick}>
         <sphereGeometry args={[0.08, 8, 8]} />
         <meshLambertMaterial color="#fda4af" />
       </mesh>
-      <mesh position={[0.1, 0.7, 0.1]}>
+      <mesh position={[0.1, 0.7, 0.1]} onClick={handleClick}>
         <sphereGeometry args={[0.08, 8, 8]} />
         <meshLambertMaterial color="#fda4af" />
       </mesh>
-      <Billboard position={[0, 1.5, 0]}>
-        <mesh>
+      <Billboard position={[0, 1.5, 0]} onClick={handleClick}>
+        <mesh onClick={handleClick}>
           <planeGeometry args={[1.5, 0.5]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
-        <mesh position={[0, 0, 0.001]}>
+        <mesh position={[0, 0, 0.001]} onClick={handleClick}>
           <planeGeometry args={[1.4, 0.4]} />
           <meshBasicMaterial color="#a855f7" />
         </mesh>
-        <Text position={[0, 0, 0.01]} fontSize={0.25} color="#ffffff" anchorX="center" anchorY="middle" fontWeight="bold">
+        <Text 
+          position={[0, 0, 0.01]} 
+          fontSize={0.25} 
+          color="#ffffff" 
+          anchorX="center" 
+          anchorY="middle" 
+          fontWeight="bold"
+          onClick={handleClick}
+        >
           {mouseData.word}
         </Text>
       </Billboard>
@@ -126,8 +149,33 @@ const Mouse = ({ mouseData, onMouseClick }) => {
   );
 };
 
-const Game2Cheese = ({ player, onFinish }) => {
+const Game2Cheese = ({ player, onFinish, speedLevel = 6 }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [roundIndex, setRoundIndex] = useState(0);
+  const MOUSE_SPEED = speedLevel * 0.01;
+
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = 'default';
+    };
+  }, []);
   const [levelScore, setLevelScore] = useState(0); // Score in the current active level (0 to 3)
   const [lives, setLives] = useState(MAX_LIVES);
   const [timer, setTimer] = useState(TIMER_SECONDS);
@@ -231,7 +279,7 @@ const Game2Cheese = ({ player, onFinish }) => {
       setMice(prev => prev.filter(m => {
         const dx = m.targetX - m.x;
         const dz = m.targetZ - m.z;
-        return Math.sqrt(dx * dx + dz * dz) > 0.35; // slightly increased path margin for scaled sizes
+        return Math.sqrt(dx * dx + dz * dz) > 0.42; // slightly increased path margin for scaled sizes
       }));
     }, 200);
     return () => clearInterval(cleanup);
@@ -245,6 +293,8 @@ const Game2Cheese = ({ player, onFinish }) => {
       const newCorrectCount = correctCount + 1;
       setLevelScore(newLevelScore);
       setCorrectCount(newCorrectCount);
+      playCorrectSound();;
+      playCorrectSound();
       setFeedback(`¡Correcto! "${mouseData.word}" rima con ${round.keyword}`);
       setTimeout(() => setFeedback(''), 1500);
       
@@ -287,7 +337,7 @@ const Game2Cheese = ({ player, onFinish }) => {
           <directionalLight position={[10, 15, 10]} intensity={0.9} castShadow />
           <CheeseBoard />
           {mice.map(m => (
-            <Mouse key={m.id} mouseData={m} onMouseClick={handleMouseClick} />
+            <Mouse key={m.id} mouseData={m} onMouseClick={handleMouseClick} mouseSpeed={MOUSE_SPEED} />
           ))}
         </Suspense>
       </Canvas>

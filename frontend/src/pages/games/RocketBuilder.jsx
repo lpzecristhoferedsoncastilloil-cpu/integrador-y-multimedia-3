@@ -7,8 +7,9 @@
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react';
-import Phaser from 'phaser';
+import SpaceParallaxBackground from '../../components/SpaceParallaxBackground';
 import API from '../../services/api';
+import { HelpCircle } from 'lucide-react';
 
 // ---- Palabras por nivel (DEFAULTS — se usan si el jugador no tiene config personalizada) ----
 const DEFAULT_LEVELS = {
@@ -27,8 +28,8 @@ const DEFAULT_LEVELS = {
 const DISTRACTOR_SYLLABLES = ['TA','BI','RO','FU','ZE','KI','WA','NU','PO','GI','XA','YU'];
 
 export default function RocketBuilder({ player, onFinish }) {
-  const gameRef   = useRef(null);
-  const phaserRef = useRef(null);
+  const [launchTrigger, setLaunchTrigger] = useState(0);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [levels, setLevels]   = useState(DEFAULT_LEVELS);
   const [level, setLevel]     = useState(1);
   const [score, setScore]     = useState(0);
@@ -338,10 +339,7 @@ export default function RocketBuilder({ player, onFinish }) {
 
   // Animación del cohete con Phaser
   const launchRocket = () => {
-    if (phaserRef.current) {
-      const scene = phaserRef.current.scene.getScene('RocketScene');
-      if (scene) scene.launchRocket();
-    }
+    setLaunchTrigger(prev => prev + 1);
   };
 
   const handleNextLevel = () => {
@@ -366,97 +364,6 @@ export default function RocketBuilder({ player, onFinish }) {
     }
     onFinish({ score, level, attempts, sessionId });
   };
-
-  // Inicializar Phaser
-  useEffect(() => {
-    if (!gameRef.current || phaserRef.current) return;
-
-    class RocketScene extends Phaser.Scene {
-      constructor() { super({ key: 'RocketScene' }); }
-
-      create() {
-        this.cameras.main.setBackgroundColor('#0a0a2e');
-
-        // Estrellas de fondo
-        for (let i = 0; i < 160; i++) {
-          const x = Phaser.Math.Between(0, 1200);
-          const y = Phaser.Math.Between(0, 350);
-          const star = this.add.circle(x, y, Phaser.Math.Between(1,3), 0xffffff, Phaser.Math.FloatBetween(0.3,1));
-          this.tweens.add({ targets: star, alpha: 0.1, duration: Phaser.Math.Between(800,2000), yoyo:true, repeat:-1 });
-        }
-
-        // Cohete
-        this.rocket = this.add.text(600, 270, '🚀', { fontSize:'72px' }).setOrigin(0.5);
-
-        // Nubes/planetas decorativos
-        this.add.text(150,  60, '🌙', { fontSize:'42px' });
-        this.add.text(1000, 120, '⭐', { fontSize:'32px' });
-        this.add.text(380,  50, '🪐', { fontSize:'52px' });
-        this.add.text(850,  80, '🛸', { fontSize:'42px' });
-
-        // Partículas de fuego (simuladas con texto)
-        this.flames = [];
-        for (let i = 0; i < 5; i++) {
-          const f = this.add.text(600, 300, ['🔥','✨','💫'][i%3], { fontSize:'28px' }).setOrigin(0.5).setAlpha(0);
-          this.flames.push(f);
-        }
-      }
-
-      launchRocket() {
-        // Animación de lanzamiento
-        this.tweens.add({
-          targets: this.rocket,
-          y: -100,
-          x: Phaser.Math.Between(450, 750),
-          duration: 1400,
-          ease: 'Power2',
-          onComplete: () => {
-            this.rocket.setPosition(600, 270);
-            this.tweens.add({ targets: this.rocket, alpha: 1, duration: 300 });
-          }
-        });
-
-        // Llamas
-        this.flames.forEach((f, i) => {
-          f.setPosition(600 + Phaser.Math.Between(-35,35), 310);
-          this.tweens.add({
-            targets: f, alpha: 1, y: f.y + 50, duration: 400,
-            delay: i * 80, yoyo: true,
-            onComplete: () => f.setAlpha(0)
-          });
-        });
-
-        // Sonido (beep con AudioContext)
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain); gain.connect(ctx.destination);
-          osc.frequency.setValueAtTime(523, ctx.currentTime);
-          osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
-          osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
-          gain.gain.setValueAtTime(0.3, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + 0.5);
-        } catch (e) {}
-      }
-    }
-
-    phaserRef.current = new Phaser.Game({
-      type: Phaser.AUTO,
-      width: 1200,
-      height: 350,
-      parent: gameRef.current,
-      backgroundColor: '#0a0a2e',
-      scene: RocketScene,
-      audio: { disableWebAudio: false },
-    });
-
-    return () => {
-      if (phaserRef.current) { phaserRef.current.destroy(true); phaserRef.current = null; }
-    };
-  }, []);
 
   // ---- Pantalla Game Over ----
   if (gameOver) {
@@ -495,7 +402,7 @@ export default function RocketBuilder({ player, onFinish }) {
   return (
     <div style={styles.gameWrapper}>
       {/* Canvas de Phaser de fondo */}
-      <div ref={gameRef} style={styles.phaserCanvasContainer} />
+      <SpaceParallaxBackground launchTrigger={launchTrigger} />
 
       {/* Contenedor del juego encima */}
       <div style={styles.gameContent}>
@@ -517,9 +424,45 @@ export default function RocketBuilder({ player, onFinish }) {
             <span style={styles.hudLabel}>Tipo</span>
             <span style={styles.hudValueSmall}>{levelData?.label}</span>
           </div>
-          <button onClick={finishGame} style={styles.btnExit}>
-            🚪 Salir del Juego
-          </button>
+
+          {/* Help and Exit Buttons inside the HUD */}
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              onClick={() => setShowHelpModal(true)}
+              style={{
+                padding: '10px',
+                background: 'rgba(15, 23, 42, 0.8)',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                borderRadius: '12px',
+                color: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              title="¿Cómo jugar?"
+            >
+              <HelpCircle style={{ width: '20px', height: '20px', color: '#a5b4fc' }} />
+            </button>
+            <button
+              onClick={finishGame}
+              style={{
+                padding: '10px 20px',
+                background: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)',
+                border: 'none',
+                borderRadius: '12px',
+                color: '#fff',
+                fontWeight: '800',
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+                transition: 'all 0.2s'
+              }}
+            >
+              SALIR
+            </button>
+          </div>
         </div>
 
         {/* Área del juego */}
@@ -598,6 +541,23 @@ export default function RocketBuilder({ player, onFinish }) {
           </div>
         </div>
       </div>
+
+      {/* Help Modal Overlay */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative">
+            <HelpCircle className="w-12 h-12 text-indigo-400 mx-auto mb-4 animate-bounce" />
+            <h3 className="text-2xl font-bold text-white mb-2">Constructor de Cohetes</h3>
+            <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+              Toca las sílabas en el orden correcto para construir palabras y hacer despegar el cohete.
+              Si estás en el nivel final de voz, presiona el micrófono y di la palabra en voz alta para validar tu respuesta.
+            </p>
+            <button onClick={() => setShowHelpModal(false)} className="w-full py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-2xl transition duration-200">
+              ¡Entendido!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

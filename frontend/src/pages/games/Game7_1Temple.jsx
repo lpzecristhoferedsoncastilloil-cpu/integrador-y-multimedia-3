@@ -346,6 +346,24 @@ const TempleScene = () => (
 );
 
 const Game7_1Temple = ({ player, onFinish }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [currentLevel, setCurrentLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(0);
   const [wordIndex, setWordIndex] = useState(0);
@@ -479,6 +497,7 @@ const Game7_1Temple = ({ player, onFinish }) => {
     if (gameState !== 'playing' || phase !== 'listening') return;
     if (currentSyllable === word.tonicIndex) {
       setCorrectCount(c => c + 1);
+      playCorrectSound();
       setPhase('captured');
       setGongPulse(true);
       setTimeout(() => setGongPulse(false), 800);
@@ -508,6 +527,7 @@ const Game7_1Temple = ({ player, onFinish }) => {
     if (gameState !== 'playing' || phase !== 'captured') return;
     if (statueType === word.type) {
       setCorrectCount(c => c + 1);
+      playCorrectSound();
       setFeedback(`¡CORRECTO! "${word.word}" – ${statueType.toUpperCase()} ✅`);
       setTimeout(() => setFeedback(''), 2000);
       const newCompleted = new Set([...completedWordIndices, wordIndex]);

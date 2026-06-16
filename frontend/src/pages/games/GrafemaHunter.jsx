@@ -7,7 +7,9 @@
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react';
+import SpaceParallaxBackground from '../../components/SpaceParallaxBackground';
 import API from '../../services/api';
+import { HelpCircle } from 'lucide-react';
 
 // ---- Palabras por nivel (DEFAULTS) ----
 const DEFAULT_LEVELS = {
@@ -199,6 +201,8 @@ if (!document.querySelector('#grafema-hunter-styles')) {
 }
 
 export default function GrafemaHunter({ player, onFinish }) {
+  const [launchTrigger, setLaunchTrigger] = useState(0);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [levels, setLevels] = useState(DEFAULT_LEVELS);
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
@@ -391,6 +395,7 @@ export default function GrafemaHunter({ player, onFinish }) {
       setFeedback({ type: 'correct', answer: option });
       setScore((s) => s + 10 * level);
       setCorrectCount((c) => c + 1);
+      setLaunchTrigger((prev) => prev + 1);
       playCorrectSound();
       spawnConfetti();
     } else {
@@ -568,24 +573,7 @@ export default function GrafemaHunter({ player, onFinish }) {
   return (
     <div style={styles.gameWrapper}>
       {/* Background stars */}
-      {starsRef.current.map((star, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            borderRadius: '50%',
-            background: '#fff',
-            opacity: 0.5,
-            animation: `grafemaBgStars ${star.duration}s ease-in-out ${star.delay}s infinite`,
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
+      <SpaceParallaxBackground launchTrigger={launchTrigger} />
 
       {/* Decorative orbiting emojis */}
       <div
@@ -657,9 +645,45 @@ export default function GrafemaHunter({ player, onFinish }) {
           <span style={styles.hudLabel}>Tipo</span>
           <span style={styles.hudValueSmall}>{levelData?.label}</span>
         </div>
-        <button onClick={finishGame} style={styles.btnExit}>
-          🚪 Salir
-        </button>
+
+        {/* Help and Exit Buttons inside the HUD */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={() => setShowHelpModal(true)}
+            style={{
+              padding: '10px',
+              background: 'rgba(15, 23, 42, 0.8)',
+              border: '1px solid rgba(99, 102, 241, 0.2)',
+              borderRadius: '12px',
+              color: '#fff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+            title="¿Cómo jugar?"
+          >
+            <HelpCircle style={{ width: '20px', height: '20px', color: '#a5b4fc' }} />
+          </button>
+          <button
+            onClick={finishGame}
+            style={{
+              padding: '10px 20px',
+              background: 'linear-gradient(135deg, #f43f5e 0%, #dc2626 100%)',
+              border: 'none',
+              borderRadius: '12px',
+              color: '#fff',
+              fontWeight: '800',
+              fontSize: '13px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            SALIR
+          </button>
+        </div>
       </div>
 
       {/* Game Area */}
@@ -773,6 +797,23 @@ export default function GrafemaHunter({ player, onFinish }) {
           </div>
         </div>
       </div>
+
+      {/* Help Modal Overlay */}
+      {showHelpModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative">
+            <HelpCircle className="w-12 h-12 text-indigo-400 mx-auto mb-4 animate-bounce" />
+            <h3 className="text-2xl font-bold text-white mb-2">La Caza del Grafema Perdido</h3>
+            <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+              Completa la palabra arrastrando la letra correcta (grafema) a la posición vacía.
+              Identifica la palabra usando la pista y la ilustración para ganar puntos y avanzar de nivel.
+            </p>
+            <button onClick={() => setShowHelpModal(false)} className="w-full py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-2xl transition duration-200">
+              ¡Entendido!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

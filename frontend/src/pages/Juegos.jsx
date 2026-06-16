@@ -4,14 +4,18 @@ import RocketBuilder from './games/RocketBuilder'
 import GrafemaHunter from './games/GrafemaHunter'
 import PodioFinal from './games/PodioFinal'
 import AvatarRender from '../components/AvatarRender'
+import SpaceParallaxBackground from '../components/SpaceParallaxBackground'
 import api from '../services/api'
-import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut, Settings, Eye, Scissors, Crown, Glasses, Smile, Orbit, Compass, Brain, Sparkles, Search, Waves, Package, Bell, Cpu, Type, Award, Activity } from 'lucide-react'
+import { Gamepad2, Play, Star, Trophy, Loader2, Heart, Clock, LogOut, Settings, Eye, Scissors, Crown, Glasses, Smile, Orbit, Compass, Brain, Sparkles, Search, Waves, Package, Bell, Cpu, Type, Award, Activity, HelpCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-import Game1Maze from './games/Game1Maze'
+import Game1_1Phonological from './games/Game1_1Phonological'
+import Game1_2Superficial from './games/Game1_2Superficial'
+import Game1_3Mixed from './games/Game1_3Mixed'
 import Game2Cheese from './games/Game2Cheese'
 import Game3Hangman from './games/Game3Hangman'
 import Game4SyllableMachine from './games/Game4SyllableMachine'
+import Game4_1SyllableMachine from './games/Game4_1SyllableMachine'
 import Game5River from './games/Game5River'
 import Game5_1River from './games/Game5_1River'
 import Game6Warehouse from './games/Game6Warehouse'
@@ -25,6 +29,7 @@ export default function Juegos() {
   const [activeGame, setActiveGame] = useState(null)
   const [gameFinishedData, setGameFinishedData] = useState(null)
   const [dbGames, setDbGames] = useState([])
+  const [cheeseSpeed, setCheeseSpeed] = useState(6)
 
   const [playerAvatar, setPlayerAvatar] = useState(null)
   const [avatarOptions, setAvatarOptions] = useState([])
@@ -67,6 +72,8 @@ export default function Juegos() {
   const [preguntaActual, setPreguntaActual] = useState(0)
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null)
   const [jugandoDemo, setJugandoDemo] = useState(false)
+  const [silabasBgTrigger, setSilabasBgTrigger] = useState(0)
+  const [showSilabasHelpModal, setShowSilabasHelpModal] = useState(false)
 
   const silabas = [
     { palabra: 'CASA', silabas: ['CA', 'SA', 'LA', 'MA'], correcta: 0 },
@@ -92,11 +99,11 @@ export default function Juegos() {
       @keyframes gameButtonPulseNormal {
         0%, 100% {
           transform: scale(1);
-          box-shadow: 0 4px 10px rgba(255, 255, 255, 0.05);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
         }
         50% {
           transform: scale(1.03);
-          box-shadow: 0 6px 16px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.6), 0 0 10px rgba(167, 139, 250, 0.4);
         }
       }
       @keyframes gameSyllablePulse {
@@ -136,8 +143,8 @@ export default function Juegos() {
       .animate-pulse-slow-normal:hover {
         transform: scale(1.06) !important;
         animation-play-state: paused;
-        box-shadow: 0 8px 20px rgba(255, 255, 255, 0.25) !important;
-        filter: brightness(1.2);
+        box-shadow: 0 10px 24px rgba(99, 102, 241, 0.8), 0 0 18px rgba(167, 139, 250, 0.6) !important;
+        filter: brightness(1.15);
       }
       .animate-pulse-slow-syllable {
         animation: gameSyllablePulse 2.5s ease-in-out infinite;
@@ -267,6 +274,7 @@ export default function Juegos() {
 
     if (correcto) {
       setPuntaje(p => p + 10)
+      setSilabasBgTrigger(prev => prev + 1)
       toast.success('¡Correcto! +10 puntos')
     } else {
       setVidas(v => v - 1)
@@ -532,20 +540,58 @@ export default function Juegos() {
               </button>
             </div>
 
-            {/* Game 1: El Laberinto de las Habitaciones */}
-            <div style={styles.gameCard} onClick={() => setActiveGame('maze')}>
+            {/* Game 1: El Laberinto - La Isla de los Duendes */}
+            <div style={{ ...styles.gameCard, cursor: 'default' }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-center p-3 mb-2">
-                <Compass className="w-12 h-12 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
+                <Compass className="w-12 h-12 text-teal-400 animate-pulse" style={{ animationDuration: '4s' }} />
               </div>
-              <h3 style={styles.gameCardTitle}>El Laberinto</h3>
-              <p style={styles.gameCardDesc}>Explora un laberinto en 3D respondiendo acertijos sobre orientación y puntos cardinales.</p>
+              <h3 style={styles.gameCardTitle}>La Isla de los Duendes</h3>
+              <p style={styles.gameCardDesc}>Explora un laberinto gigante de 5x5. ¡Elige tu ruta para resolver los desafíos de los duendes y escapar!</p>
               <div style={styles.tagGroup}>
                 <span style={styles.tag}>3D R3F</span>
-                <span style={styles.tag}>Orientación</span>
+                <span style={styles.tag}>5 x 5 Grid</span>
               </div>
-              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('maze'); }}>
-                ¡Jugar Ahora!
-              </button>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button 
+                  className="animate-pulse-slow-normal transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2" 
+                  style={{
+                    ...styles.btnPlay,
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                    height: '42px',
+                    fontSize: '14px'
+                  }} 
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('maze_phonological'); }}
+                >
+                   Juego Fonológico
+                </button>
+                <button 
+                  className="animate-pulse-slow-normal transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2" 
+                  style={{
+                    ...styles.btnPlay,
+                    background: 'linear-gradient(135deg, #d946ef 0%, #c084fc 100%)',
+                    boxShadow: '0 4px 12px rgba(217, 70, 239, 0.35)',
+                    height: '42px',
+                    fontSize: '14px'
+                  }} 
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('maze_superficial'); }}
+                >
+                   Juego Superficial
+                </button>
+                <button 
+                  className="animate-pulse-slow-normal transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2" 
+                  style={{
+                    ...styles.btnPlay,
+                    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                    boxShadow: '0 4px 12px rgba(6, 182, 212, 0.35)',
+                    height: '42px',
+                    fontSize: '14px'
+                  }} 
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('maze_mixed'); }}
+                >
+                   Juego Mixto
+                </button>
+              </div>
             </div>
 
             {/* Game 2: El Reto del Queso y los Ratones */}
@@ -558,6 +604,22 @@ export default function Juegos() {
               <div style={styles.tagGroup}>
                 <span style={styles.tag}>3D R3F</span>
                 <span style={styles.tag}>Rimas</span>
+              </div>
+              <div className="flex items-center gap-2 mb-4 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
+                <span className="text-gray-400 mr-1">Velocidad:</span>
+                <button 
+                  onClick={() => setCheeseSpeed(prev => Math.max(1, prev - 1))}
+                  className="w-7 h-7 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold rounded-lg border border-slate-700/50 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  -
+                </button>
+                <span className="w-6 text-center text-sm font-bold text-yellow-400">{cheeseSpeed}</span>
+                <button 
+                  onClick={() => setCheeseSpeed(prev => Math.min(10, prev + 1))}
+                  className="w-7 h-7 bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold rounded-lg border border-slate-700/50 flex items-center justify-center transition-all cursor-pointer"
+                >
+                  +
+                </button>
               </div>
               <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('cheese'); }}>
                 ¡Jugar Ahora!
@@ -581,7 +643,7 @@ export default function Juegos() {
             </div>
 
             {/* Game 4: La Máquina de las Sílabas */}
-            <div style={styles.gameCard} onClick={() => setActiveGame('machine')}>
+            <div style={styles.gameCard}>
               <div className="flex items-center justify-center p-3 mb-2">
                 <Cpu className="w-12 h-12 text-rose-400 animate-pulse" />
               </div>
@@ -591,9 +653,20 @@ export default function Juegos() {
                 <span style={styles.tag}>3D R3F</span>
                 <span style={styles.tag}>Morfología</span>
               </div>
-              <button className="animate-pulse-slow-normal" style={styles.btnPlay} onClick={(e) => { e.stopPropagation(); setActiveGame('machine'); }}>
-                ¡Jugar Ahora!
-              </button>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('machine7'); }}
+                >
+                  Jugar (Niños 7 años)
+                </button>
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('machine'); }}
+                >
+                  Jugar (Niños 10 años)
+                </button>
+              </div>
             </div>
 
             {/* Game 5: El Río de las Palabras Cruzadas */}
@@ -937,6 +1010,7 @@ export default function Juegos() {
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
           <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBody}>
           <RocketBuilder player={player} onFinish={handleFinishRocket} />
@@ -951,6 +1025,7 @@ export default function Juegos() {
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
           <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong> ({player.full_name})</span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBody}>
           <GrafemaHunter player={player} onFinish={handleFinishGrafema} />
@@ -968,6 +1043,24 @@ export default function Juegos() {
           <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBodyDemo}>
+          <SpaceParallaxBackground launchTrigger={silabasBgTrigger} />
+
+          {/* Help Button */}
+          <button
+            onClick={() => setShowSilabasHelpModal(true)}
+            className="absolute top-4 right-28 p-2.5 bg-slate-900/80 backdrop-blur-md border border-indigo-500/20 hover:border-indigo-400/40 text-white rounded-xl transition-all duration-300 shadow-lg cursor-pointer z-10 flex items-center justify-center"
+            title="¿Cómo jugar?"
+          >
+            <HelpCircle className="w-5 h-5 text-indigo-300" />
+          </button>
+
+          {/* Exit Button */}
+          <button
+            onClick={salirAlLobby}
+            className="absolute top-4 right-4 px-5 py-2.5 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg shadow-red-500/10 cursor-pointer z-10 text-sm"
+          >
+            SALIR
+          </button>
           {jugandoDemo ? (
             <div style={styles.demoCard}>
               <div style={styles.demoHeader}>
@@ -1016,12 +1109,29 @@ export default function Juegos() {
             </div>
           )}
         </div>
+
+        {/* Help Modal Overlay */}
+        {showSilabasHelpModal && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-indigo-500/30 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl relative">
+              <HelpCircle className="w-12 h-12 text-indigo-400 mx-auto mb-4 animate-bounce" />
+              <h3 className="text-2xl font-bold text-white mb-2">Sílabas Mágicas</h3>
+              <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+                Escucha o lee la palabra en el centro de la pantalla.
+                Elige la sílaba correcta de las opciones de abajo para completar la palabra antes de que se acabe el tiempo.
+              </p>
+              <button onClick={() => setShowSilabasHelpModal(false)} className="w-full py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-2xl transition duration-200">
+                ¡Entendido!
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
 
-  // 5. Jugando: El Laberinto de las Habitaciones (3D R3F)
-  if (activeGame === 'maze') {
+  // 5.1. Jugando: El Laberinto de los Duendes - Juego Fonológico (3D R3F)
+  if (activeGame === 'maze_phonological') {
     return (
       <div style={styles.gameContainer}>
         <div style={styles.gameHeader}>
@@ -1029,7 +1139,37 @@ export default function Juegos() {
           <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBody}>
-          <Game1Maze player={player} onFinish={(res) => handleFinishGeneric(res, 'El Laberinto de las Habitaciones', 'maze')} />
+          <Game1_1Phonological player={player} onFinish={(res) => handleFinishGeneric(res, 'La Isla de los Duendes (Fonológico)', 'maze_phonological')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 5.2. Jugando: El Laberinto de los Cofres - Juego Superficial (3D R3F)
+  if (activeGame === 'maze_superficial') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game1_2Superficial player={player} onFinish={(res) => handleFinishGeneric(res, 'El Laberinto de los Cofres (Superficial)', 'maze_superficial')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 5.3. Jugando: El Laberinto del Constructor - Juego Mixto (3D R3F)
+  if (activeGame === 'maze_mixed') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game1_3Mixed player={player} onFinish={(res) => handleFinishGeneric(res, 'El Laberinto del Constructor (Mixto)', 'maze_mixed')} />
         </div>
       </div>
     )
@@ -1044,7 +1184,7 @@ export default function Juegos() {
           <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
         </div>
         <div style={styles.gameBody}>
-          <Game2Cheese player={player} onFinish={(res) => handleFinishGeneric(res, 'El Reto del Queso y los Ratones', 'cheese')} />
+          <Game2Cheese player={player} speedLevel={cheeseSpeed} onFinish={(res) => handleFinishGeneric(res, 'El Reto del Queso y los Ratones', 'cheese')} />
         </div>
       </div>
     )
@@ -1075,6 +1215,21 @@ export default function Juegos() {
         </div>
         <div style={styles.gameBody}>
           <Game4SyllableMachine player={player} onFinish={(res) => handleFinishGeneric(res, 'La Máquina de las Sílabas', 'machine')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 8.1 Jugando: La Máquina de las Sílabas para Niños de 7 años (3D R3F)
+  if (activeGame === 'machine7') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game4_1SyllableMachine player={player} onFinish={(res) => handleFinishGeneric(res, 'La Máquina de Sílabas - 7 años', 'machine')} />
         </div>
       </div>
     )
@@ -1384,14 +1539,15 @@ const styles = {
   btnPlay: {
     width: '100%',
     height: '48px',
-    background: 'rgba(255, 255, 255, 0.08)',
+    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
     color: '#fff',
-    border: '1px solid rgba(255,255,255,0.15)',
+    border: 'none',
     borderRadius: '12px',
     fontSize: '15px',
     fontWeight: '700',
     cursor: 'pointer',
-    transition: 'all 0.2s'
+    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.35)',
+    transition: 'all 0.3s ease'
   },
 
   // MODAL AVATAR CREATOR
@@ -1654,16 +1810,21 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     background: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)',
-    padding: '40px'
+    padding: '40px',
+    position: 'relative',
+    overflow: 'hidden'
   },
   demoCard: {
-    background: 'rgba(255, 255, 255, 0.03)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(15, 23, 42, 0.6)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '24px',
     padding: '40px',
     width: '100%',
     maxWidth: '600px',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
+    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+    position: 'relative',
+    zIndex: 2
   },
   demoHeader: {
     display: 'flex',

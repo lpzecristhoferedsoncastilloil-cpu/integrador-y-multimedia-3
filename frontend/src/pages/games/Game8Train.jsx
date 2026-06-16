@@ -449,6 +449,24 @@ const FallingLetter = (props) => {
 };
 
 const Game8Train = ({ player, onFinish }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [wagonsFilled, setWagonsFilled] = useState({ M: false, P: false, L: false });
   const [currentObject, setCurrentObject] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -551,6 +569,7 @@ const Game8Train = ({ player, onFinish }) => {
 
       if (droppedWagon && currentObject && droppedWagon === currentObject.name[0]) {
         setCorrectCount(c => c + 1);
+      playCorrectSound();
         const newFilled = { ...wagonsFilled, [droppedWagon]: true };
         setWagonsFilled(newFilled);
         setScore(prev => prev + 1);

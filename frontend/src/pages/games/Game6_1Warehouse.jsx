@@ -387,6 +387,24 @@ const WarehouseScene = () => {
 };
 
 const Game6_1Warehouse = ({ player, onFinish }) => {
+
+  const playCorrectSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+      osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {}
+  };
   const [currentLevel, setCurrentLevel] = useState(1);
   const [roundIndex, setRoundIndex] = useState(0);
   const [foundWords, setFoundWords] = useState(new Set());
@@ -557,6 +575,8 @@ const Game6_1Warehouse = ({ player, onFinish }) => {
     if (matchTarget) {
       const newCorrectCount = correctCount + 1;
       setCorrectCount(newCorrectCount);
+      playCorrectSound();;
+      playCorrectSound();
       const newFound = new Set([...foundWords, matchTarget.word]);
       setFoundWords(newFound);
       setFeedback(`¡CORRECTO! Encontraste "${matchTarget.word}" 🟢`);
