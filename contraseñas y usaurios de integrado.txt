@@ -1,0 +1,41 @@
+contraseñas y usaurios de integrador
+admin@neurogym.com
+admin123
+
+Usuario Corporativo
+
+cristhofer@neurogym.com
+
+Contraseña Temporal
+
+CristhoferC123
+
+
+usaurio y contraseña juego
+
+
+123
+
+1234
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+comando para inicar 
+cd neurogym
+.\iniciar_backend.bat
+.\iniciar_frontend.bat

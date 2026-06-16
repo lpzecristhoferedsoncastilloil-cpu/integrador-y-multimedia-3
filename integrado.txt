@@ -1,0 +1,30 @@
+========================================================================
+             SISTEMA NEUROGYM - CUENTAS Y CREDENCIALES DE PRUEBA
+========================================================================
+
+A continuación se listan las credenciales válidas actuales en la base de datos 
+local para testear los accesos con diferentes roles:
+
+1. ROL: ADMINISTRADOR
+   - Correo electrónico: admin@neurogym.com
+   - Contraseña: admin123
+   - Permisos: Acceso total, visualización de agendas de todos los psicólogos y 
+               opción exclusiva de "Adicionar Psicólogo" en Configuraciones.
+
+2. ROL: PSICÓLOGO (Alex)
+   - Correo electrónico: alex@neurogym.com
+   - Contraseña: alex123
+   - Permisos: Acceso a pacientes, tests, reportes y visualización única y 
+               estricta de su propia agenda. Pestaña de adición oculta.
+
+3. ROL: PSICÓLOGO (Rosa / Roza)
+   - Correo electrónico: roza@neurogym.com
+   - Contraseña: roza123
+   - Permisos: Acceso a pacientes, tests, reportes y visualización única y 
+               estricta de su propia agenda. Pestaña de adición oculta.
+
+========================================================================
+💡 Nota: Al adicionar un nuevo psicólogo desde el panel de administrador, 
+sus credenciales se generarán automáticamente y se mostrarán en pantalla, 
+además de enviarse a su correo personal registrado.
+========================================================================

@@ -1,0 +1,87 @@
+{
+  "theme": "Light",
+  "archetype": "6 (Vibrant Play + Retro Indie 3D)",
+  "emotional_tone": "Playful, adventurous, nostalgic, and highly interactive.",
+  "design_rationale": "For a kids' educational 3D game with a retro indie aesthetic, the UI must balance nostalgic pixel/blocky visuals with modern usability. We use Archetype 6 (Vibrant Play) but style it with Neo-brutalist/Retro chunky borders, solid drop shadows, and high-contrast primary colors. The 3D world (React Three Fiber) handles the immersion, while the 2D UI remains flat, legible, and tactile.",
+  "colors": {
+    "background": "#87CEEB",
+    "surface": "#FFFFFF",
+    "surface_secondary": "#F3F4F6",
+    "primary": "#FFCC00",
+    "primary_hover": "#E6B800",
+    "secondary": "#FF3B30",
+    "accent_blue": "#007AFF",
+    "accent_green": "#4CD964",
+    "text_main": "#111827",
+    "text_muted": "#4B5563",
+    "border": "#000000"
+  },
+  "typography": {
+    "heading_font": "VT323, monospace",
+    "body_font": "Fredoka, sans-serif",
+    "scale": {
+      "h1": "text-5xl sm:text-6xl tracking-tight",
+      "h2": "text-3xl sm:text-4xl tracking-tight",
+      "h3": "text-2xl sm:text-3xl",
+      "body": "text-base sm:text-lg",
+      "small": "text-sm tracking-widest uppercase"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-6 sm:p-8 lg:p-12",
+    "gap_system": "gap-4 sm:gap-6 lg:gap-8",
+    "border_radius": "rounded-none",
+    "borders": "border-4 border-black",
+    "shadows": "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all",
+    "hud_layout": "fixed top-0 left-0 w-full p-6 flex justify-between items-start pointer-events-none",
+    "hud_elements": "pointer-events-auto bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4"
+  },
+  "ui_components": {
+    "buttons": "Chunky, flat colors (Primary Yellow or Secondary Red), 4px black border, solid black 4px drop shadow. Hover state translates down and right to simulate a physical button press.",
+    "cards_modals": "Flat white background, 4px black border, solid black shadow. High contrast, no gradient. Inside padding p-8.",
+    "hud_score": "Top left. Displays collected letters and current score. Uses heading font (VT323).",
+    "hud_controls": "Top right. Pause button, settings toggle.",
+    "menus": "Main menu and pause menu should be centered modals with heavy retro styling. Background overlay: bg-black/50 backdrop-blur-sm."
+  },
+  "three_d_guidelines": {
+    "library": "React Three Fiber (@react-three/fiber) + Drei (@react-three/drei)",
+    "aesthetic": "Low-resolution, flat shading or basic lambert materials. Blocky/Voxel style.",
+    "character": {
+      "body": "Blue Cube",
+      "head": "White Sphere",
+      "eyes": "Yellow Circles"
+    },
+    "environment": {
+      "map": "Round floating island",
+      "ground": "Pixelated green grass texture or flat green with grid",
+      "centerpiece": "Blocky central tree",
+      "platforms": "Three distinct colored floating platforms (blue, red, yellow)"
+    },
+    "lighting": "Bright ambient light + directional light for harsh, simple shadows. Avoid complex PBR materials.",
+    "camera": "Third-person follow camera, slight top-down angle for platforming clarity.",
+    "animations": "Simple, snappy animations. Floating letters bob up and down with rotation."
+  },
+  "motion_and_interactions": {
+    "ui_hover": "Tactile click (translate X and Y by 2px, reduce shadow to 2px).",
+    "scene_transitions": "Pixelate out or block wipe.",
+    "item_collection": "Scale up, spin faster, then pop/disappear with a particle burst (using Drei's sparkle or simple small cubes)."
+  },
+  "assets": {
+    "icons": "lucide-react (using bold strokeWidth=3 to match chunky style) or custom CSS pixel icons.",
+    "images": {
+      "menu_background": "https://images.unsplash.com/photo-1659115467600-67bf8777c1e6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwxfHxibG9ja3klMjBjb2xvcmZ1bCUyMDNkJTIwZ2FtZXxlbnwwfHx8fDE3ODExMTgyNjN8MA&ixlib=rb-4.1.0&q=85",
+      "decorative_blocks": "https://images.unsplash.com/photo-1685113482103-749509a62787?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODh8MHwxfHNlYXJjaHwyfHxibG9ja3klMjBjb2xvcmZ1bCUyMDNkJTIwZ2FtZXxlbnwwfHx8fDE3ODExMTgyNjN8MA&ixlib=rb-4.1.0&q=85",
+      "retro_pattern": "https://images.pexels.com/photos/8108656/pexels-photo-8108656.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    }
+  },
+  "testing": {
+    "attributes": "All interactive buttons and HUD elements MUST use data-testid. e.g., data-testid='play-button', data-testid='pause-menu'."
+  },
+  "instructions_to_main_agent": [
+    "Install VT323 and Fredoka fonts via Google Fonts in index.html.",
+    "Use raw HTML/Tailwind for the menu UI, as Shadcn's refined look conflicts with the requested Retro Indie Neo-brutalist aesthetic.",
+    "Implement WASD movement and jump using a basic physics engine wrapper (like @react-three/rapier) or custom frame loop.",
+    "Ensure UI is an overlay (z-index 50) on top of the fullscreen Canvas component.",
+    "All buttons must have the solid black border and shadow style for the tactile retro feel."
+  ]
+}

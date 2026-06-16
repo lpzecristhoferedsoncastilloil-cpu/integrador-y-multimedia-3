@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Fredoka:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Fredoka', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+canvas {
+  display: block;
+}
+
+.App {
+  width: 100%;
+  min-height: 100vh;
+}

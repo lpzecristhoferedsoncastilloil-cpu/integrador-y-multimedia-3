@@ -1,0 +1,2458 @@
+# SISTEMA NEUROGYM - GUÍA COMPLETA DE CREACIÓN
+
+# 1. TECNOLOGÍAS QUE USARÁ EL SISTEMA
+
+## FRONTEND
+
+* React.js
+* React Router DOM
+* Axios
+* TailwindCSS
+* Chart.js
+* FullCalendar
+* SweetAlert2
+* Framer Motion
+
+## BACKEND
+
+* Django
+* Django REST Framework
+* JWT Authentication
+* MySQL
+* ReportLab
+* Pillow
+* Django CORS Headers
+
+## BASE DE DATOS
+
+* MySQL mediante Laragon y phpMyAdmin
+
+---
+
+# 2. ESTRUCTURA GENERAL DEL PROYECTO
+
+## CREAR CARPETA PRINCIPAL
+
+Ya tienes:
+
+D:\IA\integradior 3
+
+Dentro quedará así:
+
+```bash
+integradior 3/
+│
+├── backend/
+├── frontend/
+├── media/
+├── assets/
+├── documentos/
+├── audios/
+├── imagenes/
+└── videos/
+```
+
+---
+
+# 3. INSTALAR BACKEND DJANGO
+
+## EN VISUAL STUDIO CODE ABRE TERMINAL
+
+```bash
+cd D:\IA\integradior 3
+```
+
+## CREAR BACKEND
+
+```bash
+mkdir backend
+cd backend
+```
+
+## CREAR ENTORNO VIRTUAL
+
+```bash
+python -m venv env
+```
+
+## ACTIVAR ENTORNO
+
+```bash
+env\Scripts\activate
+```
+
+## INSTALAR DJANGO Y LIBRERÍAS
+
+```bash
+pip install django
+pip install djangorestframework
+pip install djangorestframework-simplejwt
+pip install mysqlclient
+pip install pillow
+pip install django-cors-headers
+pip install reportlab
+pip install django-filter
+pip install python-Levenshtein
+pip install SpeechRecognition
+pip install pydub
+```
+
+---
+
+# 4. CREAR PROYECTO DJANGO
+
+```bash
+django-admin startproject config .
+```
+
+## CREAR APPS
+
+```bash
+python manage.py startapp usuarios
+python manage.py startapp psicologos
+python manage.py startapp pacientes
+python manage.py startapp historiales
+python manage.py startapp juegos
+python manage.py startapp citas
+python manage.py startapp tests
+python manage.py startapp configuraciones
+python manage.py startapp estadisticas
+```
+
+---
+
+# 5. CONFIGURAR MYSQL EN DJANGO
+
+## ARCHIVO
+
+```bash
+backend/config/settings.py
+```
+
+## CAMBIAR DATABASES
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'clinicas_psicologicas_neurogym',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
+```
+
+---
+
+# 6. APPS INSTALADAS
+
+## EN settings.py
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    'rest_framework',
+    'corsheaders',
+
+    'usuarios',
+    'psicologos',
+    'pacientes',
+    'historiales',
+    'juegos',
+    'citas',
+    'tests',
+    'configuraciones',
+    'estadisticas',
+]
+```
+
+---
+
+# 7. CONFIGURAR JWT
+
+## EN settings.py
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+```
+
+---
+
+# 8. CONFIGURAR CORS
+
+```python
+CORS_ALLOW_ALL_ORIGINS = True
+```
+
+---
+
+# 9. CREAR FRONTEND REACT
+
+## NUEVA TERMINAL
+
+```bash
+cd D:\IA\integradior 3
+```
+
+## CREAR FRONTEND
+
+```bash
+npm create vite@latest frontend -- --template react
+```
+
+## ENTRAR
+
+```bash
+cd frontend
+```
+
+## INSTALAR LIBRERÍAS
+
+```bash
+npm install
+npm install react-router-dom
+npm install axios
+npm install sweetalert2
+npm install chart.js react-chartjs-2
+npm install @fullcalendar/react
+npm install @fullcalendar/daygrid
+npm install @fullcalendar/timegrid
+npm install @fullcalendar/interaction
+npm install framer-motion
+npm install lucide-react
+npm install tailwindcss @tailwindcss/vite
+```
+
+---
+
+# 10. ESTRUCTURA DEL FRONTEND
+
+```bash
+frontend/src/
+│
+├── api/
+├── assets/
+├── components/
+├── layouts/
+├── pages/
+├── routes/
+├── services/
+├── styles/
+├── utils/
+└── context/
+```
+
+---
+
+# 11. ESTRUCTURA DE PÁGINAS
+
+```bash
+pages/
+│
+├── publicas/
+│   ├── Inicio.jsx
+│   ├── Login.jsx
+│   ├── Nosotros.jsx
+│   └── Contacto.jsx
+│
+├── psicologo/
+│   ├── Dashboard.jsx
+│   ├── Pacientes.jsx
+│   ├── Historiales.jsx
+│   ├── Calendario.jsx
+│   ├── Tests.jsx
+│   ├── Estadisticas.jsx
+│   └── Configuracion.jsx
+│
+├── paciente/
+│   ├── InicioPaciente.jsx
+│   ├── Juegos.jsx
+│   ├── Tareas.jsx
+│   └── Citas.jsx
+│
+└── juegos/
+    ├── Fonologico.jsx
+    ├── Superficial.jsx
+    └── Mixto.jsx
+```
+
+---
+
+# 12. LOGIN JWT
+
+## FRONTEND LOGIN
+
+```javascript
+import axios from 'axios'
+
+const iniciarSesion = async () => {
+    const respuesta = await axios.post('http://127.0.0.1:8000/api/token/', {
+        correo: correo,
+        password: password
+    })
+
+    localStorage.setItem('token', respuesta.data.access)
+}
+```
+
+---
+
+# 13. DISEÑO DEL CALENDARIO
+
+## EL CALENDARIO SE VERÁ COMO TU IMAGEN DE REFERENCIA
+
+CARACTERÍSTICAS:
+
+* Vista mensual
+* Vista semanal
+* Vista anual
+* Colores por estado
+* Botón crear cita
+* Modal emergente
+* Lista de pacientes
+* Validación de choques
+* Recordatorios
+* Estadísticas visuales
+
+## COMPONENTE
+
+```javascript
+<FullCalendar
+  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+  initialView="dayGridMonth"
+  editable={true}
+  selectable={true}
+  events={eventos}
+/>
+```
+
+---
+
+# 14. GRÁFICO DE ESTADÍSTICAS
+
+EL PANEL SE VERÁ COMO TU IMAGEN DE REFERENCIA.
+
+TENDRÁ:
+
+* Línea verde = respuestas correctas
+* Línea roja = incorrectas
+* Línea azul = total intentadas
+* Filtro por fechas
+* Estadísticas del paciente
+* Tiempo jugado
+* Niveles completados
+* Cantidad de errores
+* Cantidad de abandonos
+
+## EJEMPLO CHART.JS
+
+```javascript
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+import { Line } from 'react-chartjs-2'
+```
+
+---
+
+# 15. DISEÑO DE LOS JUEGOS
+
+LOS JUEGOS SE VERÁN COMO TU IMAGEN:
+
+* Fondo animado
+* Botones grandes
+* Cronómetro
+* Sistema de vidas
+* Sonidos
+* Cinemáticas
+* Música
+* Micrófono
+* Niveles
+* Subniveles
+* Recompensas
+
+---
+
+# 16. ESTRUCTURA DE ASSETS
+
+```bash
+frontend/public/assets/
+│
+├── fondos/
+├── personajes/
+├── sonidos/
+├── musicas/
+├── cinematics/
+├── palabras/
+├── botones/
+└── iconos/
+```
+
+---
+
+# 17. EJEMPLO DEL JUEGO FONOLÓGICO
+
+## COMPONENTE Fonologico.jsx
+
+```javascript
+import { useState } from 'react'
+
+export default function Fonologico() {
+
+    // Vidas del jugador
+    const [vidas, setVidas] = useState(3)
+
+    // Tiempo restante
+    const [tiempo, setTiempo] = useState(10)
+
+    // Puntaje
+    const [puntaje, setPuntaje] = useState(0)
+
+    return (
+        <div className="pantalla-juego">
+
+            <h1>Mundo de las Sílabas Mágicas</h1>
+
+            <div>
+                Vidas: {vidas}
+            </div>
+
+            <div>
+                Tiempo: {tiempo}
+            </div>
+
+            <div>
+                Puntaje: {puntaje}
+            </div>
+
+            <button>
+                Iniciar Micrófono
+            </button>
+
+        </div>
+    )
+}
+```
+
+---
+
+# 18. MICRÓFONO DEL JUEGO
+
+```javascript
+navigator.mediaDevices.getUserMedia({ audio: true })
+```
+
+---
+
+# 19. ENVÍO DEL AUDIO AL BACKEND
+
+```javascript
+const formData = new FormData()
+
+formData.append('audio', audioBlob)
+
+await axios.post(
+  'http://127.0.0.1:8000/api/procesar-audio/',
+  formData
+)
+```
+
+---
+
+# 20. VALIDACIÓN FONÉTICA DJANGO
+
+```python
+from Levenshtein import distance
+
+palabra_correcta = 'casa'
+palabra_usuario = 'caza'
+
+resultado = distance(palabra_correcta, palabra_usuario)
+
+if resultado <= 1:
+    print('Correcto')
+```
+
+---
+
+# 21. SUBIDA DE ARCHIVOS
+
+## MODELO DJANGO
+
+```python
+from django.db import models
+
+class HistorialArchivo(models.Model):
+
+    nombre = models.CharField(max_length=255)
+
+    archivo = models.FileField(upload_to='historiales/')
+
+    fecha = models.DateTimeField(auto_now_add=True)
+```
+
+---
+
+# 22. CREAR SUPERUSUARIO
+
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+# 23. MIGRACIONES
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+# 24. INICIAR DJANGO
+
+```bash
+python manage.py runserver
+```
+
+---
+
+# 25. INICIAR REACT
+
+## NUEVA TERMINAL
+
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+# 26. FUNCIONALIDADES IMPORTANTES
+
+## EL SISTEMA TENDRÁ
+
+### PACIENTES
+
+* Registro
+* Edición
+* Eliminación
+* Historial clínico
+* Juegos
+* Reportes
+* Archivos
+* Audios
+* Tutor
+
+### PSICÓLOGOS
+
+* Dashboard
+* Estadísticas
+* Calendario
+* Gestión de pacientes
+* Reportes PDF
+* Configuración
+
+### JUEGOS
+
+* Fonológico
+* Superficial
+* Mixto
+* Niveles
+* Subniveles
+* Cronómetros
+* Vidas
+* Sonidos
+* Recompensas
+
+### ADMINISTRACIÓN
+
+* CRUD completo
+* Configuración dinámica
+* Gestión multimedia
+* Gestión de tiempos
+* Gestión de vidas
+* Gestión de palabras
+* Gestión de sonidos
+
+---
+
+# 27. FLUJO COMPLETO DEL SISTEMA
+
+## FLUJO
+
+1. Paciente inicia sesión
+2. React verifica token JWT
+3. React obtiene rol
+4. React redirige
+5. Django devuelve datos
+6. React renderiza juegos
+7. Juego consume API
+8. Datos se guardan en MySQL
+9. Estadísticas se generan
+10. Psicólogo revisa historial
+
+---
+
+# 28. CÓMO FUNCIONARÁ TODO
+
+## EJEMPLO
+
+### EL NIÑO ENTRA AL JUEGO
+
+React pide:
+
+```bash
+/api/niveles/1
+```
+
+Django responde:
+
+```json
+{
+  "palabra": "casa",
+  "imagen": "/assets/palabras/casa.png",
+  "audio": "/assets/audios/casa.mp3",
+  "vidas": 3,
+  "tiempo": 10
+}
+```
+
+React muestra:
+
+* Fondo
+* Imagen
+* Sonido
+* Botones
+* Cronómetro
+
+Luego:
+
+* El niño habla
+* React graba
+* Envía audio
+* Django analiza
+* Guarda resultados
+* Actualiza estadísticas
+
+---
+
+# 29. ESTRUCTURA FINAL DEL BACKEND
+
+```bash
+backend/
+│
+├── usuarios/
+├── psicologos/
+├── pacientes/
+├── historiales/
+├── juegos/
+├── citas/
+├── tests/
+├── configuraciones/
+├── estadisticas/
+├── media/
+├── env/
+├── manage.py
+└── config/
+```
+
+---
+
+# 30. ESTRUCTURA FINAL DEL FRONTEND
+
+```bash
+frontend/
+│
+├── public/
+├── src/
+├── node_modules/
+├── package.json
+└── vite.config.js
+```
+
+---
+
+# 31. IMPORTANTE
+
+NADA ESTARÁ CABLEADO.
+
+TODO SE MODIFICARÁ DESDE:
+
+* Base de datos
+* Panel administrador
+* CRUDs
+* Formularios
+* Configuración dinámica
+
+TODO EL SISTEMA ESTARÁ CONECTADO A MYSQL.
+
+LAS IMÁGENES, AUDIOS Y VIDEOS SE GUARDARÁN COMO RUTAS.
+
+---
+
+# 32. RECOMENDACIÓN FINAL
+
+USA:
+
+* Backend = Django
+* Frontend = React
+* Base de datos = MySQL
+* Diseño = TailwindCSS
+* Juegos = React
+* Estadísticas = Chart.js
+* Calendario = FullCalendar
+* Login = JWT
+
+---
+
+# 33. ORDEN PARA CREAR TODO
+
+## PASO 1
+
+Crear base de datos.
+
+## PASO 2
+
+Crear backend Django.
+
+## PASO 3
+
+Conectar MySQL.
+
+## PASO 4
+
+Crear modelos.
+
+## PASO 5
+
+Crear APIs.
+
+## PASO 6
+
+Crear frontend React.
+
+## PASO 7
+
+Crear rutas.
+
+## PASO 8
+
+Crear login.
+
+## PASO 9
+
+Crear panel psicólogo.
+
+## PASO 10
+
+Crear juegos.
+
+## PASO 11
+
+Conectar estadísticas.
+
+## PASO 12
+
+Conectar calendario.
+
+## PASO 13
+
+Subir archivos.
+
+## PASO 14
+
+Crear reportes PDF.
+
+## PASO 15
+
+Probar todo.
+
+---
+
+# 34. RESULTADO FINAL
+
+TENDRÁS:
+
+* Sistema web profesional
+* Página clínica moderna
+* Login seguro
+* Dashboard moderno
+* Calendario tipo hospital
+* Juegos educativos animados
+* Estadísticas avanzadas
+* Gestión de pacientes
+* Historial clínico
+* Archivos multimedia
+* Reportes PDF
+* Configuración dinámica
+* Motor de juegos editable
+* Sistema completo conectado a MySQL
+# CÓDIGOS COMPLETOS REACT PARA NEUROGYM
+
+# 1. INSTALAR LIBRERÍAS DEL FRONTEND
+
+```bash
+npm install react-router-dom axios sweetalert2 framer-motion lucide-react
+npm install @fullcalendar/react
+npm install @fullcalendar/daygrid
+npm install @fullcalendar/timegrid
+npm install @fullcalendar/interaction
+npm install chart.js react-chartjs-2
+npm install tailwindcss @tailwindcss/vite
+```
+
+---
+
+# 2. ESTRUCTURA DE CARPETAS
+
+```bash
+frontend/src/
+│
+├── components/
+│   ├── Sidebar.jsx
+│   ├── Navbar.jsx
+│   ├── TarjetaPaciente.jsx
+│   └── ProtectedRoute.jsx
+│
+├── pages/
+│   ├── Login.jsx
+│   ├── Dashboard.jsx
+│   ├── Calendario.jsx
+│   ├── Estadisticas.jsx
+│   ├── Pacientes.jsx
+│   └── Juegos.jsx
+│
+├── layouts/
+│   └── LayoutPrincipal.jsx
+│
+├── services/
+│   └── api.js
+│
+├── routes/
+│   └── AppRoutes.jsx
+│
+├── App.jsx
+└── main.jsx
+```
+
+---
+
+# 3. ARCHIVO main.jsx
+
+## frontend/src/main.jsx
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
+
+---
+
+# 4. ARCHIVO App.jsx
+
+## frontend/src/App.jsx
+
+```jsx
+import AppRoutes from './routes/AppRoutes'
+
+function App() {
+  return <AppRoutes />
+}
+
+export default App
+```
+
+---
+
+# 5. CONFIGURACIÓN DE AXIOS
+
+## frontend/src/services/api.js
+
+```jsx
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8000/api/'
+})
+
+api.interceptors.request.use((config) => {
+
+  const token = localStorage.getItem('token')
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
+  return config
+})
+
+export default api
+```
+
+---
+
+# 6. LOGIN COMPLETO
+
+## frontend/src/pages/Login.jsx
+
+```jsx
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import api from '../services/api'
+
+export default function Login() {
+
+  const navigate = useNavigate()
+
+  const [correo, setCorreo] = useState('')
+  const [password, setPassword] = useState('')
+
+  const iniciarSesion = async (e) => {
+
+    e.preventDefault()
+
+    try {
+
+      const respuesta = await api.post('token/', {
+        correo,
+        password
+      })
+
+      localStorage.setItem('token', respuesta.data.access)
+      localStorage.setItem('rol', respuesta.data.rol)
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Bienvenido',
+        text: 'Inicio de sesión correcto'
+      })
+
+      if (respuesta.data.rol === 'psicologo') {
+        navigate('/dashboard')
+      } else {
+        navigate('/inicio-paciente')
+      }
+
+    } catch (error) {
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Correo o contraseña incorrectos'
+      })
+    }
+  }
+
+  return (
+
+    <div className='min-h-screen bg-gradient-to-r from-cyan-500 to-blue-700 flex items-center justify-center'>
+
+      <form
+        onSubmit={iniciarSesion}
+        className='bg-white p-10 rounded-3xl shadow-2xl w-[400px]'
+      >
+
+        <h1 className='text-4xl font-bold text-center mb-8'>
+          NeuroGym
+        </h1>
+
+        <input
+          type='email'
+          placeholder='Correo electrónico'
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
+          className='w-full p-4 border rounded-xl mb-5'
+        />
+
+        <input
+          type='password'
+          placeholder='Contraseña'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className='w-full p-4 border rounded-xl mb-5'
+        />
+
+        <button
+          className='w-full bg-blue-600 text-white p-4 rounded-xl hover:bg-blue-800 transition'
+        >
+          Iniciar Sesión
+        </button>
+
+      </form>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 7. SIDEBAR MODERNO
+
+## frontend/src/components/Sidebar.jsx
+
+```jsx
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  Gamepad2,
+  FileText,
+  Settings,
+  LogOut
+} from 'lucide-react'
+
+import { Link } from 'react-router-dom'
+
+export default function Sidebar() {
+
+  return (
+
+    <div className='w-[280px] h-screen bg-black text-white fixed left-0 top-0 p-5'>
+
+      <h1 className='text-3xl font-bold mb-10'>
+        NeuroGym
+      </h1>
+
+      <ul className='space-y-4'>
+
+        <li>
+          <Link
+            to='/dashboard'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <LayoutDashboard />
+            Dashboard
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to='/pacientes'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <Users />
+            Pacientes
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to='/calendario'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <Calendar />
+            Calendario
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to='/juegos'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <Gamepad2 />
+            Juegos
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to='/estadisticas'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <FileText />
+            Estadísticas
+          </Link>
+        </li>
+
+        <li>
+          <Link
+            to='/configuracion'
+            className='flex items-center gap-3 p-4 hover:bg-gray-800 rounded-xl'
+          >
+            <Settings />
+            Configuración
+          </Link>
+        </li>
+
+        <li>
+          <button
+            className='flex items-center gap-3 p-4 hover:bg-red-700 rounded-xl w-full'
+          >
+            <LogOut />
+            Cerrar Sesión
+          </button>
+        </li>
+
+      </ul>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 8. DASHBOARD PRINCIPAL
+
+## frontend/src/pages/Dashboard.jsx
+
+```jsx
+import Sidebar from '../components/Sidebar'
+
+export default function Dashboard() {
+
+  return (
+
+    <div className='flex bg-gray-100 min-h-screen'>
+
+      <Sidebar />
+
+      <div className='ml-[280px] p-10 w-full'>
+
+        <h1 className='text-5xl font-bold mb-10'>
+          Panel Principal
+        </h1>
+
+        <div className='grid grid-cols-4 gap-6'>
+
+          <div className='bg-white p-8 rounded-3xl shadow-xl'>
+            <h2 className='text-2xl font-bold'>Pacientes</h2>
+            <p className='text-5xl mt-5'>120</p>
+          </div>
+
+          <div className='bg-white p-8 rounded-3xl shadow-xl'>
+            <h2 className='text-2xl font-bold'>Citas</h2>
+            <p className='text-5xl mt-5'>32</p>
+          </div>
+
+          <div className='bg-white p-8 rounded-3xl shadow-xl'>
+            <h2 className='text-2xl font-bold'>Juegos</h2>
+            <p className='text-5xl mt-5'>85</p>
+          </div>
+
+          <div className='bg-white p-8 rounded-3xl shadow-xl'>
+            <h2 className='text-2xl font-bold'>Reportes</h2>
+            <p className='text-5xl mt-5'>15</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 9. CALENDARIO TIPO HOSPITAL
+
+## frontend/src/pages/Calendario.jsx
+
+```jsx
+import Sidebar from '../components/Sidebar'
+
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin from '@fullcalendar/interaction'
+
+export default function Calendario() {
+
+  const eventos = [
+    {
+      title: 'Paciente Juan',
+      date: '2026-05-20'
+    },
+    {
+      title: 'Paciente María',
+      date: '2026-05-22'
+    }
+  ]
+
+  return (
+
+    <div className='flex bg-gray-100 min-h-screen'>
+
+      <Sidebar />
+
+      <div className='ml-[280px] p-10 w-full'>
+
+        <h1 className='text-5xl font-bold mb-10'>
+          Calendario Clínico
+        </h1>
+
+        <div className='bg-white p-5 rounded-3xl shadow-xl'>
+
+          <FullCalendar
+            plugins={[
+              dayGridPlugin,
+              timeGridPlugin,
+              interactionPlugin
+            ]}
+            initialView='dayGridMonth'
+            selectable={true}
+            editable={true}
+            events={eventos}
+            height='80vh'
+          />
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 10. ESTADÍSTICAS DEL JUEGO
+
+## frontend/src/pages/Estadisticas.jsx
+
+```jsx
+import Sidebar from '../components/Sidebar'
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+import { Line } from 'react-chartjs-2'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
+export default function Estadisticas() {
+
+  const data = {
+    labels: ['Nivel 1', 'Nivel 2', 'Nivel 3'],
+
+    datasets: [
+      {
+        label: 'Correctas',
+        data: [8, 9, 10],
+        borderColor: 'green'
+      },
+      {
+        label: 'Incorrectas',
+        data: [2, 1, 0],
+        borderColor: 'red'
+      },
+      {
+        label: 'Intentadas',
+        data: [10, 10, 10],
+        borderColor: 'blue'
+      }
+    ]
+  }
+
+  return (
+
+    <div className='flex bg-gray-100 min-h-screen'>
+
+      <Sidebar />
+
+      <div className='ml-[280px] p-10 w-full'>
+
+        <h1 className='text-5xl font-bold mb-10'>
+          Estadísticas del Juego
+        </h1>
+
+        <div className='bg-white p-10 rounded-3xl shadow-xl'>
+          <Line data={data} />
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 11. JUEGO FONOLÓGICO
+
+## frontend/src/pages/Juegos.jsx
+
+```jsx
+import { useState } from 'react'
+
+export default function Juegos() {
+
+  const [vidas, setVidas] = useState(3)
+  const [tiempo, setTiempo] = useState(10)
+  const [puntaje, setPuntaje] = useState(0)
+
+  return (
+
+    <div
+      className='min-h-screen bg-cover bg-center flex flex-col items-center justify-center'
+      style={{
+        backgroundImage: `url('/assets/fondos/bosque.png')`
+      }}
+    >
+
+      <div className='bg-white p-5 rounded-3xl shadow-2xl'>
+
+        <h1 className='text-4xl font-bold text-center mb-5'>
+          Mundo de las Sílabas Mágicas
+        </h1>
+
+        <div className='flex justify-between mb-5'>
+          <h2>❤️ {vidas}</h2>
+          <h2>⏰ {tiempo}</h2>
+          <h2>⭐ {puntaje}</h2>
+        </div>
+
+        <div className='grid grid-cols-3 gap-5'>
+
+          <button className='bg-blue-200 p-6 rounded-2xl text-3xl'>
+            la
+          </button>
+
+          <button className='bg-blue-200 p-6 rounded-2xl text-3xl'>
+            co
+          </button>
+
+          <button className='bg-blue-200 p-6 rounded-2xl text-3xl'>
+            sa
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+# 12. RUTAS DEL SISTEMA
+
+## frontend/src/routes/AppRoutes.jsx
+
+```jsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
+import Login from '../pages/Login'
+import Dashboard from '../pages/Dashboard'
+import Calendario from '../pages/Calendario'
+import Estadisticas from '../pages/Estadisticas'
+import Juegos from '../pages/Juegos'
+
+export default function AppRoutes() {
+
+  return (
+
+    <BrowserRouter>
+
+      <Routes>
+
+        <Route path='/' element={<Login />} />
+
+        <Route path='/dashboard' element={<Dashboard />} />
+
+        <Route path='/calendario' element={<Calendario />} />
+
+        <Route path='/estadisticas' element={<Estadisticas />} />
+
+        <Route path='/juegos' element={<Juegos />} />
+
+      </Routes>
+
+    </BrowserRouter>
+  )
+}
+```
+
+---
+
+# 13. INICIAR EL FRONTEND
+
+```bash
+npm run dev
+```
+
+---
+
+# 14. RESULTADO FINAL
+
+TENDRÁS:
+
+* Login moderno
+* Sidebar tipo hospital
+* Dashboard profesional
+* Calendario tipo clínica
+* Estadísticas tipo dashboard
+* Juegos infantiles
+* Sistema conectado con Django
+* JWT
+* React Router
+* TailwindCSS
+* FullCalendar
+* Chart.js
+* Diseño moderno
+
+BASE DE DATOS CODIGO
+
+CREATE DATABASE IF NOT EXISTS clinicas_psicologicas_neurogym
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+USE clinicas_psicologicas_neurogym;
+
+
+
+/* =========================================================
+TABLA: usuarios
+========================================================= */
+
+CREATE TABLE usuarios (
+
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+
+    correo_electronico VARCHAR(150) NOT NULL UNIQUE,
+
+    contrasena VARCHAR(255) NOT NULL,
+
+    rol_usuario ENUM(
+        'ADMINISTRADOR',
+        'PSICOLOGO',
+        'PACIENTE',
+        'PADRE'
+    ) NOT NULL,
+
+    estado_usuario ENUM(
+        'ACTIVO',
+        'INACTIVO',
+        'BLOQUEADO'
+    ) DEFAULT 'ACTIVO',
+
+    /*
+    La imagen se pondrá automáticamente
+    desde React dependiendo:
+    - edad
+    - género
+    - tipo usuario
+
+    Ejemplo:
+    avatar_nino.png
+    avatar_nina.png
+    avatar_hombre.png
+    avatar_mujer.png
+    */
+
+    foto_perfil VARCHAR(255)
+    DEFAULT 'avatares/avatar_default.png',
+
+    ultima_sesion DATETIME NULL,
+
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+/* =========================================================
+TABLA: psicologos
+========================================================= */
+
+CREATE TABLE psicologos (
+
+    id_psicologo INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_usuario INT NOT NULL UNIQUE,
+
+    nombre_completo VARCHAR(150) NOT NULL,
+
+    ci VARCHAR(20) NOT NULL UNIQUE,
+
+    telefono VARCHAR(20),
+
+    correo_profesional VARCHAR(150),
+
+    especialidad VARCHAR(100),
+
+    direccion TEXT,
+
+    descripcion_profesional LONGTEXT,
+
+    /*
+    Foto editable posteriormente
+    */
+
+    foto_profesional VARCHAR(255)
+    DEFAULT 'avatares/avatar_psicologo.png',
+
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuarios(id_usuario)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: pacientes
+========================================================= */
+
+CREATE TABLE pacientes (
+
+    id_paciente INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_usuario INT UNIQUE,
+
+    id_psicologo INT NOT NULL,
+
+    nombre_completo VARCHAR(150) NOT NULL,
+
+    fecha_nacimiento DATE NOT NULL,
+
+    edad_actual INT,
+
+    genero ENUM(
+        'MASCULINO',
+        'FEMENINO',
+        'OTRO'
+    ) NOT NULL,
+
+    telefono VARCHAR(20),
+
+    correo_electronico VARCHAR(150),
+
+    colegio_ocupacion VARCHAR(150),
+
+    motivo_consulta LONGTEXT,
+
+    direccion TEXT,
+
+    observaciones_generales LONGTEXT,
+
+    /*
+    Imagen automática dependiendo:
+    - edad
+    - género
+    */
+
+    foto_paciente VARCHAR(255)
+    DEFAULT 'avatares/avatar_paciente.png',
+
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuarios(id_usuario)
+    ON DELETE SET NULL,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: padres
+========================================================= */
+
+CREATE TABLE padres (
+
+    id_padre INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    nombre_completo VARCHAR(150) NOT NULL,
+
+    parentesco VARCHAR(50),
+
+    telefono VARCHAR(20),
+
+    correo_electronico VARCHAR(150),
+
+    direccion TEXT,
+
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: citas
+========================================================= */
+
+CREATE TABLE citas (
+
+    id_cita INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_cita VARCHAR(150) NOT NULL,
+
+    descripcion_cita LONGTEXT,
+
+    fecha_cita DATE NOT NULL,
+
+    hora_inicio TIME NOT NULL,
+
+    hora_fin TIME NOT NULL,
+
+    estado_cita ENUM(
+        'PENDIENTE',
+        'CONFIRMADA',
+        'REALIZADA',
+        'CANCELADA',
+        'NO_ASISTIO'
+    ) DEFAULT 'PENDIENTE',
+
+    observaciones LONGTEXT,
+
+    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE,
+
+    UNIQUE(id_psicologo, fecha_cita, hora_inicio)
+);
+
+
+
+/* =========================================================
+TABLA: historiales
+========================================================= */
+
+CREATE TABLE historiales (
+
+    id_historial INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_historial VARCHAR(150),
+
+    descripcion_historial LONGTEXT,
+
+    fecha_historial DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: historialesarchivos
+RELACIONADO DIRECTAMENTE AL HISTORIAL
+========================================================= */
+
+CREATE TABLE historialesarchivos (
+
+    id_historial_archivo INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_historial INT NOT NULL,
+
+    nombre_archivo VARCHAR(255),
+
+    tipo_archivo VARCHAR(50),
+
+    ruta_archivo VARCHAR(255),
+
+    fecha_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_historial)
+    REFERENCES historiales(id_historial)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: notas
+
+NOTAS = INFORMACIÓN AGREGADA AL EXPEDIENTE
+========================================================= */
+
+CREATE TABLE notas (
+
+    id_nota INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_historial INT NOT NULL,
+
+    id_paciente INT NOT NULL,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_nota VARCHAR(150),
+
+    descripcion_nota LONGTEXT,
+
+    fecha_nota DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_historial)
+    REFERENCES historiales(id_historial)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: tests
+
+AQUÍ SE PODRÁ SUBIR:
+- pdf
+- word
+- excel
+- videos
+- imágenes
+- audios
+- etc
+========================================================= */
+
+CREATE TABLE tests (
+
+    id_test INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_test VARCHAR(150),
+
+    descripcion_test LONGTEXT,
+
+    categoria_test VARCHAR(100),
+
+    tipo_test VARCHAR(100),
+
+    observaciones_test LONGTEXT,
+
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: testarchivos
+========================================================= */
+
+CREATE TABLE testarchivos (
+
+    id_test_archivo INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_test INT NOT NULL,
+
+    nombre_archivo VARCHAR(255),
+
+    tipo_archivo VARCHAR(50),
+
+    ruta_archivo VARCHAR(255),
+
+    fecha_subida DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_test)
+    REFERENCES tests(id_test)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: juegosfonologicos
+========================================================= */
+
+CREATE TABLE juegosfonologicos (
+
+    id_juego_fonologico INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_juego VARCHAR(150),
+
+    descripcion_juego LONGTEXT,
+
+    dificultad_general VARCHAR(50),
+
+    portada_juego VARCHAR(255),
+
+    estado_juego ENUM(
+        'ACTIVO',
+        'INACTIVO'
+    ) DEFAULT 'ACTIVO'
+);
+
+
+
+/* =========================================================
+TABLA: juegossuperficiales
+========================================================= */
+
+CREATE TABLE juegossuperficiales (
+
+    id_juego_superficial INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_juego VARCHAR(150),
+
+    descripcion_juego LONGTEXT,
+
+    dificultad_general VARCHAR(50),
+
+    portada_juego VARCHAR(255),
+
+    estado_juego ENUM(
+        'ACTIVO',
+        'INACTIVO'
+    ) DEFAULT 'ACTIVO'
+);
+
+
+
+/* =========================================================
+TABLA: juegosmixtos
+========================================================= */
+
+CREATE TABLE juegosmixtos (
+
+    id_juego_mixto INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_juego VARCHAR(150),
+
+    descripcion_juego LONGTEXT,
+
+    dificultad_general VARCHAR(50),
+
+    portada_juego VARCHAR(255),
+
+    estado_juego ENUM(
+        'ACTIVO',
+        'INACTIVO'
+    ) DEFAULT 'ACTIVO'
+);
+
+
+
+/* =========================================================
+TABLA: niveles
+========================================================= */
+
+CREATE TABLE niveles (
+
+    id_nivel INT AUTO_INCREMENT PRIMARY KEY,
+
+    tipo_dislexia ENUM(
+        'FONOLOGICA',
+        'SUPERFICIAL',
+        'MIXTA'
+    ) NOT NULL,
+
+    id_juego INT NOT NULL,
+
+    nombre_nivel VARCHAR(150),
+
+    dificultad_nivel ENUM(
+        'FACIL',
+        'MEDIO',
+        'DIFICIL'
+    ) NOT NULL,
+
+    orden_nivel INT,
+
+    tiempo_limite INT,
+
+    cantidad_intentos INT,
+
+    fondo_nivel VARCHAR(255),
+
+    musica_nivel VARCHAR(255)
+);
+
+
+
+/* =========================================================
+TABLA: subniveles
+========================================================= */
+
+CREATE TABLE subniveles (
+
+    id_subnivel INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_nivel INT NOT NULL,
+
+    nombre_subnivel VARCHAR(150),
+
+    tipo_actividad VARCHAR(100),
+
+    cantidad_ejercicios INT,
+
+    orden_subnivel INT,
+
+    FOREIGN KEY (id_nivel)
+    REFERENCES niveles(id_nivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: palabras
+========================================================= */
+
+CREATE TABLE palabras (
+
+    id_palabra INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_subnivel INT NOT NULL,
+
+    palabra_correcta VARCHAR(150),
+
+    silabas VARCHAR(150),
+
+    pronunciacion_esperada VARCHAR(150),
+
+    tolerancia_fonetica VARCHAR(150),
+
+    dificultad_palabra VARCHAR(50),
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: opcionespalabras
+========================================================= */
+
+CREATE TABLE opcionespalabras (
+
+    id_opcion_palabra INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_palabra INT NOT NULL,
+
+    opcion_texto VARCHAR(150),
+
+    es_correcta BOOLEAN DEFAULT FALSE,
+
+    FOREIGN KEY (id_palabra)
+    REFERENCES palabras(id_palabra)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: preguntas
+========================================================= */
+
+CREATE TABLE preguntas (
+
+    id_pregunta INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_subnivel INT NOT NULL,
+
+    pregunta_texto LONGTEXT,
+
+    tipo_pregunta VARCHAR(100),
+
+    tiempo_pregunta INT,
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: opcionespreguntas
+========================================================= */
+
+CREATE TABLE opcionespreguntas (
+
+    id_opcion_pregunta INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_pregunta INT NOT NULL,
+
+    texto_opcion VARCHAR(255),
+
+    es_correcta BOOLEAN DEFAULT FALSE,
+
+    FOREIGN KEY (id_pregunta)
+    REFERENCES preguntas(id_pregunta)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: imagenesjuegos
+========================================================= */
+
+CREATE TABLE imagenesjuegos (
+
+    id_imagen_juego INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_subnivel INT NOT NULL,
+
+    nombre_imagen VARCHAR(255),
+
+    ruta_imagen VARCHAR(255),
+
+    tipo_imagen VARCHAR(50),
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: audiosjuegos
+========================================================= */
+
+CREATE TABLE audiosjuegos (
+
+    id_audio_juego INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_subnivel INT NOT NULL,
+
+    nombre_audio VARCHAR(255),
+
+    ruta_audio VARCHAR(255),
+
+    volumen_audio INT,
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: videosjuegos
+========================================================= */
+
+CREATE TABLE videosjuegos (
+
+    id_video_juego INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_subnivel INT NOT NULL,
+
+    nombre_video VARCHAR(255),
+
+    ruta_video VARCHAR(255),
+
+    duracion_video INT,
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: fondosjuegos
+========================================================= */
+
+CREATE TABLE fondosjuegos (
+
+    id_fondo_juego INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_nivel INT NOT NULL,
+
+    nombre_fondo VARCHAR(150),
+
+    ruta_fondo VARCHAR(255),
+
+    musica_ambiente VARCHAR(255),
+
+    FOREIGN KEY (id_nivel)
+    REFERENCES niveles(id_nivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: personajes
+========================================================= */
+
+CREATE TABLE personajes (
+
+    id_personaje INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_personaje VARCHAR(150),
+
+    descripcion_personaje LONGTEXT,
+
+    ruta_modelo VARCHAR(255),
+
+    ruta_voz VARCHAR(255),
+
+    tipo_personaje VARCHAR(100)
+);
+
+
+
+/* =========================================================
+TABLA: recompensas
+========================================================= */
+
+CREATE TABLE recompensas (
+
+    id_recompensa INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_recompensa VARCHAR(100),
+
+    tipo_recompensa VARCHAR(50),
+
+    cantidad_puntos INT,
+
+    ruta_imagen VARCHAR(255)
+);
+
+
+
+/* =========================================================
+TABLA: cinematograficas
+========================================================= */
+
+CREATE TABLE cinematograficas (
+
+    id_cinematografica INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_cinematografica VARCHAR(150),
+
+    ruta_video VARCHAR(255),
+
+    mensaje_motivacional LONGTEXT
+);
+
+
+
+/* =========================================================
+TABLA: resultadosjuegos
+
+RESULTADOS COMPLETOS POR PACIENTE
+========================================================= */
+
+CREATE TABLE resultadosjuegos (
+
+    id_resultado_juego INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    id_nivel INT NOT NULL,
+
+    id_subnivel INT NOT NULL,
+
+    nombre_juego VARCHAR(150),
+
+    respuestas_correctas INT DEFAULT 0,
+
+    respuestas_incorrectas INT DEFAULT 0,
+
+    respuestas_sin_responder INT DEFAULT 0,
+
+    preguntas_totales INT DEFAULT 0,
+
+    tiempo_jugado_segundos INT DEFAULT 0,
+
+    estrellas_ganadas INT DEFAULT 0,
+
+    niveles_completados INT DEFAULT 0,
+
+    porcentaje_resultado DECIMAL(5,2),
+
+    cantidad_audios_enviados INT DEFAULT 0,
+
+    cantidad_pronunciaciones_correctas INT DEFAULT 0,
+
+    cantidad_pronunciaciones_incorrectas INT DEFAULT 0,
+
+    estado_resultado ENUM(
+        'COMPLETADO',
+        'INCOMPLETO'
+    ) DEFAULT 'INCOMPLETO',
+
+    fecha_resultado DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_nivel)
+    REFERENCES niveles(id_nivel)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_subnivel)
+    REFERENCES subniveles(id_subnivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: audiospacientes
+
+GUARDA AUDIOS DEL NIÑO
+========================================================= */
+
+CREATE TABLE audiospacientes (
+
+    id_audio_paciente INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_resultado_juego INT NOT NULL,
+
+    ruta_audio VARCHAR(255),
+
+    texto_detectado LONGTEXT,
+
+    palabra_esperada VARCHAR(150),
+
+    coincidencia_fonetica DECIMAL(5,2),
+
+    pronunciacion_correcta BOOLEAN DEFAULT FALSE,
+
+    fecha_audio DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_resultado_juego)
+    REFERENCES resultadosjuegos(id_resultado_juego)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: progresosniveles
+========================================================= */
+
+CREATE TABLE progresosniveles (
+
+    id_progreso_nivel INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    id_nivel INT NOT NULL,
+
+    estado_nivel ENUM(
+        'BLOQUEADO',
+        'DESBLOQUEADO',
+        'COMPLETADO'
+    ) DEFAULT 'BLOQUEADO',
+
+    porcentaje_completado DECIMAL(5,2),
+
+    fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_nivel)
+    REFERENCES niveles(id_nivel)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: configuraciones
+========================================================= */
+
+CREATE TABLE configuraciones (
+
+    id_configuracion INT AUTO_INCREMENT PRIMARY KEY,
+
+    nombre_configuracion VARCHAR(100),
+
+    valor_configuracion LONGTEXT
+);
+
+
+
+/* =========================================================
+TABLA: reportes
+========================================================= */
+
+CREATE TABLE reportes (
+
+    id_reporte INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_reporte VARCHAR(150),
+
+    descripcion_reporte LONGTEXT,
+
+    ruta_reporte VARCHAR(255),
+
+    fecha_generacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: actividadespacientes
+========================================================= */
+
+CREATE TABLE actividadespacientes (
+
+    id_actividad_paciente INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_paciente INT NOT NULL,
+
+    id_psicologo INT NOT NULL,
+
+    titulo_actividad VARCHAR(150),
+
+    descripcion_actividad LONGTEXT,
+
+    fecha_entrega DATE,
+
+    estado_actividad ENUM(
+        'PENDIENTE',
+        'REALIZADO'
+    ) DEFAULT 'PENDIENTE',
+
+    FOREIGN KEY (id_paciente)
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (id_psicologo)
+    REFERENCES psicologos(id_psicologo)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+TABLA: notificaciones
+========================================================= */
+
+CREATE TABLE notificaciones (
+
+    id_notificacion INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_usuario INT NOT NULL,
+
+    titulo_notificacion VARCHAR(150),
+
+    mensaje_notificacion LONGTEXT,
+
+    estado_notificacion ENUM(
+        'LEIDO',
+        'NO_LEIDO'
+    ) DEFAULT 'NO_LEIDO',
+
+    fecha_notificacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_usuario)
+    REFERENCES usuarios(id_usuario)
+    ON DELETE CASCADE
+);
+
+
+
+/* =========================================================
+ÍNDICES
+========================================================= */
+
+CREATE INDEX idx_pacientes_nombre
+ON pacientes(nombre_completo);
+
+CREATE INDEX idx_citas_fecha
+ON citas(fecha_cita);
+
+CREATE INDEX idx_resultados_fecha
+ON resultadosjuegos(fecha_resultado);
+
+CREATE INDEX idx_palabras
+ON palabras(palabra_correcta);
+
+CREATE INDEX idx_tests
+ON tests(titulo_test);
