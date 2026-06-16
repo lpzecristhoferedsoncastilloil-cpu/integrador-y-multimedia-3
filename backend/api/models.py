@@ -448,3 +448,15 @@ class AvatarPaciente(models.Model):
         db_table = 'avatar_paciente'
 
 
+class MensajesAdmin(models.Model):
+    id_mensaje = models.AutoField(primary_key=True)
+    id_emisor = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_emisor', related_name='mensajes_enviados')
+    id_receptor = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_receptor', related_name='mensajes_recibidos')
+    titulo = models.CharField(max_length=150, default='Mensaje de Administrador')
+    contenido = models.TextField()
+    leido = models.BooleanField(default=False)
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = False
+        db_table = 'mensajes_admin'

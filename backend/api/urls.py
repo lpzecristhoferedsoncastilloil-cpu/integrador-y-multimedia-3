@@ -46,5 +46,17 @@ urlpatterns = [
     path('avatar/opciones/', views.OpcionesAvatarListView.as_view()),
     path('avatar/paciente/<int:id_paciente>/', views.AvatarPacienteDetailView.as_view()),
     
+    # Sistema Experto IA
+    path('experto-ia/', views.ExpertoIAView.as_view()),
+    path('experto-ia/excel/', views.ExpertoIAExcelView.as_view()),
+    
+    # Test de Dislexia
+    path('test-dislexia/procesar/', views.TestDislexiaProcesarView.as_view()),
+    path('test-dislexia/guardar/', views.TestDislexiaGuardarView.as_view()),
+    path('test-dislexia/historial/', views.TestDislexiaHistorialView.as_view()),
+    path('reportes/compile-report/', views.CompileReportView.as_view()),
+    path('mensajes/', views.MensajesAdminView.as_view()),
+    path('mensajes/<int:pk>/leido/', views.MensajeReadView.as_view()),
+    
     path('', include(router.urls)),
 ]

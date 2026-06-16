@@ -11,8 +11,10 @@ import Calendario from './pages/Calendario'
 import Estadisticas from './pages/Estadisticas'
 import Juegos from './pages/Juegos'
 import Tests from './pages/Tests'
-import Reports from './pages/Reports'
+import TestDislexia from './pages/TestDislexia'
+import Reportes from './pages/Reportes'
 import Configuracion from './pages/Configuracion'
+import ExpertoIA from './pages/ExpertoIA'
 
 export default function App() {
   return (
@@ -26,9 +28,11 @@ export default function App() {
           <Route path="/pacientes" element={<RutaProtegida><Pacientes /></RutaProtegida>} />
           <Route path="/calendario" element={<RutaProtegida><Calendario /></RutaProtegida>} />
           <Route path="/estadisticas" element={<RutaProtegida><Estadisticas /></RutaProtegida>} />
+          <Route path="/experto-ia" element={<RutaProtegida><ExpertoIA /></RutaProtegida>} />
           <Route path="/juegos" element={<RutaProtegida><Juegos /></RutaProtegida>} />
           <Route path="/tests" element={<RutaProtegida><Tests /></RutaProtegida>} />
-          <Route path="/reportes" element={<RutaProtegida><Reports /></RutaProtegida>} />
+          <Route path="/test-dislexia" element={<RutaProtegida><TestDislexia /></RutaProtegida>} />
+          <Route path="/reportes" element={<RutaProtegida><Reportes /></RutaProtegida>} />
           <Route path="/configuracion" element={<RutaProtegida><Configuracion /></RutaProtegida>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

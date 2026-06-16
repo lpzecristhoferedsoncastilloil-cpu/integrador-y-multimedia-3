@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import api from '../services/api'
-import { Users, Calendar, Gamepad2, FileText, TrendingUp, Clock, ChevronRight, Loader2 } from 'lucide-react'
+import { Users, Calendar, Gamepad2, FileText, TrendingUp, Clock, ChevronRight, Loader2, BookOpen, BarChart3, Cpu } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement,
@@ -35,6 +35,8 @@ export default function Dashboard() {
           total_reportes: 0,
           citas_pendientes: 0,
           total_tests: 0,
+          total_test_dislexia: 0,
+          promedio_precision: 0,
         })
       } finally {
         setCargando(false)
@@ -49,7 +51,11 @@ export default function Dashboard() {
     { label: 'Pacientes Activos', value: datos.total_pacientes, icon: Users, color: 'from-blue-500 to-cyan-500', bg: 'bg-blue-50', link: '/pacientes' },
     { label: 'Citas Hoy', value: datos.total_citas_hoy, icon: Calendar, color: 'from-indigo-500 to-purple-500', bg: 'bg-indigo-50', link: '/calendario' },
     { label: 'Juegos Jugados', value: datos.total_juegos_jugados, icon: Gamepad2, color: 'from-pink-500 to-rose-500', bg: 'bg-pink-50', link: '/juegos' },
-    { label: 'Reportes', value: datos.total_reportes, icon: FileText, color: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', link: '/reportes' },
+    { label: 'Tests Aplicados', value: datos.total_tests, icon: FileText, color: 'from-emerald-500 to-teal-500', bg: 'bg-emerald-50', link: '/tests' },
+    { label: 'Test Dislexia (PROLEC-R)', value: datos.total_test_dislexia, icon: BookOpen, color: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', link: '/test-dislexia' },
+    { label: 'Precisión Promedio', value: `${Math.round(datos.promedio_precision)}%`, icon: BarChart3, color: 'from-yellow-500 to-amber-500', bg: 'bg-yellow-50', link: '/estadisticas' },
+    { label: 'Experto IA', value: `${datos.total_pacientes} Perfiles`, icon: Cpu, color: 'from-red-500 to-orange-500', bg: 'bg-red-50', link: '/experto-ia' },
+    { label: 'Reportes Clínicos', value: datos.total_reportes, icon: FileText, color: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', link: '/reportes' },
   ] : []
 
   const chartData = {

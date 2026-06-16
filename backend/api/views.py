@@ -87,6 +87,17 @@ class DashboardView(APIView):
             and (p.fecha_registro.year if p.fecha_registro else hoy.year) == year
         )
 
+        from django.db import connection
+        from django.db.models import Avg
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM test_dislexia_results")
+                total_test_dislexia = cursor.fetchone()[0]
+        except Exception:
+            total_test_dislexia = 0
+            
+        promedio_precision = Resultadosjuegos.objects.aggregate(Avg('porcentaje_resultado'))['porcentaje_resultado__avg'] or 0
+
         return Response({
             'total_pacientes': Pacientes.objects.count(),
             'total_citas_hoy': Citas.objects.filter(fecha_cita=hoy).count(),
@@ -94,6 +105,8 @@ class DashboardView(APIView):
             'total_reportes': total_reportes,
             'citas_pendientes': Citas.objects.filter(estado_cita__iexact='PENDIENTE').count(),
             'total_tests': Tests.objects.count(),
+            'total_test_dislexia': total_test_dislexia,
+            'promedio_precision': float(promedio_precision),
             
             # Datos de gráficos reales en tiempo real
             'grafico_sesiones': sesiones_por_mes,
@@ -1359,3 +1372,540 @@ class AvatarPacienteDetailView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+
+# --- SISTEMA EXPERTO IA ---
+class ExpertoIAView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        paciente_id = request.query_params.get('paciente_id')
+        if not paciente_id:
+            return Response({'detail': 'Falta el parámetro paciente_id'}, status=400)
+        
+        import os
+        import sys
+        from django.conf import settings
+        ia_path = os.path.normpath(os.path.join(settings.BASE_DIR, '..', '..', 'IA_EXPERTO'))
+        if ia_path not in sys.path:
+            sys.path.append(ia_path)
+            
+        try:
+            import expert_system
+            profile = expert_system.get_patient_profile(int(paciente_id))
+            if not profile:
+                return Response({'detail': 'Paciente no encontrado'}, status=404)
+            return Response(profile, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class ExpertoIAExcelView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        paciente_id = request.query_params.get('paciente_id')
+        if not paciente_id:
+            from django.http import HttpResponse
+            return HttpResponse('Falta el parametro paciente_id', status=400)
+            
+        import os
+        import sys
+        from django.conf import settings
+        ia_path = os.path.normpath(os.path.join(settings.BASE_DIR, '..', '..', 'IA_EXPERTO'))
+        if ia_path not in sys.path:
+            sys.path.append(ia_path)
+            
+        try:
+            import expert_system
+            res = expert_system.generate_styled_excel(int(paciente_id))
+            if not res:
+                from django.http import HttpResponse
+                return HttpResponse('Paciente no encontrado o error al generar reporte', status=404)
+                
+            file_path, file_name = res
+            from django.http import FileResponse
+            response = FileResponse(open(file_path, 'rb'), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+            return response
+        except Exception as e:
+            from django.http import HttpResponse
+            return HttpResponse(f'Error: {str(e)}', status=500)
+
+
+# --- TEST DE DISLEXIA ---
+class TestDislexiaProcesarView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        audio_file = request.FILES.get('audio')
+        list_type = request.data.get('list_type')
+        edad = request.data.get('edad')
+        transcription = request.data.get('transcription', '')
+        
+        if not audio_file or not list_type or not edad:
+            return Response({'detail': 'Faltan campos requeridos (audio, list_type, edad)'}, status=400)
+            
+        import os
+        import sys
+        from datetime import datetime
+        from django.conf import settings
+        
+        # Guardar archivo de audio temporalmente en media/audios_test
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'audios_test')
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        file_name = f"test_{list_type}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{audio_file.name}.wav"
+        file_path = os.path.join(temp_dir, file_name)
+        
+        with open(file_path, 'wb+') as destination:
+            for chunk in audio_file.chunks():
+                destination.write(chunk)
+                
+        # Importar test_manager
+        ia_path = os.path.normpath(os.path.join(settings.BASE_DIR, '..', '..', 'test_dislexia'))
+        if ia_path not in sys.path:
+            sys.path.append(ia_path)
+            
+        try:
+            import test_manager
+            res = test_manager.process_audio_test(file_path, list_type, int(edad), transcription)
+            res['audio_url'] = f"/media/audios_test/{file_name}"
+            return Response(res, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class TestDislexiaGuardarView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        id_paciente = request.data.get('id_paciente')
+        metodo = request.data.get('metodo')
+        a_p = request.data.get('a_p')
+        t_p = request.data.get('t_p')
+        a_ps = request.data.get('a_ps')
+        t_ps = request.data.get('t_ps')
+        audio_p_ruta = request.data.get('audio_p_ruta')
+        audio_ps_ruta = request.data.get('audio_ps_ruta')
+        transcripcion_p = request.data.get('transcripcion_p')
+        transcripcion_ps = request.data.get('transcripcion_ps')
+        detalles_errores = request.data.get('detalles_errores')
+        observaciones = request.data.get('observaciones')
+        
+        if not id_paciente or not metodo or a_p is None or t_p is None or a_ps is None or t_ps is None:
+            return Response({'detail': 'Faltan campos requeridos'}, status=400)
+            
+        import os
+        import sys
+        import json
+        from django.conf import settings
+        from django.db import connection
+        
+        # Obtener edad del paciente
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT edad_actual, fecha_nacimiento FROM pacientes WHERE id_paciente = %s", [id_paciente])
+                row = cursor.fetchone()
+                if not row:
+                    return Response({'detail': 'Paciente no encontrado'}, status=404)
+                edad = row[0]
+                dob = row[1]
+                if (edad is None or edad == 0) and dob:
+                    from datetime import date
+                    today = date.today()
+                    edad = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                if edad is None or edad == 0:
+                    edad = 8  # Fallback predeterminado
+        except Exception as e:
+            return Response({'error': f"Error al buscar paciente: {str(e)}"}, status=500)
+            
+        # Importar test_manager
+        ia_path = os.path.normpath(os.path.join(settings.BASE_DIR, '..', '..', 'test_dislexia'))
+        if ia_path not in sys.path:
+            sys.path.append(ia_path)
+            
+        try:
+            import test_manager
+            # Calcular indices e inferencias
+            calcs = test_manager.calculate_all_indices(edad, int(a_p), float(t_p), int(a_ps), float(t_ps))
+            
+            # Serializar JSON fields
+            detalles_str = json.dumps(detalles_errores) if isinstance(detalles_errores, (list, dict)) else str(detalles_errores or '')
+            obs_str = json.dumps(observaciones) if isinstance(observaciones, (list, dict)) else str(observaciones or '')
+            
+            # Insertar en base de datos
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO test_dislexia_results (
+                        id_paciente, metodo, a_p, t_p, il_p, r_p,
+                        a_ps, t_ps, il_ps, r_ps, diagnostico,
+                        detalles_errores, audio_p_ruta, audio_ps_ruta,
+                        transcripcion_p, transcripcion_ps, observaciones
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """, [
+                    id_paciente, metodo, a_p, t_p, calcs["il_p"], calcs["r_il_p"],
+                    a_ps, t_ps, calcs["il_ps"], calcs["r_il_ps"], calcs["diagnostico"],
+                    detalles_str, audio_p_ruta, audio_ps_ruta,
+                    transcripcion_p, transcripcion_ps, obs_str
+                ])
+                result_id = cursor.lastrowid
+                
+            return Response({
+                'success': True,
+                'id': result_id,
+                'diagnostico': calcs["diagnostico"],
+                'il_p': calcs["il_p"],
+                'il_ps': calcs["il_ps"]
+            }, status=201)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class TestDislexiaHistorialView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request):
+        paciente_id = request.query_params.get('paciente_id')
+        if not paciente_id:
+            return Response({'detail': 'Falta el parámetro paciente_id'}, status=400)
+            
+        import json
+        from django.db import connection
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, metodo, a_p, t_p, il_p, r_p, a_ps, t_ps, il_ps, r_ps, diagnostico, 
+                           detalles_errores, audio_p_ruta, audio_ps_ruta, transcripcion_p, transcripcion_ps, 
+                           observaciones, fecha_registro
+                    FROM test_dislexia_results
+                    WHERE id_paciente = %s
+                    ORDER BY fecha_registro DESC
+                """, [paciente_id])
+                rows = cursor.fetchall()
+                
+            results = []
+            for r in rows:
+                try:
+                    detalles = json.loads(r[11]) if r[11] else []
+                except Exception:
+                    detalles = r[11]
+                    
+                try:
+                    obs = json.loads(r[16]) if r[16] else {}
+                except Exception:
+                    obs = r[16]
+                    
+                results.append({
+                    "id": r[0],
+                    "metodo": r[1],
+                    "a_p": r[2],
+                    "t_p": r[3],
+                    "il_p": r[4],
+                    "r_p": r[5],
+                    "a_ps": r[6],
+                    "t_ps": r[7],
+                    "il_ps": r[8],
+                    "r_ps": r[9],
+                    "diagnostico": r[10],
+                    "detalles_errores": detalles,
+                    "audio_p_ruta": r[12],
+                    "audio_ps_ruta": r[13],
+                    "transcripcion_p": r[14],
+                    "transcripcion_ps": r[15],
+                    "observaciones": obs,
+                    "fecha": r[17].strftime("%d/%m/%Y %H:%M") if r[17] else "N/A"
+                })
+            return Response(results, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+
+class CompileReportView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        paciente_id = request.query_params.get('paciente_id')
+        if not paciente_id:
+            return Response({'error': 'Falta el parámetro paciente_id'}, status=400)
+            
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+        
+        import json
+        from django.db import connection
+        
+        # 1. Obtener Paciente
+        try:
+            paciente = Pacientes.objects.get(pk=paciente_id)
+        except Pacientes.DoesNotExist:
+            return Response({'error': 'Paciente no encontrado'}, status=404)
+            
+        paciente_data = {
+            'id_paciente': paciente.id_paciente,
+            'nombre_completo': paciente.nombre_completo,
+            'fecha_nacimiento': paciente.fecha_nacimiento.strftime('%Y-%m-%d') if paciente.fecha_nacimiento else '',
+            'edad_actual': paciente.edad_actual,
+            'genero': paciente.genero,
+            'telefono': paciente.telefono,
+            'correo_electronico': paciente.correo_electronico,
+            'colegio_ocupacion': paciente.colegio_ocupacion,
+            'motivo_consulta': paciente.motivo_consulta,
+            'direccion': paciente.direccion,
+            'observaciones_generales': paciente.observaciones_generales,
+            'fecha_registro': paciente.fecha_registro.strftime('%Y-%m-%d %H:%M') if paciente.fecha_registro else ''
+        }
+        
+        # 2. Obtener último Test de Dislexia
+        latest_test = None
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT id, metodo, a_p, t_p, il_p, r_p, a_ps, t_ps, il_ps, r_ps,
+                       diagnostico, detalles_errores, observaciones, transcripcion_p, transcripcion_ps, fecha_registro
+                FROM test_dislexia_results
+                WHERE id_paciente = %s
+                ORDER BY fecha_registro DESC
+                LIMIT 1
+            """, [paciente_id])
+            test_row = cursor.fetchone()
+            
+        if test_row:
+            try:
+                detalles = json.loads(test_row[11]) if test_row[11] else []
+            except Exception:
+                detalles = test_row[11]
+            try:
+                obs = json.loads(test_row[12]) if test_row[12] else {}
+            except Exception:
+                obs = test_row[12]
+                
+            latest_test = {
+                'id': test_row[0],
+                'metodo': test_row[1],
+                'a_p': test_row[2],
+                't_p': test_row[3],
+                'il_p': test_row[4],
+                'r_p': test_row[5],
+                'a_ps': test_row[6],
+                't_ps': test_row[7],
+                'il_ps': test_row[8],
+                'r_ps': test_row[9],
+                'diagnostico': test_row[10],
+                'detalles_errores': detalles,
+                'observaciones': obs,
+                'transcripcion_p': test_row[13],
+                'transcripcion_ps': test_row[14],
+                'fecha': test_row[15].strftime('%Y-%m-%d %H:%M') if test_row[15] else ''
+            }
+            
+        # 3. Obtener Primer y Último Juego
+        juegos_qs = Resultadosjuegos.objects.filter(id_paciente=paciente_id).order_by('fecha_resultado')
+        if date_from:
+            juegos_qs = juegos_qs.filter(fecha_resultado__date__gte=date_from)
+        if date_to:
+            juegos_qs = juegos_qs.filter(fecha_resultado__date__lte=date_to)
+            
+        total_juegos = juegos_qs.count()
+        primer_juego = None
+        ultimo_juego = None
+        
+        if total_juegos > 0:
+            first_row = juegos_qs.first()
+            last_row = juegos_qs.last()
+            
+            def map_juego(r):
+                correctas = r.respuestas_correctas or 0
+                incorrectas = r.respuestas_incorrectas or 0
+                totales = r.preguntas_totales or 0
+                precision = float(r.porcentaje_resultado) if r.porcentaje_resultado is not None else (round((correctas / totales * 100), 1) if totales > 0 else 0)
+                return {
+                    'id': r.id_resultado_juego,
+                    'juego': r.nombre_juego or 'Constructor de Cohetes',
+                    'correctas': correctas,
+                    'incorrectas': incorrectas,
+                    'precision': precision,
+                    'estrellas': r.estrellas_ganadas or 0,
+                    'fecha': r.fecha_resultado.strftime('%Y-%m-%d %H:%M') if r.fecha_resultado else ''
+                }
+                
+            primer_juego = map_juego(first_row)
+            ultimo_juego = map_juego(last_row)
+            
+        # 4. Obtener Citas
+        citas_qs = Citas.objects.filter(id_paciente=paciente_id).order_by('-fecha_cita', '-hora_inicio')
+        if date_from:
+            citas_qs = citas_qs.filter(fecha_cita__gte=date_from)
+        if date_to:
+            citas_qs = citas_qs.filter(fecha_cita__lte=date_to)
+            
+        total_citas = citas_qs.count()
+        citas_list = []
+        for c in citas_qs[:20]:
+            citas_list.append({
+                'id_cita': c.id_cita,
+                'titulo_cita': c.titulo_cita,
+                'descripcion_cita': c.descripcion_cita,
+                'fecha_cita': c.fecha_cita.strftime('%Y-%m-%d') if c.fecha_cita else '',
+                'hora_inicio': c.hora_inicio.strftime('%H:%M') if c.hora_inicio else '',
+                'estado_cita': c.estado_cita,
+                'observaciones': c.observaciones
+            })
+            
+        # 5. Obtener Notas de Seguimiento (excluyendo notas de reporte de este generador)
+        notas_qs = Notas.objects.filter(id_paciente=paciente_id).exclude(titulo_nota='Nota de Reporte Clínico').order_by('-fecha_nota')
+        if date_from:
+            notas_qs = notas_qs.filter(fecha_nota__date__gte=date_from)
+        if date_to:
+            notas_qs = notas_qs.filter(fecha_nota__date__lte=date_to)
+            
+        notas_list = []
+        for n in notas_qs:
+            psicologo_nombre = n.id_psicologo.nombre_completo if n.id_psicologo else 'Especialista'
+            notas_list.append({
+                'id_nota': n.id_nota,
+                'titulo_nota': n.titulo_nota,
+                'descripcion_nota': n.descripcion_nota,
+                'fecha_nota': n.fecha_nota.strftime('%Y-%m-%d %H:%M') if n.fecha_nota else '',
+                'psicologo_nombre': psicologo_nombre
+            })
+
+        # 6. Obtener Notas de Reporte (sin filtrar por fecha para que no desaparezcan)
+        notas_reporte_qs = Notas.objects.filter(id_paciente=paciente_id, titulo_nota='Nota de Reporte Clínico').order_by('-fecha_nota')
+        notas_reporte_list = []
+        for n in notas_reporte_qs:
+            psicologo_nombre = n.id_psicologo.nombre_completo if n.id_psicologo else 'Especialista'
+            notas_reporte_list.append({
+                'id_nota': n.id_nota,
+                'titulo_nota': n.titulo_nota,
+                'descripcion_nota': n.descripcion_nota,
+                'fecha_nota': n.fecha_nota.strftime('%Y-%m-%d %H:%M') if n.fecha_nota else '',
+                'psicologo_nombre': psicologo_nombre
+            })
+            
+        return Response({
+            'paciente': paciente_data,
+            'latest_test': latest_test,
+            'progreso_juegos': {
+                'total_juegos': total_juegos,
+                'primer_juego': primer_juego,
+                'ultimo_juego': ultimo_juego
+            },
+            'citas': {
+                'total_citas': total_citas,
+                'lista_citas': citas_list
+            },
+            'notas_seguimiento': notas_list,
+            'notas_reporte': notas_reporte_list
+        }, status=200)
+
+    def post(self, request):
+        paciente_id = request.data.get('paciente_id')
+        titulo = request.data.get('titulo', 'Nota de Reporte Clínico')
+        descripcion = request.data.get('descripcion')
+        psicologo_id = request.data.get('psicologo_id')
+        
+        if not paciente_id or not descripcion:
+            return Response({'error': 'Faltan campos requeridos (paciente_id, descripcion)'}, status=400)
+            
+        try:
+            paciente = Pacientes.objects.get(pk=paciente_id)
+        except Pacientes.DoesNotExist:
+            return Response({'error': 'Paciente no encontrado'}, status=404)
+            
+        psicologo = None
+        if psicologo_id:
+            try:
+                psicologo = Psicologos.objects.get(pk=psicologo_id)
+            except Psicologos.DoesNotExist:
+                pass
+        
+        if not psicologo:
+            psicologo = paciente.id_psicologo or Psicologos.objects.first()
+            
+        from django.utils import timezone
+        historial, created = Historiales.objects.get_or_create(
+            id_paciente=paciente,
+            defaults={
+                'id_psicologo': psicologo,
+                'titulo_historial': f"Historial Clínico - {paciente.nombre_completo}",
+                'descripcion_historial': "Historial clínico general creado automáticamente",
+                'fecha_historial': timezone.now()
+            }
+        )
+        
+        nota = Notas.objects.create(
+            id_historial=historial,
+            id_paciente=paciente,
+            id_psicologo=psicologo,
+            titulo_nota=titulo,
+            descripcion_nota=descripcion,
+            fecha_nota=timezone.now()
+        )
+        
+        return Response({
+            'success': True,
+            'id_nota': nota.id_nota,
+            'titulo_nota': nota.titulo_nota,
+            'descripcion_nota': nota.descripcion_nota,
+            'fecha_nota': nota.fecha_nota.strftime('%Y-%m-%d %H:%M'),
+            'psicologo_nombre': psicologo.nombre_completo
+        }, status=201)
+
+
+class MensajesAdminView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        usuario_id = request.query_params.get('usuario_id')
+        role = request.query_params.get('role')
+        
+        if not usuario_id:
+            return Response({'error': 'Falta usuario_id'}, status=400)
+            
+        if role == 'ADMINISTRADOR':
+            qs = MensajesAdmin.objects.filter(id_emisor=usuario_id).order_by('-fecha_envio')
+        else:
+            qs = MensajesAdmin.objects.filter(id_receptor=usuario_id).order_by('-fecha_envio')
+            
+        return Response(MensajesAdminSerializer(qs, many=True).data)
+
+    def post(self, request):
+        emisor_id = request.data.get('emisor_id')
+        receptor_ids = request.data.get('receptor_ids', [])
+        contenido = request.data.get('contenido')
+        titulo = request.data.get('titulo', 'Mensaje de Administrador')
+        
+        if not emisor_id or not receptor_ids or not contenido:
+            return Response({'error': 'Faltan campos requeridos'}, status=400)
+            
+        try:
+            emisor = Usuarios.objects.get(pk=emisor_id)
+        except Usuarios.DoesNotExist:
+            return Response({'error': 'Emisor no encontrado'}, status=404)
+            
+        if isinstance(receptor_ids, str) or isinstance(receptor_ids, int):
+            receptor_ids = [int(receptor_ids)]
+            
+        created_messages = []
+        for r_id in receptor_ids:
+            try:
+                receptor = Usuarios.objects.get(pk=r_id)
+                msg = MensajesAdmin.objects.create(
+                    id_emisor=emisor,
+                    id_receptor=receptor,
+                    titulo=titulo,
+                    contenido=contenido,
+                    leido=False
+                )
+                created_messages.append(msg)
+            except Usuarios.DoesNotExist:
+                continue
+                
+        return Response({'success': True, 'count': len(created_messages)}, status=201)
+
+
+class MensajeReadView(APIView):
+    permission_classes = [AllowAny]
+    
+    def patch(self, request, pk):
+        try:
+            msg = MensajesAdmin.objects.get(pk=pk)
+            msg.leido = True
+            msg.save()
+            return Response({'success': True})
+        except MensajesAdmin.DoesNotExist:
+            return Response({'error': 'Mensaje no encontrado'}, status=404)

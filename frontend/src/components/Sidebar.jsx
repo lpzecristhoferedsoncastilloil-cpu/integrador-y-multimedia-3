@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   Brain, LayoutGrid, Users, Calendar, Gamepad2,
-  BarChart3, FileText, Settings, LogOut, ChevronRight
+  BarChart3, FileText, Settings, LogOut, ChevronRight, Cpu, BookOpen
 } from 'lucide-react'
 
 const menu = [
@@ -11,7 +11,9 @@ const menu = [
   { path: '/calendario', icon: Calendar, label: 'Calendario', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
   { path: '/juegos', icon: Gamepad2, label: 'Juegos', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
   { path: '/tests', icon: FileText, label: 'Tests', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
+  { path: '/test-dislexia', icon: BookOpen, label: 'Test Dislexia', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
   { path: '/estadisticas', icon: BarChart3, label: 'Estadísticas', animateClass: 'group-hover:-translate-y-1 transition-transform duration-300' },
+  { path: '/experto-ia', icon: Cpu, label: 'Experto IA', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
   { path: '/reportes', icon: FileText, label: 'Reportes', animateClass: 'group-hover:scale-110 transition-transform duration-200' },
   { path: '/configuracion', icon: Settings, label: 'Configuración', animateClass: 'group-hover:rotate-45 transition-transform duration-500' },
 ]

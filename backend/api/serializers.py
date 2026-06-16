@@ -3,9 +3,18 @@ from .models import *
 
 
 class UsuariosSerializer(serializers.ModelSerializer):
+    id_psicologo = serializers.SerializerMethodField()
+
     class Meta:
         model = Usuarios
-        fields = ['id_usuario', 'nombre_usuario', 'correo_electronico', 'rol_usuario', 'estado_usuario', 'foto_perfil', 'fecha_creacion']
+        fields = ['id_usuario', 'nombre_usuario', 'correo_electronico', 'rol_usuario', 'estado_usuario', 'foto_perfil', 'fecha_creacion', 'id_psicologo']
+
+    def get_id_psicologo(self, obj):
+        try:
+            p = Psicologos.objects.filter(id_usuario=obj.id_usuario).first()
+            return p.id_psicologo if p else None
+        except Exception:
+            return None
 
 
 class LoginSerializer(serializers.Serializer):
@@ -194,5 +203,10 @@ class AvatarPacienteSerializer(serializers.ModelSerializer):
     def get_lentes_recurso(self, obj):
         return obj.id_lentes.ruta_recurso if obj.id_lentes else None
 
+class MensajesAdminSerializer(serializers.ModelSerializer):
+    emisor_nombre = serializers.CharField(source='id_emisor.nombre_usuario', read_only=True)
+    receptor_nombre = serializers.CharField(source='id_receptor.nombre_usuario', read_only=True)
 
-
+    class Meta:
+        model = MensajesAdmin
+        fields = ['id_mensaje', 'id_emisor', 'id_receptor', 'titulo', 'contenido', 'leido', 'fecha_envio', 'emisor_nombre', 'receptor_nombre']
