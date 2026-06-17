@@ -16,6 +16,8 @@ export default function Estadisticas() {
   const [pacientes, setPacientes] = useState([])
   const [pacienteId, setPacienteId] = useState('')
   const [limiteSesiones, setLimiteSesiones] = useState('all')
+  const [juegosSeleccionados, setJuegosSeleccionados] = useState([])
+  const [dropdownAbierto, setDropdownAbierto] = useState(false)
   const [cargando, setCargando] = useState(true)
 
   const cargar = async (mostrarSpinner = false) => {
@@ -35,13 +37,32 @@ export default function Estadisticas() {
 
   useEffect(() => {
     cargar(true)
-    const interval = setInterval(() => cargar(false), 8000);
+    const interval = setInterval(() => cargar(false), 3000);
     return () => clearInterval(interval);
   }, [pacienteId])
 
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest('.juegos-dropdown-container')) {
+        setDropdownAbierto(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [])
+
+  // Obtener la lista de nombres de juegos únicos para el filtro
+  const nombresJuegos = Array.from(new Set(resultados.map(r => r.nombre_juego).filter(Boolean)));
+
+  // Filtrar resultados por juegos seleccionados
+  const resultadosFiltrados = resultados.filter(r => {
+    if (juegosSeleccionados.length === 0) return true;
+    return juegosSeleccionados.includes(r.nombre_juego);
+  });
+
   // Obtener sesiones según el límite escogido (los más recientes)
-  const cantidadSesiones = limiteSesiones === 'all' ? resultados.length : parseInt(limiteSesiones);
-  const sesionesSeleccionadas = resultados.slice(0, cantidadSesiones);
+  const cantidadSesiones = limiteSesiones === 'all' ? resultadosFiltrados.length : parseInt(limiteSesiones);
+  const sesionesSeleccionadas = resultadosFiltrados.slice(0, cantidadSesiones);
 
   // Para las gráficas queremos mostrar en orden cronológico (antiguo a nuevo)
   const sesionesGraficos = [...sesionesSeleccionadas].reverse();
@@ -137,13 +158,73 @@ export default function Estadisticas() {
             onChange={e => setLimiteSesiones(e.target.value)}
             className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white"
           >
-            <option value="all">Todas las sesiones ({resultados.length})</option>
+            <option value="all">Todas las sesiones ({resultadosFiltrados.length})</option>
             <option value="1">Última sesión</option>
             <option value="2">Últimas 2 sesiones</option>
             <option value="5">Últimas 5 sesiones</option>
             <option value="10">Últimas 10 sesiones</option>
             <option value="20">Últimas 20 sesiones</option>
           </select>
+        </div>
+
+        <div className="flex flex-col gap-1.5 flex-1 relative juegos-dropdown-container">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Filtrar por Juego</label>
+          <button
+            type="button"
+            onClick={() => setDropdownAbierto(!dropdownAbierto)}
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white text-left flex justify-between items-center shadow-sm cursor-pointer"
+          >
+            <span className="truncate">
+              {juegosSeleccionados.length === 0 
+                ? `Todos los juegos (${nombresJuegos.length})` 
+                : juegosSeleccionados.length === 1 
+                  ? juegosSeleccionados[0] 
+                  : `${juegosSeleccionados.length} seleccionados`}
+            </span>
+            <span className="text-xs text-gray-400">▼</span>
+          </button>
+          
+          {dropdownAbierto && (
+            <div className="absolute left-0 right-0 top-[68px] z-50 bg-white border border-gray-200 rounded-2xl shadow-xl p-3 max-h-64 overflow-y-auto mt-1 flex flex-col gap-1">
+              <div 
+                className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm font-semibold border-b border-gray-100 pb-2 mb-1"
+                onClick={() => setJuegosSeleccionados([])}
+              >
+                <input
+                  type="checkbox"
+                  checked={juegosSeleccionados.length === 0}
+                  readOnly
+                  className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+                <span className="select-none">Todos los juegos</span>
+              </div>
+              {nombresJuegos.map(g => {
+                const checked = juegosSeleccionados.includes(g);
+                return (
+                  <div 
+                    key={g} 
+                    className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer text-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (checked) {
+                        setJuegosSeleccionados(prev => prev.filter(x => x !== g));
+                      } else {
+                        setJuegosSeleccionados(prev => [...prev, g]);
+                      }
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      readOnly
+                      className="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                    <span className="select-none truncate" title={g}>{g}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="self-end md:self-center flex flex-col items-end md:pt-4">

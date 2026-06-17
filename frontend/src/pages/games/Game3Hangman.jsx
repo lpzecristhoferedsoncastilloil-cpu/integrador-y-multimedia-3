@@ -514,29 +514,389 @@ const HangmanStructure = (props) => {
   );
 };
 
-const DungeonScene = () => {
+// Asteroid component
+const Asteroid = ({ position, size = 0.5, speed = 0.5 }) => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.rotation.x += speed * 0.01;
+      ref.current.rotation.y += speed * 0.015;
+      // Floating animation
+      ref.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.15;
+    }
+  });
+  return (
+    <mesh ref={ref} position={position} castShadow>
+      <dodecahedronGeometry args={[size, 1]} />
+      <meshLambertMaterial color="#55556a" roughness={0.9} />
+    </mesh>
+  );
+};
+
+// Saturn Planet component
+const SaturnPlanet = ({ position, size = 1.2 }) => {
+  const groupRef = useRef();
+  const bodyRef = useRef();
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = state.clock.elapsedTime * 0.03;
+    }
+    if (bodyRef.current) {
+      bodyRef.current.rotation.x = state.clock.elapsedTime * 0.01;
+    }
+  });
+  return (
+    <group ref={groupRef} position={position}>
+      {/* Planet body */}
+      <mesh ref={bodyRef} castShadow>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial 
+          color="#f59e0b" 
+          roughness={0.5} 
+          emissive="#78350f" 
+          emissiveIntensity={0.3} 
+        />
+      </mesh>
+      {/* Rings */}
+      <mesh rotation={[Math.PI / 3, 0, 0]}>
+        <ringGeometry args={[size * 1.3, size * 2.2, 64]} />
+        <meshStandardMaterial 
+          color="#d97706" 
+          side={2} 
+          transparent 
+          opacity={0.7} 
+          roughness={0.8} 
+        />
+      </mesh>
+    </group>
+  );
+};
+
+// Sub-component for spinning hologram core
+const HologramCore = ({ position }) => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.rotation.y = state.clock.elapsedTime * 2.0;
+      ref.current.rotation.x = state.clock.elapsedTime * 1.0;
+    }
+  });
+  return (
+    <mesh ref={ref} position={position}>
+      <octahedronGeometry args={[0.08, 0]} />
+      <meshBasicMaterial color="#06b6d4" wireframe />
+    </mesh>
+  );
+};
+
+// Control Console component
+const ControlConsole = ({ position }) => {
+  return (
+    <group position={position}>
+      {/* Main Desk */}
+      <mesh position={[0, 0.4, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2.5, 0.8, 1.2]} />
+        <meshStandardMaterial color="#2d3748" metalness={0.8} roughness={0.3} />
+      </mesh>
+      
+      {/* Console keyboard area */}
+      <mesh position={[0, 0.81, 0.1]} rotation={[-0.1, 0, 0]}>
+        <boxGeometry args={[2.2, 0.05, 0.6]} />
+        <meshStandardMaterial color="#1a202c" roughness={0.4} />
+      </mesh>
+      
+      {/* Interactive buttons */}
+      <mesh position={[-0.8, 0.84, 0.2]}>
+        <boxGeometry args={[0.15, 0.03, 0.15]} />
+        <meshBasicMaterial color="#38bdf8" />
+      </mesh>
+      <mesh position={[-0.5, 0.84, 0.2]}>
+        <boxGeometry args={[0.15, 0.03, 0.15]} />
+        <meshBasicMaterial color="#ef4444" />
+      </mesh>
+      <mesh position={[-0.2, 0.84, 0.2]}>
+        <boxGeometry args={[0.15, 0.03, 0.15]} />
+        <meshBasicMaterial color="#10b981" />
+      </mesh>
+      <mesh position={[0.2, 0.84, 0.2]}>
+        <boxGeometry args={[0.25, 0.03, 0.15]} />
+        <meshBasicMaterial color="#eab308" />
+      </mesh>
+      <mesh position={[0.6, 0.84, 0.2]}>
+        <boxGeometry args={[0.3, 0.03, 0.2]} />
+        <meshBasicMaterial color="#a855f7" />
+      </mesh>
+      
+      {/* Angled screen panel back */}
+      <mesh position={[0, 1.2, -0.3]} rotation={[0.15, 0, 0]} castShadow>
+        <boxGeometry args={[2.2, 0.7, 0.15]} />
+        <meshStandardMaterial color="#1a202c" metalness={0.7} roughness={0.4} />
+      </mesh>
+      
+      {/* Screen displays */}
+      <mesh position={[-0.5, 1.2, -0.21]} rotation={[0.15, 0, 0]}>
+        <boxGeometry args={[0.8, 0.5, 0.02]} />
+        <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.6} />
+      </mesh>
+      <Text position={[-0.5, 1.2, -0.19]} rotation={[0.15, 0, 0]} fontSize={0.08} color="#ffffff" anchorX="center" anchorY="middle">
+        SYS_OK
+      </Text>
+      
+      <mesh position={[0.5, 1.2, -0.21]} rotation={[0.15, 0, 0]}>
+        <boxGeometry args={[0.8, 0.5, 0.02]} />
+        <meshStandardMaterial color="#059669" emissive="#059669" emissiveIntensity={0.6} />
+      </mesh>
+      <Text position={[0.5, 1.2, -0.19]} rotation={[0.15, 0, 0]} fontSize={0.07} color="#ffffff" anchorX="center" anchorY="middle">
+        LAUNCH_RDY
+      </Text>
+      
+      {/* Hologram emitter */}
+      <mesh position={[0, 0.83, -0.1]}>
+        <cylinderGeometry args={[0.15, 0.2, 0.05, 8]} />
+        <meshStandardMaterial color="#4a5568" metalness={0.9} />
+      </mesh>
+      <mesh position={[0, 1.2, -0.1]} transparent>
+        <coneGeometry args={[0.3, 0.7, 16, 1, true]} />
+        <meshBasicMaterial color="#22d3ee" transparent opacity={0.25} side={2} />
+      </mesh>
+      <HologramCore position={[0, 1.2, -0.1]} />
+    </group>
+  );
+};
+
+// Crystal Cluster component
+const CrystalCluster = ({ position }) => {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.05, 0]} receiveShadow>
+        <cylinderGeometry args={[1.0, 1.1, 0.1, 16]} />
+        <meshStandardMaterial color="#4a5568" metalness={0.8} roughness={0.2} />
+      </mesh>
+      
+      <mesh position={[-0.2, 0.6, -0.1]} rotation={[0.1, 0.05, -0.08]} castShadow>
+        <cylinderGeometry args={[0, 0.18, 1.1, 5]} />
+        <meshStandardMaterial color="#d946ef" emissive="#d946ef" emissiveIntensity={1.2} roughness={0.1} />
+      </mesh>
+      <mesh position={[0.25, 0.45, 0.15]} rotation={[-0.15, -0.05, 0.1]} castShadow>
+        <cylinderGeometry args={[0, 0.15, 0.8, 4]} />
+        <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={1.2} roughness={0.1} />
+      </mesh>
+      <mesh position={[0.05, 0.3, 0.4]} rotation={[0.2, 0.1, 0.15]} castShadow>
+        <cylinderGeometry args={[0, 0.12, 0.5, 6]} />
+        <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={1.0} roughness={0.1} />
+      </mesh>
+      <mesh position={[-0.35, 0.35, 0.35]} rotation={[0.1, -0.2, -0.2]} castShadow>
+        <cylinderGeometry args={[0, 0.13, 0.6, 5]} />
+        <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={1.0} roughness={0.1} />
+      </mesh>
+      
+      <pointLight color="#d946ef" intensity={1.5} distance={4} position={[0, 0.5, 0]} />
+    </group>
+  );
+};
+
+// Alien Plant component
+const AlienPlant = ({ position }) => {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.4, 0.3, 0.5, 12]} />
+        <meshStandardMaterial color="#1e293b" metalness={0.7} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.5, 0]}>
+        <cylinderGeometry args={[0.43, 0.43, 0.08, 12]} />
+        <meshStandardMaterial color="#0f172a" metalness={0.8} />
+      </mesh>
+      
+      <mesh position={[-0.1, 0.75, 0.05]} rotation={[0.2, 0, -0.15]} castShadow>
+        <cylinderGeometry args={[0.04, 0.06, 0.5, 8]} />
+        <meshStandardMaterial color="#047857" roughness={0.6} />
+      </mesh>
+      <mesh position={[-0.17, 1.05, 0.07]}>
+        <sphereGeometry args={[0.14, 16, 16]} />
+        <meshStandardMaterial color="#ec4899" emissive="#ec4899" emissiveIntensity={1.0} />
+      </mesh>
+      
+      <mesh position={[0.15, 0.8, -0.1]} rotation={[-0.15, 0.1, 0.2]} castShadow>
+        <cylinderGeometry args={[0.035, 0.05, 0.6, 8]} />
+        <meshStandardMaterial color="#047857" roughness={0.6} />
+      </mesh>
+      <mesh position={[0.25, 1.15, -0.13]}>
+        <sphereGeometry args={[0.12, 16, 16]} />
+        <meshStandardMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={1.0} />
+      </mesh>
+      
+      <mesh position={[0.0, 0.65, 0.2]} rotation={[0.1, -0.15, 0.05]} castShadow>
+        <cylinderGeometry args={[0.03, 0.045, 0.35, 8]} />
+        <meshStandardMaterial color="#059669" roughness={0.6} />
+      </mesh>
+      <mesh position={[0.0, 0.85, 0.23]}>
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial color="#eab308" emissive="#eab308" emissiveIntensity={0.8} />
+      </mesh>
+    </group>
+  );
+};
+
+// Energy Pylon component
+const EnergyPylon = ({ position, lightColor = "#ec4899" }) => {
+  const ringRef = useRef();
+  useFrame((state) => {
+    if (ringRef.current) {
+      ringRef.current.rotation.y = state.clock.elapsedTime * 1.5;
+      ringRef.current.position.y = 3.2 + Math.sin(state.clock.elapsedTime * 2.0) * 0.15;
+    }
+  });
+
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.2, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.5, 0.7, 0.4, 8]} />
+        <meshStandardMaterial color="#3f3f5f" metalness={0.7} roughness={0.4} />
+      </mesh>
+      
+      <mesh position={[0, 1.9, 0]} castShadow>
+        <cylinderGeometry args={[0.1, 0.18, 3.0, 8]} />
+        <meshStandardMaterial color="#1e1b4b" metalness={0.8} roughness={0.3} />
+      </mesh>
+      
+      {[-0.25, 0.25].map((xOffset, idx) => (
+        <mesh key={idx} position={[xOffset, 1.4, 0]} castShadow>
+          <boxGeometry args={[0.08, 2.0, 0.15]} />
+          <meshStandardMaterial color="#3f3f5f" metalness={0.7} />
+        </mesh>
+      ))}
+      
+      <mesh position={[0, 1.2, 0]}>
+        <cylinderGeometry args={[0.26, 0.26, 0.08, 12, 1, true]} />
+        <meshBasicMaterial color={lightColor} />
+      </mesh>
+      <mesh position={[0, 2.4, 0]}>
+        <cylinderGeometry args={[0.22, 0.22, 0.08, 12, 1, true]} />
+        <meshBasicMaterial color={lightColor} />
+      </mesh>
+      
+      <mesh position={[0, 3.4, 0]} castShadow>
+        <cylinderGeometry args={[0.3, 0.2, 0.2, 8]} />
+        <meshStandardMaterial color="#3f3f5f" metalness={0.7} />
+      </mesh>
+      <mesh position={[0, 3.8, 0]} castShadow>
+        <sphereGeometry args={[0.18, 12, 12]} />
+        <meshStandardMaterial color="#1e1b4b" />
+      </mesh>
+      
+      <group ref={ringRef} position={[0, 3.2, 0]}>
+        <mesh>
+          <sphereGeometry args={[0.22, 16, 16]} />
+          <meshBasicMaterial color={lightColor} />
+        </mesh>
+        <mesh rotation={[Math.PI / 4, 0, 0]}>
+          <torusGeometry args={[0.35, 0.04, 8, 24]} />
+          <meshBasicMaterial color={lightColor} />
+        </mesh>
+      </group>
+      
+      <pointLight color={lightColor} intensity={1.8} distance={8} position={[0, 3.2, 0]} />
+    </group>
+  );
+};
+
+// SpaceScenery replaces DungeonScene
+const SpaceScenery = () => {
   return (
     <group>
-      {/* Floor - lighter and more vibrant indigo */}
+      {/* Main floor plate */}
       <mesh position={[0, -0.05, 0]} receiveShadow>
         <boxGeometry args={[24, 0.1, 16]} />
-        <meshLambertMaterial color="#312e81" />
+        <meshStandardMaterial color="#131326" metalness={0.8} roughness={0.4} />
       </mesh>
-      {/* Walls back - lighter purple/indigo for color variety */}
-      <mesh position={[0, 3, -8]}>
-        <boxGeometry args={[24, 6, 0.4]} />
-        <meshLambertMaterial color="#4f46e5" />
+      
+      {/* Floor outer border wireframe */}
+      <mesh position={[0, 0.01, 0]} receiveShadow>
+        <boxGeometry args={[23.8, 0.02, 15.8]} />
+        <meshStandardMaterial color="#1a1a36" metalness={0.6} roughness={0.5} wireframe />
       </mesh>
-      {/* Torch glow accents - pink glowing spheres with point lights */}
-      {[[-8, 2.5, -7.7], [8, 2.5, -7.7], [0, 4.5, -7.7]].map((p, i) => (
-        <group key={i} position={p}>
-          <mesh>
-            <sphereGeometry args={[0.3, 16, 16]} />
-            <meshBasicMaterial color="#ec4899" />
-          </mesh>
-          <pointLight color="#ec4899" intensity={0.8} distance={6} />
-        </group>
+      
+      {/* Decorative neon paths on the floor */}
+      <mesh position={[0, 0.015, -6.5]}>
+        <boxGeometry args={[23.5, 0.01, 0.06]} />
+        <meshBasicMaterial color="#00f0ff" />
+      </mesh>
+      <mesh position={[0, 0.015, 6.5]}>
+        <boxGeometry args={[23.5, 0.01, 0.06]} />
+        <meshBasicMaterial color="#ff007f" />
+      </mesh>
+      {[-11.5, -4, 4, 11.5].map((xPos, idx) => (
+        <mesh key={idx} position={[xPos, 0.015, 0]}>
+          <boxGeometry args={[0.06, 0.01, 13.0]} />
+          <meshBasicMaterial color={idx % 2 === 0 ? "#00f0ff" : "#ff007f"} />
+        </mesh>
       ))}
+
+      {/* Back Wall */}
+      <mesh position={[0, 3, -8]} receiveShadow>
+        <boxGeometry args={[24, 6, 0.4]} />
+        <meshStandardMaterial color="#0d0d21" metalness={0.85} roughness={0.3} />
+      </mesh>
+      
+      {/* Metallic structural columns on the back wall */}
+      {[-11.8, -6, 6, 11.8].map((xOffset, idx) => (
+        <mesh key={idx} position={[xOffset, 3, -7.7]} castShadow receiveShadow>
+          <boxGeometry args={[0.5, 6, 0.35]} />
+          <meshStandardMaterial color="#2d2d48" metalness={0.7} roughness={0.4} />
+        </mesh>
+      ))}
+      
+      {/* Diagonal brace beams on back wall */}
+      <mesh position={[-8.9, 3, -7.68]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <boxGeometry args={[4.2, 0.2, 0.1]} />
+        <meshStandardMaterial color="#1e1e35" metalness={0.8} />
+      </mesh>
+      <mesh position={[8.9, 3, -7.68]} rotation={[0, 0, -Math.PI / 4]} castShadow>
+        <boxGeometry args={[4.2, 0.2, 0.1]} />
+        <meshStandardMaterial color="#1e1e35" metalness={0.8} />
+      </mesh>
+      
+      {/* Glowing wall stripes */}
+      <mesh position={[-8.9, 3, -7.65]} rotation={[0, 0, Math.PI / 4]}>
+        <boxGeometry args={[4.0, 0.05, 0.02]} />
+        <meshBasicMaterial color="#00f0ff" />
+      </mesh>
+      <mesh position={[8.9, 3, -7.65]} rotation={[0, 0, -Math.PI / 4]}>
+        <boxGeometry args={[4.0, 0.05, 0.02]} />
+        <meshBasicMaterial color="#ff007f" />
+      </mesh>
+      
+      {/* Glowing logo / core in center wall */}
+      <group position={[0, 4.2, -7.7]}>
+        <mesh>
+          <torusGeometry args={[1.0, 0.08, 8, 48]} />
+          <meshBasicMaterial color="#00f0ff" />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.4, 0.4, 0.1]} />
+          <meshBasicMaterial color="#ff007f" />
+        </mesh>
+      </group>
+
+      {/* Floating Elements (Space Background) */}
+      <SaturnPlanet position={[9, 7.2, -12.5]} size={1.3} />
+      
+      <Asteroid position={[-9, 6.8, -11]} size={0.65} speed={0.4} />
+      <Asteroid position={[-11.5, 5.2, -10]} size={0.45} speed={-0.6} />
+      <Asteroid position={[6.5, 8.2, -13.5]} size={0.35} speed={0.3} />
+
+      {/* Control Console on Far Left */}
+      <ControlConsole position={[-9.5, 0, -4.5]} />
+
+      {/* Crystals and Plants on Far Right */}
+      <CrystalCluster position={[9.8, 0, -4]} />
+      <AlienPlant position={[10.5, 0, -2.0]} />
+
+      {/* Energy Pylons */}
+      <EnergyPylon position={[-11.0, 0, -7.0]} lightColor="#ff007f" />
+      <EnergyPylon position={[11.0, 0, -7.0]} lightColor="#00f0ff" />
+      <EnergyPylon position={[0.0, 0, -7.5]} lightColor="#a855f7" />
     </group>
   );
 };
@@ -703,7 +1063,7 @@ const Game3Hangman = ({ player, onFinish }) => {
           <directionalLight position={[5, 10, 5]} intensity={0.9} castShadow />
           {/* Scaled entire 3D content by 1.2 to make it 20% larger */}
           <group scale={1.2}>
-            <DungeonScene />
+            <SpaceScenery />
             <HangmanStructure fails={fails} />
             {letterPositions.map(({ letter, position }) => (
               <LetterBlock

@@ -7,4 +7,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    host: '0.0.0.0',   // Permite conexiones desde el celular y cualquier dispositivo en la red
+    port: 5173,
+  },
 })
+

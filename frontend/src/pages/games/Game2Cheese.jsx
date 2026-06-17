@@ -36,6 +36,177 @@ const TIMER_SECONDS = 45;
 const LEVEL_WIN_SCORE = 3; // 3 correct answers required to pass level
 const MAX_LIVES = 3;
 
+const CheeseTable = () => {
+  const tableclothTiles = useMemo(() => {
+    const list = [];
+    const size = 32;
+    const grid = 12;
+    const tileS = size / grid;
+    for (let r = 0; r < grid; r++) {
+      for (let c = 0; c < grid; c++) {
+        const x = -size / 2 + (c + 0.5) * tileS;
+        const z = -size / 2 + (r + 0.5) * tileS;
+        const isRed = (r + c) % 2 === 0;
+        const color = isRed ? '#ef4444' : '#f8fafc';
+        list.push({ x, z, size: tileS, color });
+      }
+    }
+    return list;
+  }, []);
+
+  return (
+    <group>
+      {/* Table base wood slab */}
+      <mesh position={[0, -0.2, 0]} receiveShadow>
+        <boxGeometry args={[34, 0.3, 34]} />
+        <meshLambertMaterial color="#78350f" />
+      </mesh>
+      
+      {/* Tablecloth tiles */}
+      {tableclothTiles.map((tile, i) => (
+        <mesh key={i} position={[tile.x, -0.04, tile.z]} receiveShadow>
+          <boxGeometry args={[tile.size, 0.02, tile.size]} />
+          <meshLambertMaterial color={tile.color} />
+        </mesh>
+      ))}
+
+      {/* Table border */}
+      <mesh position={[0, -0.04, 16.5]} receiveShadow>
+        <boxGeometry args={[34, 0.08, 1]} />
+        <meshLambertMaterial color="#451a03" />
+      </mesh>
+      <mesh position={[0, -0.04, -16.5]} receiveShadow>
+        <boxGeometry args={[34, 0.08, 1]} />
+        <meshLambertMaterial color="#451a03" />
+      </mesh>
+      <mesh position={[16.5, -0.04, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[34, 0.08, 1]} />
+        <meshLambertMaterial color="#451a03" />
+      </mesh>
+      <mesh position={[-16.5, -0.04, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+        <boxGeometry args={[34, 0.08, 1]} />
+        <meshLambertMaterial color="#451a03" />
+      </mesh>
+
+      {/* DECORATIONS */}
+      {/* Grapes */}
+      <group position={[-7.5, 0.1, -7.5]} scale={[1.2, 1.2, 1.2]}>
+        <mesh position={[0, 0, 0]} castShadow>
+          <sphereGeometry args={[0.16, 8, 8]} />
+          <meshLambertMaterial color="#7c3aed" />
+        </mesh>
+        <mesh position={[0.2, 0, -0.1]} castShadow>
+          <sphereGeometry args={[0.15, 8, 8]} />
+          <meshLambertMaterial color="#6d28d9" />
+        </mesh>
+        <mesh position={[-0.1, 0, 0.15]} castShadow>
+          <sphereGeometry args={[0.15, 8, 8]} />
+          <meshLambertMaterial color="#7c3aed" />
+        </mesh>
+        <mesh position={[0.1, 0.1, 0.1]} castShadow>
+          <sphereGeometry args={[0.17, 8, 8]} />
+          <meshLambertMaterial color="#8b5cf6" />
+        </mesh>
+        <mesh position={[0.22, 0.08, 0.18]} castShadow>
+          <sphereGeometry args={[0.14, 8, 8]} />
+          <meshLambertMaterial color="#6d28d9" />
+        </mesh>
+        <mesh position={[-0.05, 0.12, -0.12]} castShadow>
+          <sphereGeometry args={[0.16, 8, 8]} />
+          <meshLambertMaterial color="#8b5cf6" />
+        </mesh>
+        <mesh position={[0.05, 0.22, 0]} rotation={[0.2, 0, -0.4]}>
+          <cylinderGeometry args={[0.02, 0.02, 0.22, 6]} />
+          <meshLambertMaterial color="#15803d" />
+        </mesh>
+      </group>
+
+      {/* Milk bottle */}
+      <group position={[7.5, 0, -7.5]}>
+        <mesh position={[0, 0.5, 0]} castShadow>
+          <cylinderGeometry args={[0.35, 0.35, 1, 12]} />
+          <meshLambertMaterial color="#166534" />
+        </mesh>
+        <mesh position={[0, 1.15, 0]} castShadow>
+          <cylinderGeometry args={[0.14, 0.18, 0.35, 8]} />
+          <meshLambertMaterial color="#166534" />
+        </mesh>
+        <mesh position={[0, 0.5, 0.352]}>
+          <planeGeometry args={[0.42, 0.45]} />
+          <meshLambertMaterial color="#fef08a" />
+        </mesh>
+      </group>
+
+      {/* Extra cheese wedge */}
+      <group position={[-8.5, 0.25, 8.5]} rotation={[0, 0.6, 0]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.8, 0.8, 0.5, 3]} />
+          <meshLambertMaterial color="#facc15" />
+        </mesh>
+        <mesh position={[0.1, 0.1, 0.41]}>
+          <sphereGeometry args={[0.08, 6, 6]} />
+          <meshLambertMaterial color="#ca8a04" />
+        </mesh>
+        <mesh position={[-0.3, -0.1, 0.35]}>
+          <sphereGeometry args={[0.06, 6, 6]} />
+          <meshLambertMaterial color="#ca8a04" />
+        </mesh>
+      </group>
+
+      {/* Fruit plate */}
+      <group position={[8.5, 0, 8.5]}>
+        <mesh position={[0, 0.05, 0]} castShadow>
+          <cylinderGeometry args={[0.8, 0.7, 0.06, 16]} />
+          <meshLambertMaterial color="#f8fafc" />
+        </mesh>
+        <mesh position={[-0.2, 0.22, -0.1]} castShadow>
+          <sphereGeometry args={[0.22, 12, 12]} />
+          <meshLambertMaterial color="#dc2626" />
+        </mesh>
+        <mesh position={[-0.2, 0.42, -0.1]}>
+          <cylinderGeometry args={[0.02, 0.02, 0.1, 6]} />
+          <meshLambertMaterial color="#451a03" />
+        </mesh>
+        <mesh position={[0.2, 0.22, 0.1]} castShadow>
+          <sphereGeometry args={[0.22, 12, 12]} />
+          <meshLambertMaterial color="#f97316" />
+        </mesh>
+      </group>
+
+      {/* Terracotta Flower pots in corners */}
+      {[[-14, -14], [14, -14]].map((cPos, idx) => (
+        <group key={idx} position={[cPos[0], 0, cPos[1]]}>
+          <mesh position={[0, 0.35, 0]} castShadow>
+            <cylinderGeometry args={[0.42, 0.3, 0.7, 12]} />
+            <meshLambertMaterial color="#c2410c" />
+          </mesh>
+          <mesh position={[0, 0.71, 0]}>
+            <cylinderGeometry args={[0.38, 0.38, 0.02, 10]} />
+            <meshLambertMaterial color="#451a03" />
+          </mesh>
+          <mesh position={[0, 0.95, 0]} castShadow>
+            <cylinderGeometry args={[0.03, 0.03, 0.5, 6]} />
+            <meshLambertMaterial color="#16a34a" />
+          </mesh>
+          <mesh position={[0, 1.25, 0]} castShadow>
+            <sphereGeometry args={[0.12, 8, 8]} />
+            <meshLambertMaterial color="#facc15" />
+          </mesh>
+          {[0, 1, 2, 3, 4].map(p => {
+            const angle = (p * Math.PI * 2) / 5;
+            return (
+              <mesh key={p} position={[Math.cos(angle) * 0.18, 1.25 + Math.sin(angle) * 0.18, 0]} castShadow>
+                <sphereGeometry args={[0.09, 8, 8]} />
+                <meshLambertMaterial color={idx === 0 ? '#ec4899' : '#3b82f6'} />
+              </mesh>
+            );
+          })}
+        </group>
+      ))}
+    </group>
+  );
+};
+
 const CheeseBoard = () => {
   return (
     <group>
@@ -54,11 +225,8 @@ const CheeseBoard = () => {
           </mesh>
         ))}
       </group>
-      {/* Floor - expanded slightly for scaled-up board */}
-      <mesh position={[0, -0.05, 0]} receiveShadow>
-        <boxGeometry args={[30, 0.1, 30]} />
-        <meshLambertMaterial color="#475569" />
-      </mesh>
+      {/* Table top with beautiful decorations */}
+      <CheeseTable />
     </group>
   );
 };

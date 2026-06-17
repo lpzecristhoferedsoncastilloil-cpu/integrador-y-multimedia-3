@@ -1,7 +1,12 @@
 import axios from 'axios'
 
+const getBaseURL = () => {
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '127.0.0.1'
+  return `http://${hostname}:8000/api`
+}
+
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: getBaseURL(),
 })
 
 api.interceptors.request.use((config) => {
@@ -17,7 +22,7 @@ api.interceptors.response.use(
       const refresh = localStorage.getItem('refresh')
       if (refresh) {
         try {
-          const { data } = await axios.post('http://127.0.0.1:8000/api/token/refresh/', { refresh })
+          const { data } = await axios.post(`${getBaseURL()}/token/refresh/`, { refresh })
           localStorage.setItem('access', data.access)
           err.config.headers.Authorization = `Bearer ${data.access}`
           return axios(err.config)

@@ -227,55 +227,265 @@ const filterProps = (props) => {
   return f;
 };
 
+// Spinning Gear component for toy factory wall
+const SpinningGear = ({ position, radius, color, speed, teeth = 8 }) => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.rotation.z = state.clock.elapsedTime * speed;
+    }
+  });
+  return (
+    <group ref={ref} position={position}>
+      {/* Central Hub */}
+      <mesh castShadow>
+        <cylinderGeometry args={[radius * 0.35, radius * 0.35, 0.2, 16]} />
+        <meshStandardMaterial color="#ffffff" metalness={0.1} roughness={0.2} />
+      </mesh>
+      {/* Main Gear Cylinder */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[radius, radius, 0.15, 24]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.1} />
+      </mesh>
+      {/* Teeth */}
+      {Array.from({ length: teeth }).map((_, idx) => {
+        const angle = (idx / teeth) * Math.PI * 2;
+        const toothWidth = radius * 0.35;
+        const toothLength = radius * 1.3;
+        return (
+          <mesh 
+            key={idx} 
+            position={[Math.cos(angle) * radius, Math.sin(angle) * radius, 0]} 
+            rotation={[0, 0, angle]}
+            castShadow
+          >
+            <boxGeometry args={[toothWidth, toothWidth, 0.15]} />
+            <meshStandardMaterial color={color} roughness={0.3} metalness={0.1} />
+          </mesh>
+        );
+      })}
+      {/* Axle Pin */}
+      <mesh position={[0, 0, 0.11]}>
+        <cylinderGeometry args={[radius * 0.12, radius * 0.12, 0.05, 8]} />
+        <meshBasicMaterial color="#1e293b" />
+      </mesh>
+    </group>
+  );
+};
+
+// Animated Robot Arm component
+const RobotArm = ({ position, baseColor, armColor }) => {
+  const armRef1 = useRef();
+  const armRef2 = useRef();
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (armRef1.current) {
+      armRef1.current.rotation.z = Math.sin(t * 1.2) * 0.22 - 0.15;
+      armRef1.current.rotation.y = Math.cos(t * 0.6) * 0.12;
+    }
+    if (armRef2.current) {
+      armRef2.current.rotation.x = Math.sin(t * 1.8) * 0.25;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Base */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.4, 0.5, 0.35, 12]} />
+        <meshStandardMaterial color="#475569" roughness={0.5} />
+      </mesh>
+      {/* Joint sphere */}
+      <mesh position={[0, 0.25, 0]} castShadow>
+        <sphereGeometry args={[0.25, 12, 12]} />
+        <meshStandardMaterial color={baseColor} roughness={0.3} />
+      </mesh>
+      {/* Upper arm */}
+      <group ref={armRef1} position={[0, 0.25, 0]}>
+        <mesh position={[0, 0.45, 0]} castShadow>
+          <cylinderGeometry args={[0.1, 0.1, 0.9, 8]} />
+          <meshStandardMaterial color={armColor} roughness={0.4} />
+        </mesh>
+        {/* Elbow */}
+        <mesh position={[0, 0.9, 0]} castShadow>
+          <sphereGeometry args={[0.2, 12, 12]} />
+          <meshStandardMaterial color={baseColor} roughness={0.3} />
+        </mesh>
+        {/* Forearm */}
+        <group ref={armRef2} position={[0, 0.9, 0]}>
+          <mesh position={[0, 0.35, 0]} castShadow>
+            <cylinderGeometry args={[0.07, 0.07, 0.7, 8]} />
+            <meshStandardMaterial color={armColor} roughness={0.4} />
+          </mesh>
+          {/* Tool head */}
+          <mesh position={[0, 0.7, 0]} castShadow>
+            <boxGeometry args={[0.25, 0.12, 0.25]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.2} />
+          </mesh>
+          {/* Glowing tip */}
+          <mesh position={[0, 0.78, 0]}>
+            <sphereGeometry args={[0.07, 8, 8]} />
+            <meshBasicMaterial color="#10b981" />
+          </mesh>
+        </group>
+      </group>
+    </group>
+  );
+};
+
+// Candy Dispenser Spawner Tube
+const SpawnerTube = ({ position, baseColor, isLeft }) => {
+  return (
+    <group position={position}>
+      {/* Main Tube */}
+      <mesh castShadow>
+        <cylinderGeometry args={[0.7, 0.7, 2.0, 16]} />
+        <meshStandardMaterial color={baseColor} roughness={0.3} metalness={0.1} />
+      </mesh>
+      
+      {/* Candy stripes */}
+      {[0.4, 0.0, -0.4].map((yOffset, i) => (
+        <mesh key={i} position={[0, yOffset, 0]} rotation={[0, isLeft ? Math.PI/6 : -Math.PI/6, 0]}>
+          <torusGeometry args={[0.72, 0.06, 8, 24]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.3} />
+        </mesh>
+      ))}
+      
+      {/* Connector ring */}
+      <mesh position={[0, 1.0, 0]}>
+        <cylinderGeometry args={[0.8, 0.8, 0.15, 16]} />
+        <meshStandardMaterial color="#facc15" metalness={0.7} roughness={0.2} />
+      </mesh>
+      
+      {/* Glass dome */}
+      <mesh position={[0, 1.4, 0]} transparent>
+        <sphereGeometry args={[0.6, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshStandardMaterial color="#38bdf8" transparent opacity={0.35} roughness={0.1} />
+      </mesh>
+      
+      {/* Spinning Star inside the dome */}
+      <SpinningStar position={[0, 1.25, 0]} color="#fbbf24" />
+    </group>
+  );
+};
+
+const SpinningStar = ({ position, color }) => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.rotation.y = state.clock.elapsedTime * 2.0;
+      ref.current.rotation.z = state.clock.elapsedTime * 1.0;
+    }
+  });
+  return (
+    <mesh ref={ref} position={position}>
+      <octahedronGeometry args={[0.14, 0]} />
+      <meshBasicMaterial color={color} />
+    </mesh>
+  );
+};
+
 const ConveyorBelt = () => {
   return (
     <group>
       {/* Belt 1 (Rear lane, Pink channel - Left to Right) */}
       <mesh position={[0, 0, -0.8]} receiveShadow>
         <boxGeometry args={[16, 0.2, 1.0]} />
-        <meshLambertMaterial color="#312e81" />
+        <meshStandardMaterial color="#ec4899" metalness={0.1} roughness={0.4} />
       </mesh>
       {/* Rollers Belt 1 */}
       {[-7, -3.5, 0, 3.5, 7].map((x, i) => (
         <mesh key={`r1-${i}`} position={[x, -0.1, -0.8]}>
           <cylinderGeometry args={[0.2, 0.2, 1.0, 16]} />
-          <meshLambertMaterial color="#4f46e5" />
+          <meshStandardMaterial color="#eab308" roughness={0.3} />
         </mesh>
       ))}
-      {/* Left Tube (shoots Prefix / Parts 1 & 2) */}
-      <mesh position={[-8, 2.5, -0.8]}>
-        <cylinderGeometry args={[0.7, 0.7, 2.0, 16]} />
-        <meshLambertMaterial color="#f43f5e" emissive="#f43f5e" emissiveIntensity={0.2} />
+      {/* Left Tube spawner */}
+      <SpawnerTube position={[-8, 2.5, -0.8]} baseColor="#f43f5e" isLeft={true} />
+      {/* Support pole for Left Tube */}
+      <mesh position={[-8, 0.6, -0.8]}>
+        <cylinderGeometry args={[0.08, 0.08, 1.8, 8]} />
+        <meshStandardMaterial color="#475569" />
       </mesh>
 
       {/* Belt 2 (Front lane, Cyan channel - Right to Left) */}
       <mesh position={[0, 0, 0.8]} receiveShadow>
         <boxGeometry args={[16, 0.2, 1.0]} />
-        <meshLambertMaterial color="#1e1b4b" />
+        <meshStandardMaterial color="#06b6d4" metalness={0.1} roughness={0.4} />
       </mesh>
       {/* Rollers Belt 2 */}
       {[-7, -3.5, 0, 3.5, 7].map((x, i) => (
         <mesh key={`r2-${i}`} position={[x, -0.1, 0.8]}>
           <cylinderGeometry args={[0.2, 0.2, 1.0, 16]} />
-          <meshLambertMaterial color="#4f46e5" />
+          <meshStandardMaterial color="#eab308" roughness={0.3} />
         </mesh>
       ))}
-      {/* Right Tube (shoots Suffix / Part 3) */}
-      <mesh position={[8, 2.5, 0.8]}>
-        <cylinderGeometry args={[0.7, 0.7, 2.0, 16]} />
-        <meshLambertMaterial color="#06b6d4" emissive="#06b6d4" emissiveIntensity={0.2} />
+      {/* Right Tube spawner */}
+      <SpawnerTube position={[8, 2.5, 0.8]} baseColor="#0ea5e9" isLeft={false} />
+      {/* Support pole for Right Tube */}
+      <mesh position={[8, 0.6, 0.8]}>
+        <cylinderGeometry args={[0.08, 0.08, 1.8, 8]} />
+        <meshStandardMaterial color="#475569" />
       </mesh>
 
-      {/* Factory floor */}
+      {/* Toy Factory floor */}
       <mesh position={[0, -1, 0]} receiveShadow>
         <boxGeometry args={[24, 0.2, 10]} />
-        <meshLambertMaterial color="#0b0f19" />
+        <meshStandardMaterial color="#0f766e" roughness={0.5} />
       </mesh>
-      {/* Back wall */}
-      <mesh position={[0, 3, -5]}>
+      {/* Floor border line */}
+      <mesh position={[0, -0.89, 0]}>
+        <boxGeometry args={[23.8, 0.02, 9.8]} />
+        <meshStandardMaterial color="#fbbf24" roughness={0.3} wireframe />
+      </mesh>
+
+      {/* Back Wall - Golden Sunny Yellow */}
+      <mesh position={[0, 3, -5]} receiveShadow>
         <boxGeometry args={[24, 8, 0.4]} />
-        <meshLambertMaterial color="#111827" />
+        <meshStandardMaterial color="#fbbf24" roughness={0.6} />
       </mesh>
+      {/* Decorative wall panels */}
+      {[-8.5, -4.5, -0.5, 3.5, 7.5].map((x, i) => (
+        <mesh key={i} position={[x, 3, -4.7]} receiveShadow>
+          <boxGeometry args={[0.1, 8, 0.1]} />
+          <meshStandardMaterial color="#f59e0b" />
+        </mesh>
+      ))}
+
+      {/* Interlocking Gears on back wall */}
+      <SpinningGear position={[-3, 4.2, -4.7]} radius={0.95} color="#ef4444" speed={0.5} teeth={8} />
+      <SpinningGear position={[-1.4, 4.8, -4.7]} radius={0.75} color="#3b82f6" speed={-0.63} teeth={7} />
+      <SpinningGear position={[0.2, 4.1, -4.7]} radius={0.85} color="#10b981" speed={0.56} teeth={8} />
+      
+      {/* Decorative toy pipes on back wall */}
+      <mesh position={[-6.5, 2.0, -4.75]}>
+        <cylinderGeometry args={[0.08, 0.08, 4.0, 8]} />
+        <meshStandardMaterial color="#f43f5e" roughness={0.3} />
+      </mesh>
+      <mesh position={[-6.5, 4.0, -4.75]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
+        <meshStandardMaterial color="#f43f5e" />
+      </mesh>
+      <mesh position={[-5.0, 4.0, -4.75]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.08, 0.08, 3.0, 8]} />
+        <meshStandardMaterial color="#f43f5e" roughness={0.3} />
+      </mesh>
+
+      <mesh position={[5.5, 2.5, -4.75]}>
+        <cylinderGeometry args={[0.08, 0.08, 5.0, 8]} />
+        <meshStandardMaterial color="#3b82f6" roughness={0.3} />
+      </mesh>
+      <mesh position={[5.5, 5.0, -4.75]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
+        <meshStandardMaterial color="#3b82f6" />
+      </mesh>
+      <mesh position={[4.0, 5.0, -4.75]} rotation={[0, 0, Math.PI/2]}>
+        <cylinderGeometry args={[0.08, 0.08, 3.0, 8]} />
+        <meshStandardMaterial color="#3b82f6" roughness={0.3} />
+      </mesh>
+
+      {/* Robot Arms at sides */}
+      <RobotArm position={[-9.5, -0.9, 1.5]} baseColor="#ef4444" armColor="#facc15" />
+      <RobotArm position={[9.5, -0.9, -1.5]} baseColor="#0ea5e9" armColor="#10b981" />
     </group>
   );
 };
@@ -283,24 +493,67 @@ const ConveyorBelt = () => {
 const SyllableBlock = (props) => {
   const { block, isSelected, onClick } = filterProps(props);
   const groupRef = useRef();
+  const [isHovered, setIsHovered] = useState(false);
 
   useFrame((state) => {
     if (groupRef.current && block) {
       groupRef.current.position.x = block.x;
       groupRef.current.position.z = block.z;
-      groupRef.current.position.y = 0.6 + Math.sin(state.clock.elapsedTime * 4 + block.id) * 0.05;
+      // Faster and higher bounce on hover to excite kids!
+      const floatSpeed = isHovered ? 8 : 4;
+      const floatAmplitude = isHovered ? 0.08 : 0.05;
+      groupRef.current.position.y = 0.6 + Math.sin(state.clock.elapsedTime * floatSpeed + block.id) * floatAmplitude;
     }
   });
 
-  const color = isSelected ? '#10b981' : (block.colorType === 'pink' ? '#f43f5e' : '#06b6d4');
+  const baseColor = isSelected ? '#10b981' : (block.colorType === 'pink' ? '#f43f5e' : '#0ea5e9');
+  const color = isHovered ? '#fbbf24' : baseColor; // Turn golden yellow on hover
+  const scale = isHovered ? [1.12, 1.12, 1.12] : [1, 1, 1];
+  const emissive = isHovered ? '#f59e0b' : '#000000';
+  const emissiveIntensity = isHovered ? 1.5 : 0;
 
   return (
-    <group ref={groupRef} position={[block.x, 0.6, block.z]} onClick={(e) => { e.stopPropagation(); onClick(block); }}>
+    <group 
+      ref={groupRef} 
+      position={[block.x, 0.6, block.z]} 
+      scale={scale}
+      onClick={(e) => { 
+        e.stopPropagation(); 
+        onClick(block); 
+        setIsHovered(false);
+        document.body.style.cursor = 'default';
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setIsHovered(true);
+        document.body.style.cursor = 'pointer';
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setIsHovered(false);
+        document.body.style.cursor = 'default';
+      }}
+    >
       <mesh castShadow>
         <boxGeometry args={[1.6, 0.8, 0.8]} />
-        <meshLambertMaterial color={color} />
+        <meshStandardMaterial 
+          color={color} 
+          roughness={0.2} 
+          metalness={0.1}
+          emissive={emissive} 
+          emissiveIntensity={emissiveIntensity} 
+        />
       </mesh>
-      <Text position={[0, 0, 0.42]} fontSize={0.26} color="#ffffff" anchorX="center" anchorY="middle" fontWeight="bold">
+      {/* Corner light dots to look like a Lego/toy block */}
+      {[-0.7, 0.7].map((cx) => (
+        [-0.3, 0.3].map((cz) => (
+          <mesh key={`${cx}-${cz}`} position={[cx, 0.41, cz]}>
+            <sphereGeometry args={[0.07, 8, 8]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+        ))
+      ))}
+      <Text position={[0, 0, 0.42]} fontSize={0.28} color="#ffffff" anchorX="center" anchorY="middle" fontWeight="bold">
         {block.text}
       </Text>
     </group>

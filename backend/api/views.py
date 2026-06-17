@@ -741,6 +741,7 @@ class GameSessionCompleteView(APIView):
         req_correct = request.data.get('correct_attempts')
         req_incorrect = request.data.get('incorrect_attempts')
         req_total = request.data.get('total_attempts')
+        req_level = request.data.get('level')
         
         from django.db import connection
         from django.utils import timezone
@@ -762,6 +763,9 @@ class GameSessionCompleteView(APIView):
                 
                 player_id, id_paciente, session_level, game_type = row
                 
+                # Usar el nivel enviado por request si existe; de lo contrario el de la sesión en BD
+                level_to_save = int(req_level) if req_level is not None else session_level
+                
                 # Mapear game_type a nombre del juego
                 GAME_NAMES = {
                     'fonologica': 'Constructor de Cohetes',
@@ -776,7 +780,7 @@ class GameSessionCompleteView(APIView):
                     'train': 'El Tren de las Letras',
                 }
                 nombre_juego = GAME_NAMES.get(game_type, game_type or 'Juego Desconocido')
-                logger.info(f'[SESSION_COMPLETE] session={session_id} paciente={id_paciente} level={session_level}')
+                logger.info(f'[SESSION_COMPLETE] session={session_id} paciente={id_paciente} level={level_to_save}')
                 
                 # 2. Contar intentos de sílabas
                 if req_correct is not None and req_incorrect is not None and req_total is not None:
@@ -816,14 +820,13 @@ class GameSessionCompleteView(APIView):
                     estrellas = 1
                 
                 # 5. Asignar nivel y subnivel basándose en el nivel del juego
-                # Mapeo: niveles 1-3 = FONOLOGICA (id_nivel 1), 4-6 = id_nivel 2, 7-10 = id_nivel 3
-                if session_level <= 3:
+                if level_to_save <= 3:
                     id_nivel = 1
-                elif session_level <= 6:
+                elif level_to_save <= 6:
                     id_nivel = 2
                 else:
                     id_nivel = 3
-                id_subnivel = 1  # Constructor de Cohetes es subnivel 1
+                id_subnivel = 1  # Por defecto
                 
                 # Verificar que existen los registros de nivel y subnivel
                 cursor.execute('SELECT id_nivel FROM niveles WHERE id_nivel = %s', [id_nivel])
@@ -839,7 +842,7 @@ class GameSessionCompleteView(APIView):
                     id_subnivel = fallback[0] if fallback else 1
                 
                 # 6. Determinar estado
-                estado = 'COMPLETADO' if session_level >= 10 or total_attempts > 0 else 'INCOMPLETO'
+                estado = 'COMPLETADO' if level_to_save >= 10 or total_attempts > 0 else 'INCOMPLETO'
                 
                 # 7. Insertar resultado
                 cursor.execute('''
@@ -855,20 +858,20 @@ class GameSessionCompleteView(APIView):
                 ''', [
                     id_paciente, id_nivel, id_subnivel, nombre_juego,
                     correct_attempts, incorrect_attempts, total_attempts,
-                    total_time_seconds, estrellas, session_level,
+                    total_time_seconds, estrellas, level_to_save,
                     pct,
                     voice_count, 0, 0,
                     estado, timezone.now()
                 ])
                 
-                # 8. Actualizar sesión
+                # 8. Actualizar sesión (incluyendo el nivel alcanzado)
                 cursor.execute('''
                     UPDATE game_sessions
-                    SET score = %s, total_time_seconds = %s
+                    SET score = %s, total_time_seconds = %s, level = %s
                     WHERE id = %s
-                ''', [final_score, total_time_seconds, session_id])
+                ''', [final_score, total_time_seconds, level_to_save, session_id])
                 
-                logger.info(f'[SESSION_COMPLETE] Resultado guardado: correctas={correct_attempts} incorrectas={incorrect_attempts} pct={pct}% estrellas={estrellas} tiempo={total_time_seconds}s')
+                logger.info(f'[SESSION_COMPLETE] Resultado guardado: correctas={correct_attempts} incorrectas={incorrect_attempts} pct={pct}% estrellas={estrellas} tiempo={total_time_seconds}s nivel={level_to_save}')
                 
                 return Response({
                     'message': 'Sesión completada y resultado registrado',
@@ -879,6 +882,7 @@ class GameSessionCompleteView(APIView):
                         'porcentaje': pct,
                         'estrellas': estrellas,
                         'tiempo': total_time_seconds,
+                        'level': level_to_save
                     }
                 })
         except Exception as e:

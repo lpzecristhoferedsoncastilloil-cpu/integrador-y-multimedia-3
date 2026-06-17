@@ -280,44 +280,235 @@ const AnimalSVG = ({ type }) => {
   }
 };
 
-const River = () => {
+// Cosmic Forest Tree component
+const ForestTree = ({ position, color = "#a855f7" }) => {
   return (
-    <group>
-      {/* Cosmic River */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <boxGeometry args={[12, 0.2, 40]} />
-        <meshLambertMaterial color="#1e1b4b" />
+    <group position={position}>
+      {/* Trunk */}
+      <mesh castShadow>
+        <cylinderGeometry args={[0.12, 0.18, 0.9, 6]} />
+        <meshLambertMaterial color="#8B4513" />
       </mesh>
-      {/* Space docks / banks */}
-      <mesh position={[-7, 0, 0]}>
-        <boxGeometry args={[2, 0.5, 40]} />
-        <meshLambertMaterial color="#0f172a" />
+      {/* Cones stacked */}
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <coneGeometry args={[0.7, 0.8, 6]} />
+        <meshLambertMaterial color={color} />
       </mesh>
-      <mesh position={[7, 0, 0]}>
-        <boxGeometry args={[2, 0.5, 40]} />
-        <meshLambertMaterial color="#0f172a" />
+      <mesh position={[0, 1.1, 0]} castShadow>
+        <coneGeometry args={[0.55, 0.7, 6]} />
+        <meshLambertMaterial color={color} />
       </mesh>
-      {/* Cosmic beacons on banks */}
-      {[-15, -10, -5, 0, 5, 10, 15].map(z => (
-        <group key={z}>
-          <mesh position={[-7, 0.8, z]}>
-            <cylinderGeometry args={[0.1, 0.1, 1.2, 8]} />
-            <meshLambertMaterial color="#4f46e5" />
+      <mesh position={[0, 1.5, 0]} castShadow>
+        <coneGeometry args={[0.4, 0.5, 6]} />
+        <meshLambertMaterial color={color} />
+      </mesh>
+    </group>
+  );
+};
+
+// Bioluminescent Mushroom component
+const GlowMushroom = ({ position, capColor = "#ec4899" }) => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.intensity = 1.0 + Math.sin(state.clock.elapsedTime * 2.0 + position[0]) * 0.4;
+    }
+  });
+  return (
+    <group position={position}>
+      {/* Stem */}
+      <mesh castShadow>
+        <cylinderGeometry args={[0.08, 0.12, 0.5, 8]} />
+        <meshLambertMaterial color="#e2e8f0" />
+      </mesh>
+      {/* Cap */}
+      <mesh position={[0, 0.35, 0]} castShadow>
+        <sphereGeometry args={[0.26, 12, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+        <meshLambertMaterial color={capColor} emissive={capColor} emissiveIntensity={0.8} />
+      </mesh>
+      {/* Small glowing dots on cap */}
+      {[-0.12, 0.12].map((xOffset) => (
+        [-0.12, 0.12].map((zOffset) => (
+          <mesh key={`${xOffset}-${zOffset}`} position={[xOffset, 0.45, zOffset]}>
+            <sphereGeometry args={[0.03, 6, 6]} />
+            <meshBasicMaterial color="#ffffff" />
           </mesh>
-          <mesh position={[-7, 1.5, z]}>
-            <sphereGeometry args={[0.2, 8, 8]} />
-            <meshBasicMaterial color="#d946ef" />
+        ))
+      ))}
+      {/* Pulse light */}
+      <pointLight ref={ref} color={capColor} intensity={1.2} distance={3} position={[0, 0.3, 0]} />
+    </group>
+  );
+};
+
+// Flowing current lines on the river
+const RiverFlow = () => {
+  const ref = useRef();
+  useFrame((state) => {
+    if (ref.current) {
+      ref.current.position.z = (state.clock.elapsedTime * 2.5) % 10.0;
+    }
+  });
+  return (
+    <group ref={ref}>
+      {[-20, -10, 0, 10, 20].map((zOffset, idx) => (
+        <group key={idx} position={[0, 0.01, zOffset]}>
+          {/* Broad color lanes representing currents of different celeste tones */}
+          <mesh position={[-3, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[2.8, 10]} />
+            <meshBasicMaterial color="#7dd3fc" transparent opacity={0.5} />
           </mesh>
-          <mesh position={[7, 0.8, z]}>
-            <cylinderGeometry args={[0.1, 0.1, 1.2, 8]} />
-            <meshLambertMaterial color="#4f46e5" />
+          <mesh position={[0, -0.001, -2]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[2.8, 10]} />
+            <meshBasicMaterial color="#0284c7" transparent opacity={0.4} />
           </mesh>
-          <mesh position={[7, 1.5, z]}>
-            <sphereGeometry args={[0.2, 8, 8]} />
-            <meshBasicMaterial color="#d946ef" />
+          <mesh position={[3, 0, -5]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[2.8, 10]} />
+            <meshBasicMaterial color="#bae6fd" transparent opacity={0.6} />
+          </mesh>
+          
+          {/* Fine flowing ripple / foam lines */}
+          <mesh position={[-1.5, 0.001, -3]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.15, 6]} />
+            <meshBasicMaterial color="#ffffff" transparent opacity={0.65} />
+          </mesh>
+          <mesh position={[1.5, 0.001, -7]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[0.2, 5]} />
+            <meshBasicMaterial color="#e0f2fe" transparent opacity={0.7} />
           </mesh>
         </group>
       ))}
+    </group>
+  );
+};
+
+const CHEERFUL_COLORS = ["#ff007f", "#00f0ff", "#39ff14", "#facc15", "#d946ef", "#ff5722"];
+
+const River = () => {
+  return (
+    <group>
+      {/* Cosmic River - Bright Light-Blue Celeste Base */}
+      <mesh position={[0, -0.1, 0]} receiveShadow>
+        <boxGeometry args={[12, 0.2, 40]} />
+        <meshBasicMaterial color="#0ea5e9" />
+      </mesh>
+      <mesh position={[0, -0.12, 0]}>
+        <boxGeometry args={[11.8, 0.2, 40]} />
+        <meshBasicMaterial color="#38bdf8" />
+      </mesh>
+      
+      {/* Space docks / banks - base grass */}
+      <mesh position={[-7.5, 0, 0]} receiveShadow>
+        <boxGeometry args={[3, 0.5, 40]} />
+        <meshLambertMaterial color="#22c55e" />
+      </mesh>
+      <mesh position={[7.5, 0, 0]} receiveShadow>
+        <boxGeometry args={[3, 0.5, 40]} />
+        <meshLambertMaterial color="#22c55e" />
+      </mesh>
+
+      {/* Multitone green grass patches on the banks (where trees sit) */}
+      {[-17, -11, -5, 1, 7, 13, 19].map((z, idx) => {
+        const patchColor1 = idx % 3 === 0 ? "#4ade80" : idx % 3 === 1 ? "#16a34a" : "#86efac";
+        const patchColor2 = idx % 3 === 0 ? "#15803d" : idx % 3 === 1 ? "#86efac" : "#4ade80";
+        return (
+          <group key={z}>
+            {/* Left Bank Patches */}
+            <mesh position={[-8.0, 0.26, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[2.0, 4.0]} />
+              <meshBasicMaterial color={patchColor1} />
+            </mesh>
+            {/* Right Bank Patches */}
+            <mesh position={[8.0, 0.26, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[2.0, 4.0]} />
+              <meshBasicMaterial color={patchColor2} />
+            </mesh>
+          </group>
+        );
+      })}
+
+      {/* Sandy beaches and brown borders at the shorelines */}
+      {[-15, -8, -1, 6, 13].map((z, idx) => {
+        const beachColor = idx % 2 === 0 ? "#d97706" : "#eab308";
+        const sandEdgeColor = idx % 2 === 0 ? "#b45309" : "#d97706";
+        return (
+          <group key={`lb-${z}`}>
+            <mesh position={[-6.3, 0.262, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.7, 3.5]} />
+              <meshBasicMaterial color={beachColor} />
+            </mesh>
+            <mesh position={[-6.0, 0.263, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.15, 3.5]} />
+              <meshBasicMaterial color={sandEdgeColor} />
+            </mesh>
+          </group>
+        );
+      })}
+      {[-12, -5, 2, 9, 16].map((z, idx) => {
+        const beachColor = idx % 2 === 0 ? "#eab308" : "#d97706";
+        const sandEdgeColor = idx % 2 === 0 ? "#d97706" : "#b45309";
+        return (
+          <group key={`rb-${z}`}>
+            <mesh position={[6.3, 0.262, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.7, 3.5]} />
+              <meshBasicMaterial color={beachColor} />
+            </mesh>
+            <mesh position={[6.0, 0.263, z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[0.15, 3.5]} />
+              <meshBasicMaterial color={sandEdgeColor} />
+            </mesh>
+          </group>
+        );
+      })}
+      
+      {/* Neon rails bordering the shores */}
+      <mesh position={[-6.0, 0.261, 0]}>
+        <boxGeometry args={[0.06, 0.02, 40]} />
+        <meshBasicMaterial color="#00f0ff" />
+      </mesh>
+      <mesh position={[6.0, 0.261, 0]}>
+        <boxGeometry args={[0.06, 0.02, 40]} />
+        <meshBasicMaterial color="#ff007f" />
+      </mesh>
+
+      {/* Flowing current */}
+      <RiverFlow />
+
+      {/* Beacons and Forest Details on the banks */}
+      {[-18, -13, -8, -3, 2, 7, 12, 17].map((z, idx) => {
+        return (
+          <group key={z}>
+            {/* Beacons (glowing space torches) */}
+            <mesh position={[-6.2, 0.8, z]} castShadow>
+              <cylinderGeometry args={[0.05, 0.05, 1.2, 6]} />
+              <meshStandardMaterial color="#4b5563" />
+            </mesh>
+            <mesh position={[-6.2, 1.45, z]}>
+              <sphereGeometry args={[0.14, 8, 8]} />
+              <meshBasicMaterial color="#00ffff" />
+            </mesh>
+            <pointLight color="#00ffff" intensity={0.6} distance={4} position={[-6.2, 1.45, z]} />
+
+            <mesh position={[6.2, 0.8, z]} castShadow>
+              <cylinderGeometry args={[0.05, 0.05, 1.2, 6]} />
+              <meshStandardMaterial color="#4b5563" />
+            </mesh>
+            <mesh position={[6.2, 1.45, z]}>
+              <sphereGeometry args={[0.14, 8, 8]} />
+              <meshBasicMaterial color="#ff007f" />
+            </mesh>
+            <pointLight color="#ff007f" intensity={0.6} distance={4} position={[6.2, 1.45, z]} />
+
+            {/* Cosmic Forest details - Trees with bright, cheerful colors */}
+            <ForestTree position={[-7.8, 0.25, z - 1.5]} color={CHEERFUL_COLORS[idx % CHEERFUL_COLORS.length]} />
+            <ForestTree position={[7.8, 0.25, z + 1.2]} color={CHEERFUL_COLORS[(idx + 2) % CHEERFUL_COLORS.length]} />
+            
+            {/* Bioluminescent mushrooms with bright colors */}
+            <GlowMushroom position={[-8.4, 0.25, z + 1.5]} capColor={CHEERFUL_COLORS[(idx + 4) % CHEERFUL_COLORS.length]} />
+            <GlowMushroom position={[8.4, 0.25, z - 1.5]} capColor={CHEERFUL_COLORS[(idx + 1) % CHEERFUL_COLORS.length]} />
+          </group>
+        );
+      })}
     </group>
   );
 };
@@ -329,36 +520,63 @@ const Raft = (props) => {
     if (groupRef.current) {
       const target = LANE_X[laneX];
       groupRef.current.position.x += (target - groupRef.current.position.x) * 0.15;
-      groupRef.current.position.y = 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.05;
+      groupRef.current.position.y = 0.3 + Math.sin(state.clock.elapsedTime * 2.5) * 0.05;
+      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.5) * 0.02;
     }
   });
   return (
     <group ref={groupRef} position={[LANE_X[laneX], 0.3, 6]}>
-      {/* Raft Hoverboard */}
-      <mesh castShadow>
-        <boxGeometry args={[1.8, 0.15, 1.5]} />
-        <meshLambertMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.2} />
+      {/* Wooden Log Raft (Balsa de Tablas) */}
+      {[-0.6, -0.3, 0, 0.3, 0.6].map((xOffset, idx) => (
+        <mesh key={idx} position={[xOffset, 0, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.13, 0.13, 1.6, 8]} />
+          <meshStandardMaterial color="#854d0e" roughness={0.9} />
+        </mesh>
+      ))}
+      {/* Ropes tying logs together */}
+      {[-0.5, 0.5].map((zOffset, idx) => (
+        <mesh key={idx} position={[0, 0.1, zOffset]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.04, 0.04, 1.4, 6]} />
+          <meshStandardMaterial color="#2d1a04" roughness={0.7} />
+        </mesh>
+      ))}
+      {/* Lantern post */}
+      <mesh position={[0.7, 0.4, -0.6]} rotation={[0.1, 0, -0.15]} castShadow>
+        <cylinderGeometry args={[0.03, 0.03, 0.8, 6]} />
+        <meshStandardMaterial color="#5c3a21" />
       </mesh>
-      <mesh position={[0, -0.05, 0]}>
-        <boxGeometry args={[1.6, 0.1, 1.3]} />
-        <meshBasicMaterial color="#06b6d4" />
+      {/* Hanging Lantern */}
+      <group position={[0.78, 0.7, -0.6]}>
+        {/* Cap */}
+        <mesh castShadow>
+          <cylinderGeometry args={[0.12, 0.12, 0.05, 8]} />
+          <meshStandardMaterial color="#1f1f2e" metalness={0.7} />
+        </mesh>
+        {/* Bulb / Glow */}
+        <mesh position={[0, -0.1, 0]}>
+          <sphereGeometry args={[0.08, 12, 12]} />
+          <meshBasicMaterial color="#facc15" />
+        </mesh>
+        <pointLight color="#facc15" intensity={1.5} distance={3} position={[0, -0.1, 0]} />
+      </group>
+
+      {/* Space traveler standing on the raft */}
+      <mesh position={[0, 0.4, 0.2]} castShadow>
+        <boxGeometry args={[0.4, 0.5, 0.25]} />
+        <meshStandardMaterial color="#a855f7" roughness={0.4} />
       </mesh>
-      {/* Space traveler */}
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.5, 0.6, 0.3]} />
-        <meshLambertMaterial color="#a855f7" />
+      <mesh position={[0, 0.85, 0.2]} castShadow>
+        <sphereGeometry args={[0.2, 12, 12]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.3} />
       </mesh>
-      <mesh position={[0, 1.05, 0]} castShadow>
-        <sphereGeometry args={[0.25, 12, 12]} />
-        <meshLambertMaterial color="#ffffff" />
+      {/* Glowing alien eyes */}
+      <mesh position={[-0.08, 0.9, 0.38]}>
+        <circleGeometry args={[0.04, 8]} />
+        <meshBasicMaterial color="#00ffff" />
       </mesh>
-      <mesh position={[-0.1, 1.1, 0.22]}>
-        <circleGeometry args={[0.06, 12]} />
-        <meshBasicMaterial color="#eab308" />
-      </mesh>
-      <mesh position={[0.1, 1.1, 0.22]}>
-        <circleGeometry args={[0.06, 12]} />
-        <meshBasicMaterial color="#eab308" />
+      <mesh position={[0.08, 0.9, 0.38]}>
+        <circleGeometry args={[0.04, 8]} />
+        <meshBasicMaterial color="#00ffff" />
       </mesh>
     </group>
   );
@@ -371,38 +589,86 @@ const Log = (props) => {
   useFrame((state) => {
     if (groupRef.current && log) {
       groupRef.current.position.z = log.z;
+      if (!log.isHazard) {
+        groupRef.current.position.y = 0.3 + Math.sin(state.clock.elapsedTime * 2.0 + log.id) * 0.04;
+      }
     }
     if (meshGroupRef.current && log) {
-      meshGroupRef.current.rotation.x += log.isHazard ? 0.05 : 0.02;
+      // Rotating/spinning logs (around X-axis as they travel in Z)
+      meshGroupRef.current.rotation.x += log.isHazard ? 0.06 : 0.035;
     }
   });
   return (
     <group ref={groupRef} position={[LANE_X[log.lane], 0.3, log.z]}>
       {log.isHazard ? (
         <group ref={meshGroupRef}>
+          {/* Spiky Mine hazard */}
           <mesh castShadow>
-            <cylinderGeometry args={[0.3, 0.3, 1.2, 8]} rotation={[0, 0, Math.PI / 2]} />
-            <meshLambertMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.5} />
+            <sphereGeometry args={[0.35, 12, 12]} />
+            <meshStandardMaterial color="#ef4444" emissive="#ef4444" emissiveIntensity={0.6} roughness={0.3} />
           </mesh>
-          <mesh>
-            <sphereGeometry args={[0.4, 8, 8]} />
-            <meshBasicMaterial color="#f43f5e" wireframe />
-          </mesh>
+          {/* Spikes */}
+          {Array.from({ length: 8 }).map((_, idx) => {
+            const angle = (idx / 8) * Math.PI * 2;
+            return (
+              <mesh key={idx} position={[Math.cos(angle) * 0.38, Math.sin(angle) * 0.38, 0]} rotation={[0, 0, angle + Math.PI/2]}>
+                <coneGeometry args={[0.08, 0.3, 4]} />
+                <meshStandardMaterial color="#f97316" />
+              </mesh>
+            );
+          })}
         </group>
       ) : (
         <>
           <group ref={meshGroupRef}>
-            {/* Space cylinder capsule */}
+            {/* Floating Wooden Log */}
             <mesh castShadow>
-              <cylinderGeometry args={[0.4, 0.4, 1.8, 12]} rotation={[0, 0, Math.PI / 2]} />
-              <meshLambertMaterial color="#6366f1" />
+              <cylinderGeometry args={[0.32, 0.32, 1.8, 12]} rotation={[0, 0, Math.PI / 2]} />
+              <meshStandardMaterial color="#6e3e08" roughness={0.9} />
             </mesh>
-            <mesh>
-              <cylinderGeometry args={[0.41, 0.41, 0.4, 12]} rotation={[0, 0, Math.PI / 2]} />
-              <meshBasicMaterial color="#a855f7" />
+            {/* Lighter end rings simulating log rings */}
+            {[-0.91, 0.91].map((xOffset, idx) => (
+              <mesh key={idx} position={[xOffset, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+                <cylinderGeometry args={[0.3, 0.3, 0.02, 12]} />
+                <meshStandardMaterial color="#d6a060" roughness={0.8} />
+              </mesh>
+            ))}
+            {/* Neon core stripe around log for cosmic look */}
+            <mesh rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.33, 0.33, 0.15, 12, 1, true]} />
+              <meshBasicMaterial color="#00f0ff" />
+            </mesh>
+            
+            {/* Wood knots and moss patches to make rotation visible */}
+            <mesh position={[0.4, 0.28, 0.15]} castShadow>
+              <boxGeometry args={[0.15, 0.1, 0.15]} />
+              <meshStandardMaterial color="#4c2f04" roughness={0.9} />
+            </mesh>
+            <mesh position={[-0.5, -0.28, -0.15]} castShadow>
+              <boxGeometry args={[0.12, 0.1, 0.12]} />
+              <meshStandardMaterial color="#4c2f04" roughness={0.9} />
+            </mesh>
+            <mesh position={[0.1, -0.15, 0.28]} castShadow>
+              <boxGeometry args={[0.18, 0.18, 0.1]} />
+              <meshStandardMaterial color="#3f6212" roughness={0.9} />
+            </mesh>
+            <mesh position={[-0.2, 0.15, -0.28]} castShadow>
+              <boxGeometry args={[0.15, 0.15, 0.1]} />
+              <meshStandardMaterial color="#3f6212" roughness={0.9} />
             </mesh>
           </group>
-          <Text position={[0, 1.0, 0]} fontSize={0.35} color="#ffffff" anchorX="center" anchorY="middle" fontWeight="bold">
+          {/* Text placed higher, tilted, black, 10% larger, bold, with thick white outline */}
+          <Text 
+            position={[0, 2.2, 0]} 
+            rotation={[-0.4, 0, 0]} 
+            fontSize={0.5} 
+            color="#000000" 
+            outlineColor="#ffffff" 
+            outlineWidth={0.06} 
+            anchorX="center" 
+            anchorY="middle" 
+            fontWeight="bold"
+          >
             {log.word}
           </Text>
         </>

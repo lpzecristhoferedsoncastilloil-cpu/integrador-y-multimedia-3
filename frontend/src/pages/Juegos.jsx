@@ -23,6 +23,7 @@ import Game6_1Warehouse from './games/Game6_1Warehouse'
 import Game7Temple from './games/Game7Temple'
 import Game7_1Temple from './games/Game7_1Temple'
 import Game8Train from './games/Game8Train'
+import Game9Spelling from './games/Game9Spelling'
 
 export default function Juegos() {
   const [player, setPlayer] = useState(null)
@@ -766,6 +767,33 @@ export default function Juegos() {
               </button>
             </div>
 
+            {/* Game 9: Deletreo Estelar */}
+            <div style={styles.gameCard}>
+              <div className="flex items-center justify-center p-3 mb-2">
+                <Compass className="w-12 h-12 text-yellow-400 animate-pulse" />
+              </div>
+              <h3 style={styles.gameCardTitle}>Deletreo Estelar</h3>
+              <p style={styles.gameCardDesc}>Deletrea palabras dictadas seleccionando asteroides 3D o hablando por el micrófono para lanzar el cohete.</p>
+              <div style={styles.tagGroup}>
+                <span style={styles.tag}>3D R3F</span>
+                <span style={styles.tag}>Audio y Voz</span>
+              </div>
+              <div className="flex flex-col gap-2.5 w-full">
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('spelling_cadete'); }}
+                >
+                  Jugar (Niños 7 años)
+                </button>
+                <button
+                  className="animate-pulse-slow-normal w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold rounded-xl transition-all duration-300 shadow-lg hover:scale-103 cursor-pointer text-xs uppercase"
+                  onClick={(e) => { e.stopPropagation(); setActiveGame('spelling_commander'); }}
+                >
+                  Jugar (Niños 10 años)
+                </button>
+              </div>
+            </div>
+
             {/* Juegos cargados dinámicamente de la base de datos */}
             {dbGames.map((jg, idx) => (
               <div style={styles.gameCard} key={idx} onClick={() => { setActiveGame('silabas_magicas'); iniciarDemo(); }}>
@@ -1335,6 +1363,36 @@ export default function Juegos() {
         </div>
         <div style={styles.gameBody}>
           <Game8Train player={player} onFinish={(res) => handleFinishGeneric(res, 'El Tren de las Letras', 'train')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 13. Jugando: Deletreo Estelar (3D R3F) - Cadete
+  if (activeGame === 'spelling_cadete') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game9Spelling player={player} initialMode="cadete" onFinish={(res) => handleFinishGeneric(res, 'Deletreo Estelar - 7 años', 'spelling_cadete')} />
+        </div>
+      </div>
+    )
+  }
+
+  // 13.1. Jugando: Deletreo Estelar (3D R3F) - Comandante
+  if (activeGame === 'spelling_commander') {
+    return (
+      <div style={styles.gameContainer}>
+        <div style={styles.gameHeader}>
+          <span style={styles.playerTag}>Jugador: <strong>{player.nickname}</strong></span>
+          <button style={styles.btnBackToLobby} onClick={salirAlLobby}>Volver a la Sala</button>
+        </div>
+        <div style={styles.gameBody}>
+          <Game9Spelling player={player} initialMode="commander" onFinish={(res) => handleFinishGeneric(res, 'Deletreo Estelar - 10 años', 'spelling_commander')} />
         </div>
       </div>
     )
